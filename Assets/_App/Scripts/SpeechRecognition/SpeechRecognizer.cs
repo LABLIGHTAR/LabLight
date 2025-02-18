@@ -76,7 +76,7 @@ public class SpeechRecognizer : MonoBehaviour
             {
                 // Remove special characters and convert to lowercase
                 var recognizedWords = Regex.Replace(result, @"[^\w\d\s]","").ToLower().Split(' ');
-
+                Debug.Log("Number of Keywords: " + Keywords.Count);
                 //Debug.Log("Number of Keywords: " + Keywords.Count);
                 if (result == null || Keywords.Count == 0)
                 {
@@ -84,17 +84,38 @@ public class SpeechRecognizer : MonoBehaviour
                     return;
                 }
 
-                // Check if recognized words match any keywords
+                Dictionary<string, int> wordCounts = new Dictionary<string, int>();
+                //used to play multiple actions in one segment
+                
                 foreach (var word in recognizedWords)
                 {
+                    Debug.Log("Word: " + word);
+                    // Track word count
+                    if (!wordCounts.ContainsKey(word))
+                    {
+                        wordCounts[word] = 0;
+                    }
+                    wordCounts[word]++;
+                    //first recognized action than breaks than breaks
                     Action action;
-                    if (Keywords.TryGetValue(word, out action))
+                    if(Keywords.TryGetValue(word, out action))
                     {
                         Debug.Log("Keyword recognized: " + word);
                         PlayKeywordRecognizedSound();
                         action.Invoke();
+                        break;
                     }
+                    //plays every action recognized in segment once
+                    /*
+                    Action action;
+                    if(wordCounts[word] < 2 && Keywords.TryGetValue(word, out action))
+                    {
+                        Debug.Log("Keyword recognized: " + word);
+                        PlayKeywordRecognizedSound();
+                        action.Invoke();
+                    }*/
                 }
+
             }
             else
             {
