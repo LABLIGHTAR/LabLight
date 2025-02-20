@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UniRx;
+using System.Threading.Tasks;
 
 public class ProtocolState : MonoBehaviour
 {
@@ -48,6 +49,8 @@ public class ProtocolState : MonoBehaviour
         return currentStepState.Checklist.All(item => item.IsChecked.Value);
     }
 
+    private IProtocolDataProvider _protocolDataProvider;
+
     void Awake()
     {
         if (Instance == null)
@@ -56,11 +59,12 @@ public class ProtocolState : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Multiple ProtocolState instances detected. Destroying duplicate.");
+            Debug.LogWarning("Duplicate ProtocolState instance detected. Destroying duplicate.");
             Destroy(gameObject);
             return;
         }
         ServiceRegistry.GetService<IUIDriver>()?.Initialize();
+        _protocolDataProvider = ServiceRegistry.GetService<IProtocolDataProvider>();
     }
 
     public void SetProtocolDefinition(ProtocolDefinition protocolDefinition)
@@ -74,27 +78,70 @@ public class ProtocolState : MonoBehaviour
         Steps.Clear();
         ActiveProtocol.Value = protocolDefinition;
         ProtocolTitle.Value = protocolDefinition.title;
-
         InitializeSteps(protocolDefinition);
-        InitCSV();
+        ServiceRegistry.GetService<ILighthouseControl>()?.SetProtocolStatus();
+        ProtocolStream.OnNext(protocolDefinition);
+        SceneLoader.Instance.LoadSceneClean("Protocol");
+    }
+
+    public void SetProtocolDefinition(ProtocolDefinition protocolDefinition, ProtocolStateData stateData)
+    {
+        if (protocolDefinition == null || protocolDefinition.steps.Count == 0)
+        {
+            Debug.LogError("Invalid protocol definition");
+            return;
+        }
+
+        // Clear previous steps and set base protocol info
+        Steps.Clear();
+        ActiveProtocol.Value = protocolDefinition;
+        ProtocolTitle.Value = protocolDefinition.title;
+
+        // Initialize steps from current protocol definition
+        InitializeSteps(protocolDefinition);
+
+        // If we have saved state data, restore it
+        if (stateData != null)
+        {
+            RestoreSavedState(stateData);
+        }
+        else
+        {
+            SetStep(0);
+        }
 
         ServiceRegistry.GetService<ILighthouseControl>()?.SetProtocolStatus();
         ProtocolStream.OnNext(protocolDefinition);
         SceneLoader.Instance.LoadSceneClean("Protocol");
     }
 
+    private void RestoreSavedState(ProtocolStateData stateData)
+    {
+        int count = Math.Min(Steps.Count, stateData.Steps.Count);
+        for (int i = 0; i < count; i++)
+        {
+            var stepState = Steps[i];
+            var savedStep = stateData.Steps[i];
+            stepState.SignedOff.Value = savedStep.SignedOff;
+            
+            if (stepState.Checklist != null && savedStep.Checklist != null)
+            {
+                int itemCount = Math.Min(stepState.Checklist.Count, savedStep.Checklist.Count);
+                for (int j = 0; j < itemCount; j++)
+                {
+                    var checkItemState = stepState.Checklist[j];
+                    var savedCheck = savedStep.Checklist[j];
+                    checkItemState.IsChecked.Value = savedCheck.IsChecked;
+                }
+            }
+        }
+        
+        // Restore resume state from the saved data
+        SetStepAndCheckItem(stateData.CurrentStep, stateData.CurrentCheckItem);
+    }
+
     private void InitializeSteps(ProtocolDefinition protocolDefinition)
     {
-        // var arModels = protocolDefinition.globalArObjects
-        //     .Where(x => x.arDefinitionType == ArDefinitionType.Model)
-        //     .Cast<ModelArDefinition>()
-        //     .ToList();
-
-        // if (arModels.Count > 0)
-        // {
-        //     protocolDefinition.steps.Insert(0, CreateLockingStep(arModels));
-        // }
-
         foreach (var step in protocolDefinition.steps)
         {
             var stepState = new StepState();
@@ -109,26 +156,6 @@ public class ProtocolState : MonoBehaviour
         SetStep(0);
     }
 
-    //TODO: move this to a protocol definition class
-    // private StepDefinition CreateLockingStep(List<ModelArDefinition> arModels) remake
-    // {
-    //     var checkList = new List<CheckItemDefinition>
-    //     {
-    //         new CheckItemDefinition { Text = "Place the items listed below on your workspace" }
-    //     };
-
-    //     checkList.AddRange(arModels.Select(arModel => new CheckItemDefinition
-    //     {
-    //         Text = arModel.name,
-    //         operations = new List<ArOperation> { new AnchorArOperation { arDefinition = arModel } }
-    //     }));
-
-    //     return new StepDefinition
-    //     {
-    //         checklist = checkList
-    //     };
-    // }
-
     public void SetStep(int step)
     {
         if (step < 0 || ActiveProtocol.Value == null || Steps == null || step >= Steps.Count)
@@ -140,6 +167,12 @@ public class ProtocolState : MonoBehaviour
         CurrentStepState.Value = Steps[step];
         StepStream.OnNext(CurrentStepState.Value);
         UpdateCheckItem();
+    }
+
+    public void SetStepAndCheckItem(int step, int checkItem)
+    {
+        SetStep(step);
+        SetCheckItem(checkItem);
     }
 
     public void SetCheckItem(int index)
@@ -202,6 +235,7 @@ public class ProtocolState : MonoBehaviour
         }
         CsvPath.Value = csvPath;
     }
+    //insert protocol persistent state updating here
 
     public class StepState
     {
@@ -216,4 +250,5 @@ public class ProtocolState : MonoBehaviour
         public ReactiveProperty<bool> IsChecked { get; } = new ReactiveProperty<bool>();
         public string Text { get; set; }
     }
+
 }

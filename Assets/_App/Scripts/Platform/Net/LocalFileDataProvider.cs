@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UniRx;
@@ -11,16 +12,34 @@ using UnityEngine;
 /// <summary>
 /// Implements IDataProvider interface for accessing available procedures and updating runtime state
 /// </summary>
-public class LocalFileDataProvider : IProtocolDataProvider, ITextDataProvider, IAnchorDataProvider, IUserProfileDataProvider
+public class LocalFileDataProvider : IProtocolDataProvider, ITextDataProvider, IAnchorDataProvider, IUserProfileDataProvider, IProtocolStateTracking
 {
     private const string ANCHOR_DATA_FILENAME = "AnchorData.json";
     private const string USER_PROFILES_DIRECTORY = "UserProfiles";
     private const string USER_PROFILE_DATA_FILENAME = "UserProfileData.json";
+    private const string STATE_DATA_DIRECTORY = "StateData"; // Single directory for all state data
     private readonly string _persistentDataPath;
     
     public LocalFileDataProvider()
     {
         _persistentDataPath = Application.persistentDataPath;
+        EnsureStateDirectory();
+    }
+
+    private void EnsureStateDirectory()
+    {
+        string path = Path.Combine(_persistentDataPath, STATE_DATA_DIRECTORY);
+        if (!Directory.Exists(path))
+            Directory.CreateDirectory(path);
+    }
+
+    private string GetStateDataPath() => Path.Combine(_persistentDataPath, STATE_DATA_DIRECTORY);
+
+    private string SanitizeForFileName(string input)
+    {
+        foreach (char c in Path.GetInvalidFileNameChars())
+            input = input.Replace(c, '_');
+        return input;
     }
 
     public async Task<List<ProtocolDefinition>> GetProtocolList()
@@ -50,7 +69,6 @@ public class LocalFileDataProvider : IProtocolDataProvider, ITextDataProvider, I
                 catch (Exception ex)
                 {
                     Debug.LogError($"Failed to read protocol file {file.Name}: {ex.Message}");
-                    // Continue with other files even if one fails
                 }
             }
         }
@@ -356,7 +374,6 @@ public class LocalFileDataProvider : IProtocolDataProvider, ITextDataProvider, I
                 catch (Exception ex)
                 {
                     Debug.LogError($"Failed to delete user profile {file.Name}: {ex.Message}");
-                    // Continue with other files even if one fails
                 }
             }
             
@@ -366,5 +383,268 @@ public class LocalFileDataProvider : IProtocolDataProvider, ITextDataProvider, I
         {
             Debug.LogError($"Failed to clear user profiles: {ex.Message}");
         }
+    }
+
+    public async Task<ProtocolStateData> GetProtocolState(string userID, string protocolTitle)
+    {
+        try
+        {
+            var matchingStates = (await LoadAllStateData())
+                .Where(s => s.UserID == userID && s.ProtocolTitle == protocolTitle)
+                .OrderByDescending(s => s.LastUpdated);
+            return matchingStates.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load protocol state: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task SaveProtocolStateData(ProtocolStateData stateData)
+    {
+        try
+        {
+            stateData.LastUpdated = DateTime.Now;
+            string safeTitle = SanitizeForFileName(stateData.ProtocolTitle);
+            string timestamp = stateData.LastUpdated.ToString("yyyy-MM-dd_HH-mm-ss");
+            string fileName = $"{stateData.UserID}__{safeTitle}__{timestamp}.json";
+            string fullPath = Path.Combine(GetStateDataPath(), fileName);
+            string tempPath = fullPath + ".tmp";
+
+            string jsonContent = JsonConvert.SerializeObject(stateData, Formatting.Indented);
+            await File.WriteAllTextAsync(tempPath, jsonContent);
+            File.Replace(tempPath, fullPath, null);
+            Debug.Log($"Saved protocol state to: {fullPath}");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to save protocol state: {ex.Message}");
+        }
+    }
+
+    public async Task<List<ProtocolStateData>> GetAllProtocolStates(string userID, string protocolTitle)
+    {
+        try
+        {
+            return (await LoadAllStateData())
+                .Where(s => s.UserID == userID && s.ProtocolTitle == protocolTitle)
+                .OrderByDescending(s => s.LastUpdated)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load protocol states: {ex.Message}");
+            return new List<ProtocolStateData>();
+        }
+    }
+
+    // Incrementally update the resume state (current step/check item)
+    public async Task UpdateResumeState(string userID, string protocolTitle, int currentStep, int currentCheckItem)
+    {
+        try
+        {
+            var currentState = await GetProtocolState(userID, protocolTitle);
+            if (currentState == null)
+            {
+                Debug.LogWarning("No existing state found for resume state update");
+                return;
+            }
+
+            currentState.UpdateResumeState(currentStep, currentCheckItem);
+            await SaveProtocolStateData(currentState);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to update resume state: {ex.Message}");
+        }
+    }
+
+    // Incrementally update a check item's completion status.
+    public async Task UpdateCheckItemCompletion(string userID, string protocolTitle, int stepIndex, int checkIndex, bool isChecked, string completionTime)
+    {
+        try
+        {
+            var currentState = await GetProtocolState(userID, protocolTitle);
+            if (currentState == null)
+            {
+                Debug.LogWarning("No existing state found for check item update");
+                return;
+            }
+
+            currentState.UpdateCheckItem(stepIndex, checkIndex, isChecked, completionTime);
+            await SaveProtocolStateData(currentState);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to update check item completion: {ex.Message}");
+        }
+    }
+
+    // Sign off a step with a sign off time.
+    public async Task SignOffStep(string userID, string protocolTitle, int stepIndex, string signOffTime)
+    {
+        try
+        {
+            var currentState = await GetProtocolState(userID, protocolTitle);
+            if (currentState == null)
+            {
+                Debug.LogWarning("No existing state found for step sign off");
+                return;
+            }
+
+            currentState.SignOffStep(stepIndex, signOffTime);
+            await SaveProtocolStateData(currentState);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to sign off step: {ex.Message}");
+        }
+    }
+
+    // Reset (wipe) all completion data for a specific step (emergency reset)
+    public async Task ResetStepData(string userID, string protocolTitle, int stepIndex)
+    {
+        try
+        {
+            var currentState = await GetProtocolState(userID, protocolTitle);
+            if (currentState == null)
+            {
+                Debug.LogWarning("No existing state found for step reset");
+                return;
+            }
+
+            currentState.ResetStepData(stepIndex);
+            await SaveProtocolStateData(currentState);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to reset step data: {ex.Message}");
+        }
+    }
+
+    public async Task DeleteProtocolState(string userID, string protocolTitle)
+    {
+        try
+        {
+            string statesPath = GetStateDataPath();
+            foreach (var file in Directory.GetFiles(statesPath, "*.json"))
+            {
+                try
+                {
+                    string content = await File.ReadAllTextAsync(file);
+                    var state = JsonConvert.DeserializeObject<ProtocolStateData>(content);
+                    if (state != null && state.UserID == userID && state.ProtocolTitle == protocolTitle)
+                    {
+                        File.Delete(file);
+                        Debug.Log($"Deleted protocol state file: {Path.GetFileName(file)}");
+                    }
+                }
+                catch (Exception innerEx)
+                {
+                    Debug.LogError($"Error processing file {file} for deletion: {innerEx.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to delete protocol state: {ex.Message}");
+        }
+    }
+
+    public async Task<List<ProtocolStateData>> GetProtocolStatesByUser(string userID)
+    {
+        try
+        {
+            return (await LoadAllStateData())
+                .Where(s => s.UserID == userID)
+                .OrderByDescending(s => s.LastUpdated)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load protocol states by user: {ex.Message}");
+            return new List<ProtocolStateData>();
+        }
+    }
+
+    public async Task<List<ProtocolStateData>> GetProtocolStatesByTitle(string protocolTitle)
+    {
+        try
+        {
+            return (await LoadAllStateData())
+                .Where(s => s.ProtocolTitle == protocolTitle)
+                .OrderByDescending(s => s.LastUpdated)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load protocol states by title: {ex.Message}");
+            return new List<ProtocolStateData>();
+        }
+    }
+
+    public async Task DeleteAllProtocolStateData()
+    {
+        try
+        {
+            foreach (var file in Directory.GetFiles(GetStateDataPath(), "*.json"))
+                File.Delete(file);
+            Debug.Log("Deleted all protocol state data");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to delete all protocol state data: {ex.Message}");
+        }
+    }
+
+    public async Task DeleteAllProtocolStateDataForUser(string userID)
+    {
+        try
+        {
+            foreach (var file in Directory.GetFiles(GetStateDataPath(), "*.json"))
+            {
+                try
+                {
+                    string content = await File.ReadAllTextAsync(file);
+                    var state = JsonConvert.DeserializeObject<ProtocolStateData>(content);
+                    if (state != null && state.UserID == userID)
+                    {
+                        File.Delete(file);
+                        Debug.Log($"Deleted user protocol state file: {Path.GetFileName(file)}");
+                    }
+                }
+                catch (Exception innerEx)
+                {
+                    Debug.LogError($"Error processing file {file} for deletion: {innerEx.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to delete user protocol state data: {ex.Message}");
+        }
+    }
+
+    // Helper to load all state data from JSON files.
+    private async Task<List<ProtocolStateData>> LoadAllStateData()
+    {
+        var states = new List<ProtocolStateData>();
+        string statesPath = GetStateDataPath();
+        foreach (var file in Directory.GetFiles(statesPath, "*.json"))
+        {
+            try
+            {
+                string content = await File.ReadAllTextAsync(file);
+                var state = JsonConvert.DeserializeObject<ProtocolStateData>(content);
+                if (state != null)
+                    states.Add(state);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error reading state file {file}: {ex.Message}");
+            }
+        }
+        return states;
     }
 }
