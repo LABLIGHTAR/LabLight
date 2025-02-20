@@ -46,6 +46,7 @@ struct StepDefinition: Codable, Identifiable, Equatable, Hashable {
     let estimatedDurationInSeconds: Int
     let contentItems: [ContentItem]
     let checklist: [CheckItemDefinition]
+    let title: String?
     
     // Computed property for Identifiable
     let id: UUID = UUID()
@@ -55,6 +56,7 @@ struct StepDefinition: Codable, Identifiable, Equatable, Hashable {
         case estimatedDurationInSeconds
         case contentItems
         case checklist
+        case title
     }
     
     // MARK: Hashable
@@ -68,7 +70,8 @@ struct StepDefinition: Codable, Identifiable, Equatable, Hashable {
                lhs.isCritical == rhs.isCritical &&
                lhs.estimatedDurationInSeconds == rhs.estimatedDurationInSeconds &&
                lhs.contentItems == rhs.contentItems &&
-               lhs.checklist == rhs.checklist
+               lhs.checklist == rhs.checklist &&
+               lhs.title == rhs.title
     }
 }
 

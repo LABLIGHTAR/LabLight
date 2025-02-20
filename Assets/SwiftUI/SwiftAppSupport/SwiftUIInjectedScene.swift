@@ -12,11 +12,14 @@ struct SwiftUIInjectedScene {
         // You can create multiple WindowGroups here for different wnidows;
         // they need a distinct id. If you include multiple items,
         // the scene property must be decorated with "@SceneBuilder" as above.
+
+        WindowGroup(id: "UserProfiles") {
+            UserSelectionContentView()
+        }
+        .defaultSize(width: 400, height: 600)
+
         WindowGroup(id: "ProtocolMenu") {
             ProtocolMenuContentView()
-                .onAppear {
-                    print("######LABLIGHT ProtocolMenuContentView appeared")
-                }
         }
         .defaultSize(width: 800, height: 600)
 

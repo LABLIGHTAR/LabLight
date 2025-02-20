@@ -40,6 +40,14 @@ struct ProtocolContentView: View {
     
     private var stepContent: some View {
         VStack(alignment: .leading, spacing: 16) {
+            if let title = contentItems.first?.properties["stepTitle"],
+               !title.isEmpty {
+                Text(title)
+                    .font(.title2)
+                    .foregroundColor(.primary)
+                    .padding(.bottom, 4)
+            }
+            
             Text("Step Instructions")
                 .font(.headline)
                 .foregroundColor(.primary)

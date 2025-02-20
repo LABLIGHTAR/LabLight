@@ -176,7 +176,7 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     //Swift UI Display methods
     public void DisplayUserSelection()
     {
-        OpenSwiftUIWindow("UserSelection");
+        OpenSwiftUIWindow("UserProfiles");
     }
 
     public void DisplayProtocolMenu()
@@ -217,10 +217,37 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     // Unity Callback Methods
     public void UserSelectionCallback(string userID)
     {
-        ServiceRegistry.GetService<IUserProfileDataProvider>().GetOrCreateUserProfile(userID).Subscribe(profile => {
-            SessionState.currentUserProfile = profile;
-            DisplayProtocolMenu();
-        });
+        Debug.Log($"######LABLIGHT Starting UserSelectionCallback for ID: {userID}");
+        var profileProvider = ServiceRegistry.GetService<IUserProfileDataProvider>();
+        if (profileProvider == null)
+        {
+            Debug.LogError("######LABLIGHT IUserProfileDataProvider is null");
+            return;
+        }
+
+        profileProvider.GetOrCreateUserProfile(userID).Subscribe(
+            profile => {
+                Debug.Log("######LABLIGHT Profile loaded successfully");
+                if (profile == null)
+                {
+                    Debug.LogError("######LABLIGHT Profile is null after loading");
+                    return;
+                }
+                SessionState.currentUserProfile = profile;
+                Debug.Log("######LABLIGHT Profile set in SessionState");
+                
+                // Close UserProfiles window first
+                CloseSwiftUIWindow("UserProfiles");
+                Debug.Log("######LABLIGHT UserProfiles window closed");
+                
+                // Then open Protocol Menu
+                Debug.Log("######LABLIGHT About to display protocol menu");
+                DisplayProtocolMenu();
+            },
+            error => {
+                Debug.LogError($"######LABLIGHT Error in UserSelectionCallback: {error}");
+            }
+        );
     }
 
     public void StepNavigationCallback(int stepIndex)
@@ -342,6 +369,13 @@ public class SwiftUIDriver : IUIDriver, IDisposable
         LoadProtocolDefinitions();
     }
 
+    public void OnUserProfilesChange(List<UserProfileData> profiles)
+    {
+        var profilesData = profiles.Select(p => new { userId = p.GetUserId(), name = p.GetName() }).ToList();
+        string profilesJson = JsonConvert.SerializeObject(profilesData);
+        SendMessageToSwiftUI($"userProfiles|{profilesJson}");
+    }
+
     // Native callback handler
     [MonoPInvokeCallback(typeof(CallbackDelegate))]
     private static void OnMessageReceived(string message)
@@ -425,6 +459,22 @@ public class SwiftUIDriver : IUIDriver, IDisposable
                     break;
                 case "downloadJsonProtocol":
                     DownloadJsonProtocolCallback();
+                    break;
+                case "requestUserProfiles":
+                    var userProfileProvider = ServiceRegistry.GetService<IUserProfileDataProvider>();
+                    userProfileProvider.GetAllUserProfiles()
+                        .ObserveOnMainThread()
+                        .Subscribe(OnUserProfilesChange);
+                    break;
+                case "selectUser":
+                    UserSelectionCallback(data);
+                    break;
+                case "createUser":
+                    var provider = ServiceRegistry.GetService<IUserProfileDataProvider>();
+                    provider.SaveUserProfileData(data, new UserProfileData(data));
+                    provider.GetAllUserProfiles()
+                        .ObserveOnMainThread()
+                        .Subscribe(OnUserProfilesChange);
                     break;
                 // Add more cases as needed
             }

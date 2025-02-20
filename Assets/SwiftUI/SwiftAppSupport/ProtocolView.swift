@@ -55,12 +55,51 @@ struct ProtocolView: View {
     
     // MARK: - View Components
     private var stepPicker: some View {
-        Picker("Select Step", selection: $viewModel.selectedStepIndex) {
-            ForEach(0..<viewModel.selectedProtocol.steps.count, id: \.self) { index in
-                Text("Step \(index + 1)").tag(index)
+        ScrollViewReader { proxy in
+            HStack {
+                Spacer()
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(0..<viewModel.selectedProtocol.steps.count, id: \.self) { index in
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    viewModel.selectedStepIndex = index
+                                }
+                            }) {
+                                Text("\(index + 1)")
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background {
+                                        if index == viewModel.selectedStepIndex {
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .fill(.white.opacity(0.15))
+                                        } else {
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .fill(.clear)
+                                                .glassBackgroundEffect()
+                                        }
+                                    }
+                                    .foregroundColor(index == viewModel.selectedStepIndex ? .primary : .white)
+                            }
+                            .buttonStyle(.plain)
+                            .id(index)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                }
+                .padding(.vertical, 4)
+                .background {
+                    Capsule()
+                        .fill(.black.opacity(0.3))
+                }
+                Spacer()
+            }
+            .onChange(of: viewModel.selectedStepIndex) { _, newValue in
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    proxy.scrollTo(newValue, anchor: .center)
+                }
             }
         }
-        .pickerStyle(SegmentedPickerStyle())
         .padding(.horizontal)
     }
     
@@ -319,14 +358,14 @@ class ProtocolViewModel: ObservableObject {
         
         DispatchQueue.main.async {
             self.currentStates = checkItemStateDataList
-            self.lastCheckedItemIndex = checkItemStateDataList.last { $0.isChecked }?.checkIndex    
+            self.lastCheckedItemIndex = checkItemStateDataList.last { $0.isChecked }?.checkIndex
             self.updateCanSignOff()
         }
     }
     
     private func updateCanSignOff() {
-        canSignOff = !isStepSignedOff && 
-                    currentStates.count == checklistItems.count && 
+        canSignOff = !isStepSignedOff &&
+                    currentStates.count == checklistItems.count &&
                     currentStates.allSatisfy { $0.isChecked }
     }
 }

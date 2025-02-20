@@ -52,6 +52,10 @@ func sendMessageToSwiftUI(_ cmessage: UnsafePointer<CChar>) {
         print("######LABLIGHT Posting JsonFileDownloadableChange notification")
         NotificationCenter.default.post(name: Notification.Name("JsonFileDownloadableChange"), object: nil, userInfo: ["message": message])
     }
+    else if message.hasPrefix("userProfiles|") {
+        print("######LABLIGHT Posting UserProfiles notification")
+        NotificationCenter.default.post(name: Notification.Name("UserProfiles"), object: nil, userInfo: ["message": message])
+    }
     else {
         NotificationCenter.default.post(name: Notification.Name("LLMChatMessage"), object: nil, userInfo: ["message": message])
     }
@@ -61,16 +65,32 @@ func sendMessageToSwiftUI(_ cmessage: UnsafePointer<CChar>) {
 
 @_cdecl("OpenSwiftUIWindow")
 func openSwiftUIWindow(_ cname: UnsafePointer<CChar>) {
-    let openWindow = EnvironmentValues().openWindow
     let name = String(cString: cname)
-    openWindow(id: name)
+    print("######LABLIGHT Attempting to open window: \(name)")
+    DispatchQueue.main.async {
+        do {
+            let openWindow = EnvironmentValues().openWindow
+            openWindow(id: name)
+            print("######LABLIGHT Successfully opened window: \(name)")
+        } catch {
+            print("######LABLIGHT Error opening window: \(name) - \(error)")
+        }
+    }
 }
 
 @_cdecl("CloseSwiftUIWindow")
 func closeSwiftUIWindow(_ cname: UnsafePointer<CChar>) {
-    let dismissWindow = EnvironmentValues().dismissWindow
     let name = String(cString: cname)
-    dismissWindow(id: name)
+    print("######LABLIGHT Attempting to close window: \(name)")
+    DispatchQueue.main.async {
+        do {
+            let dismissWindow = EnvironmentValues().dismissWindow
+            dismissWindow(id: name)
+            print("######LABLIGHT Successfully closed window: \(name)")
+        } catch {
+            print("######LABLIGHT Error closing window: \(name) - \(error)")
+        }
+    }
 }
 
 // MARK: - PDF Functionality

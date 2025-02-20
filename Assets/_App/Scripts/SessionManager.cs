@@ -86,7 +86,6 @@ public class SessionManager : MonoBehaviour
         var UIDriver = new SwiftUIDriver();
         ServiceRegistry.RegisterService<IUIDriver>(UIDriver);
         Destroy(GetComponent<UnityUIDriver>());
-        UIDriver.DisplayProtocolMenu();
         #elif UNITY_EDITOR
         var UIDriver = GetComponent<UnityUIDriver>();
         ServiceRegistry.RegisterService<IUIDriver>(UIDriver);
