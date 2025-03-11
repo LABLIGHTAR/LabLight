@@ -4,7 +4,7 @@
 "description": "Procedure for determining PON1 activity in plasma or serum using a UV-transparent 96-well microplate and phenyl acetate substrate with kinetic measurements at 270 nm.",
 "estimatedDuration": "0",
 "protocolPDFNames": [
-"Determining_PON1_Activity_Protocol.pdf"
+"PON1Protocol.pdf"
 ],
 "globalArObjects": [
 {
@@ -162,6 +162,13 @@
   "properties": {
     "url" : "platemap2.png"
   }
+},
+{
+    "contentType": "video",
+    "arObjectID": "",
+    "properties":{
+        "url" : "Test1"
+        }
 }
 ],
 "arActions": [
