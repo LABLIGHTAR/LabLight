@@ -1,57 +1,53 @@
 using UnityEngine;
 using System.Net;
-using System.Net.Sockets;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Collections.Concurrent;
-
-
-// Stream view of Unity camera:
-//	attach this script to an empty game object
-//	it should automatically find the main camera in the scene (or you can overrule it)
-//	it should create a render texture, capture the camera view into it and stream it out
-
-// Stream from a webcam:
-//	attach this script to an empty game object
-//	attach the webcam-tester script to the same object
-//	it should automatically connect things, fetch the webcam texture and stream it out
+using UnityEngine.UI;
 
 // Point a webbrowser to http://localhost:8080
-
-
 public class MJPEGStreamer : MonoBehaviour
 {
 	[Header("Stream Settings")]
 	[SerializeField] private int port		= 8080;
 	[SerializeField] private int quality	= 75;
-	[SerializeField] private int frameRate	= 30;
 	
 	[Header("Source")]
 
-	[SerializeField] private EnterpriseCameraAccessManager _enterpriseCameraAccessManager;
-
-
-
-	
+	private IFrameProvider frameProvider;	
 	private HttpListener										httpListener;
 	private ConcurrentDictionary<string, HttpListenerContext>	activeClients;
 	private CancellationTokenSource								cancellationTokenSource;
 	private bool												isStreaming = false;
-	private float												frameInterval;
-	private float												lastFrameTime;
-
-
 
 	private void Start()
 	{
-		frameInterval = 1f / frameRate;
 		activeClients = new ConcurrentDictionary<string, HttpListenerContext>();
 		StartServer();
 
-		//_enterpriseCameraAccessManager.frameUpdate.AddListener(() => SendFrame());
+		frameProvider = ServiceRegistry.GetService<IFrameProvider>();
+   		frameProvider.OnFrameReceived += OnFrameReceived;
 	}
 
+	void OnDestroy()
+	{
+		if (frameProvider != null)
+		{
+			frameProvider.OnFrameReceived -= OnFrameReceived;
+		}
+
+		if (readableTexture != null)
+		{
+			Destroy(readableTexture);
+		}
+	}
+
+	private void OnFrameReceived(Texture2D texture)
+	{
+		if (!isStreaming)
+	 		return;
+
+		SendFrame(texture);		
+	}
 
 	private void StartServer()
 	{
@@ -74,10 +70,11 @@ public class MJPEGStreamer : MonoBehaviour
 		}
 	}
 
-
 	private async void ListenForClientsAsync()
 	{
-		while(!cancellationTokenSource.Token.IsCancellationRequested)
+		while (	cancellationTokenSource != null &&
+				cancellationTokenSource.Token != null &&
+				!cancellationTokenSource.Token.IsCancellationRequested)
 		{
 			try
 			{
@@ -96,35 +93,89 @@ public class MJPEGStreamer : MonoBehaviour
 			}
 			catch(System.Exception e)
 			{
-				if(!cancellationTokenSource.Token.IsCancellationRequested)
+				if (cancellationTokenSource != null &&
+					cancellationTokenSource.Token != null &&
+					!cancellationTokenSource.Token.IsCancellationRequested)
+				{
 					Debug.LogError($"Error accepting client: {e.Message}");
+				}
 			}
 		}
 	}
 
-	private void Update()
+	Texture2D readableTexture = null;
+	RenderTexture _renderTexture = null;	
+
+	private void SendFrame(Texture2D texture)
 	{
-		if(!isStreaming || Time.time - lastFrameTime < frameInterval)
-			return;
-
-		lastFrameTime = Time.time;
-		SendFrame();
-	}
-
-
-	private void SendFrame()
-	{
-		if(activeClients.Count == 0)
+		if (activeClients.Count == 0 || texture == null)
 			return;
 
 		byte[] jpegBytes = null;
-
-		if (_enterpriseCameraAccessManager != null)
+		
+		if (texture.isReadable && (texture.format == TextureFormat.RGBA32 || texture.format == TextureFormat.RGB24))
 		{
-			jpegBytes = _enterpriseCameraAccessManager.GetMainCameraTexture2D().EncodeToJPG(quality);
+			jpegBytes = texture.EncodeToJPG(quality);
+		}
+		else
+		{
+			// Webcam texture 
+			// EncodeToJPG kan direct hierop worden aangeroepen
+			// Texture format: RGBA32 
+			// graphics format R8G8B8A8_SRGB 
+			// width: 1920 
+			// height: 1080 
+			// readable: True 
+			// mipmap: 11 
+			// filterMode: Bilinear 
+			// wrapMode: Repeat
+
+			// Vision OS Incoming texture 
+			// Texture format: BGRA32 
+			// graphics format B8G8R8A8_SRGB 
+			// width: 1920 height: 1080 
+			// readable: True 
+			// mipmap: 1 
+			// filterMode: Bilinear 
+			// wrapMode: Repeat
+
+			// print texture info that is relevatn for conversion to jpg
+			// Debug.Log("Texture format: " + texture.format + 
+			// 	" graphics format " + texture.graphicsFormat +
+			// 	" width: " + texture.width + 
+			// 	" height: " + texture.height + 
+			// 	" readable: " + texture.isReadable + 
+			// 	" mipmap: " + texture.mipmapCount + 
+			// 	" filterMode: " + texture.filterMode +
+			// 	" wrapMode: " + texture.wrapMode );			
+
+			if (_renderTexture == null)
+			{
+				_renderTexture = new RenderTexture(texture.width, texture.height, 1, RenderTextureFormat.ARGB32);
+				_renderTexture.enableRandomWrite = true;
+				_renderTexture.Create();
+			}
+
+       		// Blit the external texture to the RenderTexture
+			Graphics.Blit(  texture, 
+							_renderTexture, 
+							new Vector2(frameProvider.IsFlippedHorizontally ? -1.0f: 1.0f, frameProvider.IsFlippedVertically ? -1.0f : 1.0f), 
+							new Vector2(frameProvider.IsFlippedHorizontally ? 1.0f : 0.0f, frameProvider.IsFlippedVertically ? 1.0f : 0.0f));
+
+			if (readableTexture == null)
+			{
+				readableTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+			}
+
+			// Read rendertarget into CPU texture
+			RenderTexture.active = _renderTexture;
+			readableTexture.ReadPixels(new Rect(0, 0, _renderTexture.width, _renderTexture.height), 0, 0);
+			// Note: no Apply needed since we are only using readableTexture to encode to JPG
+			// Encode texture into JPG
+        	jpegBytes = readableTexture.EncodeToJPG(quality);
 		}
 
-		if(jpegBytes != null)
+		if (jpegBytes != null)
 		{
 			foreach(var client in activeClients)
 			{
@@ -159,6 +210,7 @@ public class MJPEGStreamer : MonoBehaviour
 		
 		if (cancellationTokenSource != null)
 		{
+			// Stop listening for new clients
 			cancellationTokenSource.Cancel();
 			cancellationTokenSource.Dispose();
 			cancellationTokenSource = null;
