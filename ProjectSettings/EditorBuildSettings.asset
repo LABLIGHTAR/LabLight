@@ -5,25 +5,25 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/_App/Scenes/Persistent.unity
     guid: 1651c094ee4f047ef90379568391b1fc
-  - enabled: 0
+  - enabled: 1
     path: Assets/_App/Scenes/Calibration.unity
     guid: e9c98d7db1eae4990872049e4a39eb2f
-  - enabled: 0
+  - enabled: 1
     path: Assets/_App/Scenes/Protocol.unity
     guid: 5cc9ac2b6a37148859f4d0f7f1480648
-  - enabled: 0
+  - enabled: 1
     path: Assets/_App/Scenes/ProtocolMenu.unity
     guid: 2eb36e272a82447ebb4039cba4cfd413
-  - enabled: 0
+  - enabled: 1
     path: Assets/_App/Scenes/Settings.unity
     guid: 8b99cd2156c2a4642ad37bb214c06de1
-  - enabled: 0
+  - enabled: 1
     path: Assets/_App/Scenes/WorkspaceAnchorEditor.unity
     guid: cf9a9d1074f3c4f2c9c91a0385d5ba9f
-  - enabled: 1
+  - enabled: 0
     path: Assets/_App/Scenes/TestCameraStreaming.unity
     guid: 594e98ef0442742f5b603f85cc26fa07
   m_configObjects:
