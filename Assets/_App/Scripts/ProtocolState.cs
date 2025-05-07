@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine;
 using UniRx;
 
+[DefaultExecutionOrder(-300)]
 public class ProtocolState : MonoBehaviour
 {
     public static ProtocolState Instance { get; private set; }
@@ -15,6 +16,7 @@ public class ProtocolState : MonoBehaviour
     public ReactiveProperty<DateTime> StartTime { get; } = new ReactiveProperty<DateTime>();
     public ReactiveCollection<StepState> Steps { get; } = new ReactiveCollection<StepState>();
     public ReactiveProperty<int> CurrentStep { get; } = new ReactiveProperty<int>();
+    [Obsolete("CSV export removed – use checkpoint JSON instead")]
     public ReactiveProperty<string> CsvPath { get; } = new ReactiveProperty<string>();
 
     // Data streams
@@ -76,8 +78,8 @@ public class ProtocolState : MonoBehaviour
         ProtocolTitle.Value = protocolDefinition.title;
 
         InitializeSteps(protocolDefinition);
-        InitCSV();
-
+        // Legacy CSV export deprecated – persistence handled by CheckpointManager
+    
         ServiceRegistry.GetService<ILighthouseControl>()?.SetProtocolStatus();
         ProtocolStream.OnNext(protocolDefinition);
         SceneLoader.Instance.LoadSceneClean("Protocol");
@@ -188,20 +190,12 @@ public class ProtocolState : MonoBehaviour
         }
 
         currentStep.SignedOff.Value = true;
+        // notify observers so CheckpointManager persists immediately
+        ChecklistStream.OnNext(currentStep.Checklist?.ToList());
         ServiceRegistry.GetService<ILighthouseControl>()?.SetProtocolStatus();
     }
 
-    //TODO: move this to another class
-    private void InitCSV()
-    {
-        string fileName = $"{ProtocolTitle.Value}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.csv";
-        string csvPath = Path.Combine(Application.persistentDataPath, fileName);
-        if (!File.Exists(csvPath))
-        {
-            File.WriteAllText(csvPath, "Action,Result,Completion Time\n");
-        }
-        CsvPath.Value = csvPath;
-    }
+    // Legacy CSV writer removed.  Checkpoints provide structured persistence.
 
     public class StepState
     {

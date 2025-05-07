@@ -167,7 +167,7 @@ public class Parsers
         }
         catch (System.Exception e)
         {
-            ServiceRegistry.Logger.LogError("Error parsing workspace: " + e.ToString());
+            Debug.LogError("Parsing anchor data: " + e.ToString());
             throw;
         }
     }
@@ -219,7 +219,7 @@ public class Parsers
         }
         catch (System.Exception e)
         {
-            ServiceRegistry.Logger.LogError("Parsing protocol index: " + e.ToString());
+            Debug.LogError("Parsing protocol index: " + e.ToString());
             throw;
         }
     }

@@ -89,7 +89,7 @@ public class ResourceFileDataProvider : IProtocolDataProvider, IMediaProvider
                 if (file is TextAsset textAsset)
                 {
                     Debug.Log($"Found protocol definition: {textAsset.name}");
-                    //ServiceRegistry.Logger.Log($"Found protocol definition: {textAsset.name}");
+                    //Debug.Log($"Found protocol definition: {textAsset.name}");
                     protocolJsonFiles.Add(textAsset.text);
                 }
             }
@@ -97,7 +97,7 @@ public class ResourceFileDataProvider : IProtocolDataProvider, IMediaProvider
             if (protocolJsonFiles.Count == 0)
             {
                 Debug.LogError($"No protocol definitions found in Resources/{PROTOCOLS_BASE_PATH}");
-                //ServiceRegistry.Logger.LogWarning($"No protocol definitions found in Resources/{PROTOCOLS_BASE_PATH}");
+                //Debug.LogWarning($"No protocol definitions found in Resources/{PROTOCOLS_BASE_PATH}");
             }
 
             return Task.FromResult(Parsers.ParseProtocolList(protocolJsonFiles));
@@ -105,7 +105,7 @@ public class ResourceFileDataProvider : IProtocolDataProvider, IMediaProvider
         catch (Exception ex)
         {
             Debug.LogError($"Failed to load protocol definitions: {ex}");
-            //ServiceRegistry.Logger.LogError($"Failed to load protocol definitions: {ex}");
+            //Debug.LogError($"Failed to load protocol definitions: {ex}");
             throw ex;
         }
     }

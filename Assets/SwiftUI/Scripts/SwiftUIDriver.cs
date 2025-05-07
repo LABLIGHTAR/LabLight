@@ -476,6 +476,9 @@ public class SwiftUIDriver : IUIDriver, IDisposable
                         .ObserveOnMainThread()
                         .Subscribe(OnUserProfilesChange);
                     break;
+                case "resumeCheckpoint":
+                    ResumeCheckpoint(data);
+                    break;
                 // Add more cases as needed
             }
         }
@@ -617,4 +620,53 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     #endif
 
     private delegate void CallbackDelegate(string command);
+
+#region Checkpoint resume
+private void ResumeCheckpoint(string json)
+{
+    try
+    {
+        var cpState = JsonConvert.DeserializeObject<CheckpointState>(json);
+        if (cpState == null)
+        {
+            Debug.LogError("######LABLIGHT resumeCheckpoint – failed to deserialize JSON");
+            return;
+        }
+
+        // Locate matching protocol definition
+        ProtocolDefinition protocol = null;
+        var provider = ServiceRegistry.GetService<IProtocolDataProvider>();
+        if (provider != null)
+        {
+            try
+            {
+                var listTask = provider.GetProtocolList();
+                listTask.Wait(); // sync wait – list is loaded from memory/resources
+                protocol = listTask.Result
+                           .FirstOrDefault(p => string.Equals(p.title, cpState.ProtocolName, StringComparison.OrdinalIgnoreCase));
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("######LABLIGHT resumeCheckpoint – error fetching protocol list: " + ex);
+            }
+        }
+
+        if (protocol == null)
+        {
+            Debug.LogError($"######LABLIGHT resumeCheckpoint – protocol '{cpState.ProtocolName}' not found");
+            return;
+        }
+
+        // Activate protocol, then install checkpoint & hydrate
+        ProtocolState.Instance.SetProtocolDefinition(protocol);
+        CheckpointManager.Instance?.LoadExistingState(cpState);
+        ProtocolState.Instance.HydrateFromCheckpoint(cpState);
+        Debug.Log("######LABLIGHT resumeCheckpoint – session restored");
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError("######LABLIGHT resumeCheckpoint – exception: " + ex);
+    }
+}
+#endregion
 }

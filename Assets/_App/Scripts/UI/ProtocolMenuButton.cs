@@ -14,6 +14,9 @@ using Newtonsoft.Json;
 public class ProtocolMenuButton : MonoBehaviour
 {
     private ProtocolDefinition protocolDefinition;
+    // Modal is now spawned via UnityUIDriver.ShowCheckpointModal
+
+    private ICheckpointDataProvider _checkpointProvider;
     public TextMeshProUGUI titleText;
     public TextMeshProUGUI descriptionText;
 
@@ -26,6 +29,7 @@ public class ProtocolMenuButton : MonoBehaviour
 
     void Awake()
     {
+        _checkpointProvider = ServiceRegistry.GetService<ICheckpointDataProvider>();
         interactable = GetComponent<XRSimpleInteractable>();
         buttonRenderer = GetComponent<Renderer>();
         defaultMaterial = buttonRenderer.material;
@@ -45,18 +49,7 @@ public class ProtocolMenuButton : MonoBehaviour
             ? protocolDefinition.description.Substring(0, 97) + "..." 
             : protocolDefinition.description;
 
-        interactable.selectEntered.AddListener(_ => {
-            StartCoroutine(ChangeMaterialAfterDelay(1f));
-            InvokeRepeating(nameof(IncrementProgressFill), 1.1f, 0.05f);
-        });
-
-        interactable.selectExited.AddListener(_ => {
-            CancelInvoke();
-            buttonRenderer.material = defaultMaterial;
-            
-            string protocolDefinitionJson = JsonConvert.SerializeObject(protocolDefinition);
-            ServiceRegistry.GetService<IUIDriver>().ProtocolSelectionCallback(protocolDefinitionJson);
-        });
+        interactable.selectEntered.AddListener(_ => OnButtonPressed());
     }
 
     private IEnumerator ChangeMaterialAfterDelay(float delay)
@@ -78,4 +71,18 @@ public class ProtocolMenuButton : MonoBehaviour
             Destroy(gameObject);
         }
     }
-}
+
+    private void OnButtonPressed()
+    {
+        // Open checkpoint modal immediately – all further logic handled there
+        var driver = ServiceRegistry.GetService<IUIDriver>() as UnityUIDriver;
+        if (driver == null)
+        {
+            Debug.LogError("[ProtocolMenuButton] UnityUIDriver service not found – cannot open checkpoint modal");
+            return;
+        }
+
+        driver.ShowCheckpointModal(protocolDefinition);
+    }
+    // Old SelectionFlow & FinishSelectionDirect removed – modal now controls start/resume
+  }

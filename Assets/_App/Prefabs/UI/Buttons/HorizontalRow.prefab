@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 3418919474946923036}
   - component: {fileID: 7415679304241882529}
   m_Layer: 0
-  m_Name: TextButton
+  m_Name: HorizontalRow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

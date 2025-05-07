@@ -5,6 +5,8 @@ struct ProtocolMenuContentView: View {
     @StateObject private var viewModel = ProtocolMenuViewModel()
     @Environment(\.dismiss) private var dismiss
     @State private var path = NavigationPath()
+    @State private var showingCheckpointSheet = false
+    @State private var unfinishedSessions: [CheckpointState] = []
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -19,10 +21,21 @@ struct ProtocolMenuContentView: View {
                     List {
                         ForEach(viewModel.protocols) { protocolDef in
                             Button(action: {
-                                if let jsonData = try? JSONEncoder().encode(protocolDef),
-                                   let jsonString = String(data: jsonData, encoding: .utf8) {
-                                    CallCSharpCallback("selectProtocol|" + jsonString)
-                                    path.append(protocolDef)
+                                Task {
+                                    if let cpProvider = ServiceLocator.shared.resolve(ICheckpointDataProvider.self) {
+                                        let userId = UserDefaults.standard.string(forKey:"currentUserID") ?? "anonymous"
+                                        let sessions = try await cpProvider.loadStates(protocolName: protocolDef.title, userID: userId)
+                                        if sessions.isEmpty {
+                                            if let jsonData = try? JSONEncoder().encode(protocolDef),
+                                               let jsonString = String(data: jsonData, encoding: .utf8) {
+                                                CallCSharpCallback("selectProtocol|" + jsonString)
+                                                path.append(protocolDef)
+                                            }
+                                        } else {
+                                            unfinishedSessions = sessions
+                                            showingCheckpointSheet = true
+                                        }
+                                    }
                                 }
                             }) {
                                 VStack(alignment: .leading, spacing: 4) {
@@ -50,6 +63,34 @@ struct ProtocolMenuContentView: View {
             }
             .ornament(visibility: .visible, attachmentAnchor: .scene(.leading)) {
                 downloadButton
+            }
+            .sheet(isPresented: $showingCheckpointSheet) {
+                if let protocolDef = path.last as? ProtocolDefinition ?? viewModel.protocols.first(where: { $0.title == unfinishedSessions.first?.protocolName }) {
+                    CheckpointResumeSheet(
+                        protocolName: protocolDef.title,
+                        unfinished: unfinishedSessions,
+                        onResume: { cp in
+                            if let data = try? JSONEncoder().encode(cp),
+                               let json = String(data: data, encoding: .utf8) {
+                                CallCSharpCallback("resumeCheckpoint|" + json)
+                            }
+                        },
+                        onNewRun: {
+                            if let jsonData = try? JSONEncoder().encode(protocolDef),
+                               let jsonString = String(data: jsonData, encoding: .utf8) {
+                                CallCSharpCallback("selectProtocol|" + jsonString)
+                                path.append(protocolDef)
+                            }
+                        },
+                        onDelete: { cp in
+                            Task {
+                                try? await ServiceLocator.shared.resolve(ICheckpointDataProvider.self)?
+                                    .deleteState(sessionID: cp.sessionID)
+                                unfinishedSessions.removeAll { $0.sessionID == cp.sessionID }
+                            }
+                        }
+                    )
+                }
             }
         }
     }

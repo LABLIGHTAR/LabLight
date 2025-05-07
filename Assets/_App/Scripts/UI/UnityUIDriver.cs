@@ -14,6 +14,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private ProtocolMenuViewController protocolMenuPanel;
     [SerializeField] private TimerViewController timerPanel;
     [SerializeField] private LLMChatPanelViewController chatPanel;
+    [SerializeField] private CheckpointModalViewController checkpointModalPanel; // Scene object reference
 
     public void Initialize()
     {
@@ -128,6 +129,24 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         return;
         //pdfReaderPanel.gameObject.SetActive(true);
         //pdfReaderPanel.LoadPDF(url);
+    }
+
+    /// <summary>
+    /// Presents the unfinished-run modal for the given protocol.
+    /// </summary>
+    public void ShowCheckpointModal(ProtocolDefinition protocol)
+    {
+        if (checkpointModalPanel == null)
+        {
+            Debug.LogError("[UnityUIDriver] checkpointModalPanel reference not set in inspector.");
+            return;
+        }
+
+        // Activate panel and initialise with current protocol/user.
+        checkpointModalPanel.gameObject.SetActive(true);
+        checkpointModalPanel.Init(
+            protocol,
+            SessionState.currentUserProfile?.GetUserId() ?? "anonymous");
     }
 
     // Unity Callback Methods

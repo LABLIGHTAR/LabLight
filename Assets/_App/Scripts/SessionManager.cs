@@ -75,12 +75,20 @@ public class SessionManager : MonoBehaviour
         ServiceRegistry.RegisterService<IAnchorDataProvider>(localFileDataProvider);
         ServiceRegistry.RegisterService<IUserProfileDataProvider>(localFileDataProvider);
 
+        // Register checkpoint provider
+        var checkpointProvider = new LocalFileCheckpointDataProvider();
+        ServiceRegistry.RegisterService<ICheckpointDataProvider>(checkpointProvider);
+
         var resourceFileDataProvider = new ResourceFileDataProvider();
         ServiceRegistry.RegisterService<IProtocolDataProvider>(resourceFileDataProvider);
         ServiceRegistry.RegisterService<IMediaProvider>(resourceFileDataProvider);
 
         var llmChatProvider = new ClaudeChatProvider();
         ServiceRegistry.RegisterService<ILLMChatProvider>(llmChatProvider);
+
+        // After service registrations
+        if (CheckpointManager.Instance == null)
+            gameObject.AddComponent<CheckpointManager>();
 
         #if UNITY_VISIONOS && !UNITY_EDITOR
         var UIDriver = new SwiftUIDriver();
