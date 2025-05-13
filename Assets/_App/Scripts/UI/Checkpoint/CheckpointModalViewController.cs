@@ -76,6 +76,13 @@ public sealed class CheckpointModalViewController : MonoBehaviour
 
         // 3. Re-hydrate runtime progress (steps, checklist, locks…)
         ProtocolState.Instance.HydrateFromCheckpoint(state);
+
+        // Ensure UI reflects resumed protocol (checklist shown, menu hidden)
+        if (ServiceRegistry.GetService<IUIDriver>() is UnityUIDriver driver)
+        {
+            driver.OnProtocolChange(_protocol);
+        }
+
         Close();
     }
 

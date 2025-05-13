@@ -124,5 +124,7 @@ public static class CheckpointStateExtensions
         // Jump to first unfinished step (or 0 if all signed off)
         int targetStep = saved.Steps.FindIndex(st => st.SignoffTime == null);
         runtime.SetStep(targetStep >= 0 ? targetStep : 0);
+        int targetCheckItem = saved.Steps[targetStep].CheckItems.FindIndex(st => st.CompletedTime == null);
+        runtime.SetCheckItem(targetCheckItem < 0 ? saved.Steps[targetStep].CheckItems.Count()-1 : targetCheckItem);
     }
 }

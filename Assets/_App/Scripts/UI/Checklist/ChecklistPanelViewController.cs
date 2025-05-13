@@ -50,6 +50,7 @@ public class ChecklistPanelViewController : LLBasePanel
     private readonly WaitForSeconds standardDelay = new WaitForSeconds(0.2f);
     private readonly WaitForSeconds buttonDelay = new WaitForSeconds(0.5f);
     private const float COOLDOWN_DURATION = 1f;
+    private readonly CompositeDisposable _stepSub = new CompositeDisposable();
 
     protected override void Awake()
     {
@@ -71,7 +72,8 @@ public class ChecklistPanelViewController : LLBasePanel
     {
         RemoveButtonEvents();
         RemovePopupEvents();
-        DisposeVoice?.Invoke();
+    DisposeVoice?.Invoke();
+    _stepSub.Clear(); // dispose step subscription
         
         // Clean up all slots
         foreach(var slot in checkItemSlots)
@@ -91,7 +93,11 @@ public class ChecklistPanelViewController : LLBasePanel
             return;
         }
 
-        StartCoroutine(LoadChecklist());
+    // NEW: keep panel in sync with step changes even if UnityUIDriver loses reference
+    ProtocolState.Instance.StepStream
+        .Subscribe(_ => StartCoroutine(LoadChecklist()))
+        .AddTo(_stepSub);
+    StartCoroutine(LoadChecklist());
 
         popupPanelViewController = FindFirstObjectByType<PopupPanelViewController>(FindObjectsInactive.Include);
         if (popupPanelViewController == null)

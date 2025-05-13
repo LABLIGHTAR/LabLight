@@ -142,6 +142,18 @@ public class ArObjectManager : MonoBehaviour
         {
             isInitialized = true;
             UpdateArActions();
+
+            // NEW: auto-trigger locking when resuming a session where
+            // the “locking” step (usually index 0) was already signed off.
+            if (lockingManager != null
+                && ProtocolState.Instance != null
+                && ProtocolState.Instance.Steps.Count > 0
+                && ProtocolState.Instance.Steps[0].SignedOff.Value)            // step 0 completed
+            {
+                // Enqueue every instantiated prefab so the user sees the
+                // normal placement workflow immediately.
+                lockingManager.EnqueueObjects(modelPrefabCache.Values.ToList());
+            }
         }
     }
 

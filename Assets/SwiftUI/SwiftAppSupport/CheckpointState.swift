@@ -68,3 +68,48 @@ enum CodableValue: Codable {
         }
     }
 }
+
+// MARK: - Progress helpers ---------------------------------------------------
+
+extension CheckpointState.StepProgress {
+    /// Number of checklist items already completed.
+    var completedItemsCount: Int {
+        checkItems.filter { $0.completedTime != nil }.count
+    }
+}
+
+extension CheckpointState {
+
+    /// Index of the first unsigned-off step, or the last step if all signed off.
+    var currentStepIndex: Int {
+        steps.firstIndex(where: { $0.signoffTime == nil }) ?? max(steps.count - 1, 0)
+    }
+
+    /// Convenience accessor for the currently active StepProgress.
+    var currentStep: StepProgress? {
+        guard !steps.isEmpty else { return nil }
+        return steps[currentStepIndex]
+    }
+
+    /// Returns `(current, total, awaitingSignOffFlag)` for the *current* step’s checklist.
+    func itemProgress() -> (current: Int, total: Int, awaitingSignOff: Bool) {
+        guard let step = currentStep else { return (0, 0, false) }
+
+        let total = step.checkItems.count
+        let completed = step.completedItemsCount
+        let awaiting = completed == total && step.signoffTime == nil
+        return (completed, total, awaiting)
+    }
+
+    /// Latest timestamp found in the checkpoint (completion, sign-off or session start).
+    var lastActivity: Date {
+        var latest = startTimestamp
+        for s in steps {
+            if let t = s.signoffTime, t > latest { latest = t }
+            for ci in s.checkItems {
+                if let t = ci.completedTime, t > latest { latest = t }
+            }
+        }
+        return latest
+    }
+}

@@ -141,6 +141,7 @@ public class ProtocolState : MonoBehaviour
         CurrentStep.Value = step;
         CurrentStepState.Value = Steps[step];
         StepStream.OnNext(CurrentStepState.Value);
+        Debug.Log("updating step to " + step);
         UpdateCheckItem();
     }
 

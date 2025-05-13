@@ -106,39 +106,47 @@ public sealed class LocalFileCheckpointDataProvider : ICheckpointDataProvider
 
     private async Task WriteFileWithRetryAsync(string finalPath, CheckpointState state)
     {
-        string tmpPath = finalPath + ".tmp";
-        string json    = JsonConvert.SerializeObject(state, JsonSettings);
-        byte[] bytes   = Encoding.UTF8.GetBytes(json);
+        Debug.Log("writing to file" + finalPath);
+        string json  = JsonConvert.SerializeObject(state, JsonSettings);
+        byte[] bytes = Encoding.UTF8.GetBytes(json);
 
-        int attempt   = 0;
-        int[] delays  = { 100, 500, 2000 }; // ms
-        Exception lastError = null;
+        int attempt      = 0;
+        int[] backOffMs  = { 100, 500, 2000 };
+        Exception lastEx = null;
 
-        while (attempt < delays.Length)
+        while (attempt < backOffMs.Length)
         {
             try
             {
-                await File.WriteAllBytesAsync(tmpPath, bytes).ConfigureAwait(false);
+                // Ensure directory exists before writing
+                EnsureRoot();
 
-                // Atomic replace
-                if (File.Exists(finalPath))
-                    File.Delete(finalPath);
-                File.Move(tmpPath, finalPath);
+                // Write directly – FileMode.Create will overwrite atomically on most FS
+                using (var fs = new FileStream(
+                           finalPath,
+                           FileMode.Create,
+                           FileAccess.Write,
+                           FileShare.None,
+                           bufferSize: 4096,
+                           useAsync: true))
+                {
+                    await fs.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                }
 
-                Debug.Log($"[CHECKPOINT] ts={DateTime.UtcNow:o} tid={System.Threading.Thread.CurrentThread.ManagedThreadId} action=SaveState file={finalPath} size={bytes.Length} status=success");
+                Debug.Log($"[CHECKPOINT] ts={DateTime.UtcNow:o} action=SaveState file={finalPath} size={bytes.Length} status=success");
                 return;
             }
             catch (Exception ex)
             {
-                lastError = ex;
+                lastEx = ex;
                 Debug.LogError($"[CHECKPOINT] ts={DateTime.UtcNow:o} action=SaveState attempt={attempt} status=error err={ex}");
-                await Task.Delay(delays[attempt]).ConfigureAwait(false);
+                await Task.Delay(backOffMs[attempt]).ConfigureAwait(false);
                 attempt++;
             }
         }
 
-        Debug.LogError($"[CHECKPOINT] ts={DateTime.UtcNow:o} action=SaveState status=fatal err={lastError}");
-        throw lastError ?? new IOException("Unknown failure saving checkpoint");
+        Debug.LogError($"[CHECKPOINT] ts={DateTime.UtcNow:o} action=SaveState status=fatal err={lastEx}");
+        throw lastEx ?? new IOException("Failed to save checkpoint");
     }
 
     private string GetFilePath(CheckpointState state)

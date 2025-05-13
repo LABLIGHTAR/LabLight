@@ -24,9 +24,22 @@ struct CheckpointResumeSheet: View {
                         ForEach(unfinished) { cp in
                             HStack {
                                 VStack(alignment: .leading) {
-                                    Text(DateFormatter.localizedString(from: cp.startTimestamp, dateStyle: .medium, timeStyle: .short))
+                                    // Top line – original start date stays
+                                    Text(DateFormatter.localizedString(from: cp.startTimestamp,
+                                                                       dateStyle: .medium,
+                                                                       timeStyle: .short))
                                         .font(.headline)
-                                    Text(cp.sessionID.uuidString.prefix(8) + "…")
+
+                                    // New: step / item progress + last update
+                                    let stepStr = "Step \(cp.currentStepIndex + 1)/\(cp.steps.count)"
+                                    let itemProg = cp.itemProgress()
+                                    let itemStr = itemProg.awaitingSignOff
+                                        ? "Checklist awaiting sign-off"
+                                        : "Item \(itemProg.current + 1)/\(itemProg.total)"
+                                    let lastStr = DateFormatter.localizedString(from: cp.lastActivity,
+                                                                                dateStyle: .none,
+                                                                                timeStyle: .short)
+                                    Text("\(stepStr)  |  \(itemStr)  |  Last \(lastStr)")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }

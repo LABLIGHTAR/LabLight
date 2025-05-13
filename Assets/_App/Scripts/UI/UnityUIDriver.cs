@@ -142,6 +142,12 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
             return;
         }
 
+        // Prevent duplicate openings if the modal is already displayed
+        if (checkpointModalPanel.gameObject.activeSelf)
+        {
+            return;
+        }
+
         // Activate panel and initialise with current protocol/user.
         checkpointModalPanel.gameObject.SetActive(true);
         checkpointModalPanel.Init(
@@ -225,6 +231,9 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     {
         var protocolDefinition = JsonConvert.DeserializeObject<ProtocolDefinition>(protocolDefinitionJson);
         ProtocolState.Instance.SetProtocolDefinition(protocolDefinition);
+
+        // Ensure UI immediately reflects protocol start (menu hidden, checklist shown)
+        OnProtocolChange(protocolDefinition);
     }
 
     public void ChecklistSignOffCallback(bool isSignedOff)
@@ -238,8 +247,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void CloseProtocolCallback()
     {
         checklistPanel.gameObject.SetActive(false);
-        Debug.Log("######LABLIGHT SWIFTUIDRIVER CloseProtocolCallback");
-
+        Debug.Log("Closing protocol");
         SpeechRecognizer.Instance.ClearAllKeywords();
 
         ProtocolState.Instance.ActiveProtocol.Value = null;

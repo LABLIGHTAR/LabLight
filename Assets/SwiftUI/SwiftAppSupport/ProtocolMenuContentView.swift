@@ -22,7 +22,8 @@ struct ProtocolMenuContentView: View {
                         ForEach(viewModel.protocols) { protocolDef in
                             Button(action: {
                                 Task {
-                                    if let cpProvider = ServiceLocator.shared.resolve(ICheckpointDataProvider.self) {
+                                    do {
+                                        let cpProvider = LocalFileCheckpointDataProvider()
                                         let userId = UserDefaults.standard.string(forKey:"currentUserID") ?? "anonymous"
                                         let sessions = try await cpProvider.loadStates(protocolName: protocolDef.title, userID: userId)
                                         if sessions.isEmpty {
@@ -35,6 +36,8 @@ struct ProtocolMenuContentView: View {
                                             unfinishedSessions = sessions
                                             showingCheckpointSheet = true
                                         }
+                                    } catch {
+                                        print("Failed to load checkpoint sessions: \\(error)")
                                     }
                                 }
                             }) {
@@ -84,8 +87,8 @@ struct ProtocolMenuContentView: View {
                         },
                         onDelete: { cp in
                             Task {
-                                try? await ServiceLocator.shared.resolve(ICheckpointDataProvider.self)?
-                                    .deleteState(sessionID: cp.sessionID)
+                                let cpProvider = LocalFileCheckpointDataProvider()
+                                try? await cpProvider.deleteState(sessionID: cp.sessionID)
                                 unfinishedSessions.removeAll { $0.sessionID == cp.sessionID }
                             }
                         }

@@ -13,6 +13,8 @@ public sealed class CheckpointManager : MonoBehaviour
 {
     public static CheckpointManager Instance { get; private set; }
 
+    private Guid _lastGeneratedSessionId = Guid.Empty;
+
     private CheckpointState _current;
     private ICheckpointDataProvider _provider;
 
@@ -36,7 +38,7 @@ public sealed class CheckpointManager : MonoBehaviour
             return;
         }
 
-        // Observe protocol lifecycle
+        //Observe protocol lifecycle
         ProtocolState.Instance.ProtocolStream
             .Subscribe(protocol =>
             {
@@ -57,6 +59,7 @@ public sealed class CheckpointManager : MonoBehaviour
         _subs.Clear();
 
         _current = protocol.ToCheckpointSkeleton(SessionState.currentUserProfile?.GetUserId() ?? "anonymous");
+        _lastGeneratedSessionId = _current.SessionID;
 
         // Persist immediately so temp file exists early
         _ = SafeSaveAsync();
@@ -128,6 +131,12 @@ public sealed class CheckpointManager : MonoBehaviour
     public void LoadExistingState(CheckpointState existing)
     {
         if (existing == null) throw new ArgumentNullException(nameof(existing));
+
+        if(_lastGeneratedSessionId != Guid.Empty && _lastGeneratedSessionId != existing.SessionID)
+        {
+            _ = _provider.DeleteStateAsync(_lastGeneratedSessionId);
+            _lastGeneratedSessionId = Guid.Empty;
+        }
 
         // Replace the in-memory state and ensure we are listening for changes.
         _current = existing;
