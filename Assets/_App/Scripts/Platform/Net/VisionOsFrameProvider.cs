@@ -1,3 +1,4 @@
+/*
 using UnityEngine;
 using System;
 using System.Runtime.InteropServices;
@@ -122,4 +123,6 @@ public class VisionOSFrameProvider : IFrameProvider
     private static UInt64 getUpdateCount() { return 0; }
 #endif
 }
+
+*/
 

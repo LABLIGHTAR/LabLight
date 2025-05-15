@@ -13,7 +13,7 @@ public class MJPEGStreamer : MonoBehaviour
 	
 	[Header("Source")]
 
-	private IFrameProvider frameProvider;	
+	// private IFrameProvider frameProvider;	
 	private HttpListener										httpListener;
 	private ConcurrentDictionary<string, HttpListenerContext>	activeClients;
 	private CancellationTokenSource								cancellationTokenSource;
@@ -24,16 +24,18 @@ public class MJPEGStreamer : MonoBehaviour
 		activeClients = new ConcurrentDictionary<string, HttpListenerContext>();
 		StartServer();
 
-		frameProvider = ServiceRegistry.GetService<IFrameProvider>();
-   		frameProvider.OnFrameReceived += OnFrameReceived;
+		// frameProvider = ServiceRegistry.GetService<IFrameProvider>();
+   		// frameProvider.OnFrameReceived += OnFrameReceived;
 	}
 
 	void OnDestroy()
 	{
+		/*
 		if (frameProvider != null)
 		{
 			frameProvider.OnFrameReceived -= OnFrameReceived;
 		}
+		*/
 
 		if (readableTexture != null)
 		{
@@ -43,10 +45,12 @@ public class MJPEGStreamer : MonoBehaviour
 
 	private void OnFrameReceived(Texture2D texture)
 	{
+		/*
 		if (!isStreaming)
 	 		return;
 
-		SendFrame(texture);		
+		SendFrame(texture);
+		*/	
 	}
 
 	private void StartServer()
@@ -108,6 +112,7 @@ public class MJPEGStreamer : MonoBehaviour
 
 	private void SendFrame(Texture2D texture)
 	{
+		/*
 		if (activeClients.Count == 0 || texture == null)
 			return;
 
@@ -197,6 +202,7 @@ public class MJPEGStreamer : MonoBehaviour
 				}
 			}
 		}
+		*/
 	}
 
 	private void OnDisable()

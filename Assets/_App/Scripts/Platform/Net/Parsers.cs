@@ -172,57 +172,57 @@ public class Parsers
         }
     }
 
-    public static NetStateFrame ParseNetStateFrame(string json)
-    {
-        try
-        {
-            var frame = new NetStateFrame();
+    // public static NetStateFrame ParseNetStateFrame(string json)
+    // {
+    //     try
+    //     {
+    //         var frame = new NetStateFrame();
 
-            var root = JObject.Parse(json);
-            frame.master = (string)root["master"];
-            frame.procedure = (string)root["procedure"];
-            frame.step = (int)root["step"];
+    //         var root = JObject.Parse(json);
+    //         frame.master = (string)root["master"];
+    //         frame.procedure = (string)root["procedure"];
+    //         frame.step = (int)root["step"];
 
-            var screen = (JObject)root["screen"];
-            var screenPos = (JArray)screen["pos"];
-            var screenVec = (JArray)screen["vec"];
+    //         var screen = (JObject)root["screen"];
+    //         var screenPos = (JArray)screen["pos"];
+    //         var screenVec = (JArray)screen["vec"];
 
-            frame.screen = new PositionRotation()
-            {
-                position = vec3(screenPos),
-                lookForward = vec3(screenVec),
-            };
+    //         frame.screen = new PositionRotation()
+    //         {
+    //             position = vec3(screenPos),
+    //             lookForward = vec3(screenVec),
+    //         };
 
-            frame.objects = new List<TrackedObject>();
+    //         frame.objects = new List<TrackedObject>();
 
-            var objects = (JArray)root["objects"];
-            foreach (JObject obj in objects.Children())
-            {
+    //         var objects = (JArray)root["objects"];
+    //         foreach (JObject obj in objects.Children())
+    //         {
 
-                var center = (JArray)obj["center"];
-                var size = (JArray)obj["size"];
-                var angle = (float)obj["angle"];
-                var z = (float)obj["z"];
+    //             var center = (JArray)obj["center"];
+    //             var size = (JArray)obj["size"];
+    //             var angle = (float)obj["angle"];
+    //             var z = (float)obj["z"];
 
-                frame.objects.Add(new TrackedObject()
-                {
-                    id = (int)obj["id"],
-                    label = (string)obj["label"],
-                    angle = angle,
-                    scale = new Vector3((float)size[0], z, (float)size[1]),
-                    position = new Vector3((float)center[0], 0, (float)center[1]),
-                    rotation = Quaternion.AngleAxis(angle, Vector3.up)
-                });
-            }
+    //             frame.objects.Add(new TrackedObject()
+    //             {
+    //                 id = (int)obj["id"],
+    //                 label = (string)obj["label"],
+    //                 angle = angle,
+    //                 scale = new Vector3((float)size[0], z, (float)size[1]),
+    //                 position = new Vector3((float)center[0], 0, (float)center[1]),
+    //                 rotation = Quaternion.AngleAxis(angle, Vector3.up)
+    //             });
+    //         }
 
-            return frame;
-        }
-        catch (System.Exception e)
-        {
-            ServiceRegistry.Logger.LogError("Parsing protocol index: " + e.ToString());
-            throw;
-        }
-    }
+    //         return frame;
+    //     }
+    //     catch (System.Exception e)
+    //     {
+    //         ServiceRegistry.Logger.LogError("Parsing protocol index: " + e.ToString());
+    //         throw;
+    //     }
+    // }
 
     // public static ProtocolDefinition ParseProtocol(string json)
     // {

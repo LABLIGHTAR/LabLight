@@ -1,3 +1,4 @@
+/*
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,3 +22,4 @@ public class NetStateFrame
     public PositionRotation screen;
     public List<TrackedObject> objects;
 }
+*/

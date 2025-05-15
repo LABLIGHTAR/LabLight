@@ -1,3 +1,4 @@
+/*
 using System;
 using UnityEngine;
 
@@ -51,4 +52,5 @@ public interface IFrameProvider
     // update
     //void Update();
 }
+*/
 
