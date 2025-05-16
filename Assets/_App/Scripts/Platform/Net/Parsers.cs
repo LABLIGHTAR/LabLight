@@ -11,15 +11,6 @@ using System.Linq;
 /// </summary>
 public class Parsers
 {
-    // public static JsonSerializerSettings oldSerializerSettings = new JsonSerializerSettings
-    // {
-    //     PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-    //     ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-    //     NullValueHandling = NullValueHandling.Ignore,
-    //     Converters = { new ArDefinitionConverter(),
-    //                    new ArOperationConverter(),
-    //                    new ContentItemConverter(),}
-    // };
 
     public static JsonSerializerSettings serializerSettings = new JsonSerializerSettings
     {
@@ -224,78 +215,6 @@ public class Parsers
         }
     }
 
-    // public static ProtocolDefinition ParseProtocol(string json)
-    // {
-    //     try
-    //     {
-    //         var protocol = new ProtocolDefinition();
-
-    //         var root = JObject.Parse(json);
-    //         protocol.version = (root["version"] == null) ? 0 : (int)root["version"];
-
-    //         protocol.title = (string)root["title"];
-
-    //         Debug.Log("Protocol '" + protocol.title + "' file version " + protocol.version);
-
-    //         if (protocol.version >= 1)
-    //         {
-    //             protocol = JsonConvert.DeserializeObject<ProtocolDefinition>(json, serializerSettings);
-    //         }
-    //         else
-    //         { 
-    //             Debug.LogError("Version 0 procedure is no longer supported");
-    //         }
-
-
-    //         return protocol;
-    //     }
-    //     catch (System.Exception e)
-    //     {
-    //         Debug.LogError("Parsing protocol index: " + e.ToString());
-    //         throw;
-    //     }
-    // }
-
-    static Vector3 vec3(JArray arr)
-    {
-        return new Vector3((float)arr[0], (float)arr[1], (float)arr[2]);
-    }
-
-    static Vector2 vec2(JArray arr)
-    {
-        return new Vector2((float)arr[0], (float)arr[1]);
-    }
-
-    // public static ProtocolDefinition ConvertWellPlateCsvToProtocol(string filename, string csvString) depricated
-    // {
-    //     try
-    //     {
-    //         ProtocolDefinition protocol = new ProtocolDefinition();
-    //         protocol.version = 7;
-    //         protocol.title = filename;
-
-    //         Debug.Log("Protocol '" + protocol.title + "' file version " + protocol.version);
-
-    //         protocol.steps = new List<StepDefinition>();
-    //         //protocol.steps = convertCSVtoProtocol.ReadStepsFromCSV(csvString.Split('\n'));
-
-    //         if(filename.Contains("piplight_"))
-    //         {
-    //             //protocol = convertCSVtoProtocol.ReadPipLightCSV(csvString.Split('\n'), filename);
-    //         }
-    //         else if(filename.Contains("pooling_"))
-    //         {
-    //             //protocol = convertCSVtoProtocol.ReadPoolingCSV(csvString.Split('\n'), filename);
-    //         }
-
-    //         return protocol;
-    //     }
-    //     catch (System.Exception e)
-    //     {
-    //         Debug.LogError("Parsing protocol index: " + e.ToString());
-    //         throw;
-    //     }
-    // }
 
     public static AnchorData ParseAnchorData(string json)
     {
