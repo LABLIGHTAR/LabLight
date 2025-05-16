@@ -56,6 +56,10 @@ func sendMessageToSwiftUI(_ cmessage: UnsafePointer<CChar>) {
         print("######LABLIGHT Posting UserProfiles notification")
         NotificationCenter.default.post(name: Notification.Name("UserProfiles"), object: nil, userInfo: ["message": message])
     }
+    else if message.hasPrefix("checkpointStates|") {
+        print("######LABLIGHT Posting CheckpointStates notification")
+        NotificationCenter.default.post(name: Notification.Name("CheckpointStates"), object: nil, userInfo: ["message": message])
+    }
     else {
         NotificationCenter.default.post(name: Notification.Name("LLMChatMessage"), object: nil, userInfo: ["message": message])
     }

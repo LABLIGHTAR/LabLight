@@ -5,6 +5,7 @@ struct ProtocolMenuContentView: View {
     @StateObject private var viewModel = ProtocolMenuViewModel()
     @Environment(\.dismiss) private var dismiss
     @State private var path = NavigationPath()
+    @State private var selectedProtocol: ProtocolDefinition? = nil
     @State private var showingCheckpointSheet = false
     @State private var unfinishedSessions: [CheckpointState] = []
     
@@ -21,25 +22,8 @@ struct ProtocolMenuContentView: View {
                     List {
                         ForEach(viewModel.protocols) { protocolDef in
                             Button(action: {
-                                Task {
-                                    do {
-                                        let cpProvider = LocalFileCheckpointDataProvider()
-                                        let userId = UserDefaults.standard.string(forKey:"currentUserID") ?? "anonymous"
-                                        let sessions = try await cpProvider.loadStates(protocolName: protocolDef.title, userID: userId)
-                                        if sessions.isEmpty {
-                                            if let jsonData = try? JSONEncoder().encode(protocolDef),
-                                               let jsonString = String(data: jsonData, encoding: .utf8) {
-                                                CallCSharpCallback("selectProtocol|" + jsonString)
-                                                path.append(protocolDef)
-                                            }
-                                        } else {
-                                            unfinishedSessions = sessions
-                                            showingCheckpointSheet = true
-                                        }
-                                    } catch {
-                                        print("Failed to load checkpoint sessions: \\(error)")
-                                    }
-                                }
+                                selectedProtocol = protocolDef
+                                CallCSharpCallback("requestCheckpointStates|\(protocolDef.title)")
                             }) {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(protocolDef.title)
@@ -61,6 +45,15 @@ struct ProtocolMenuContentView: View {
             .onAppear {
                 viewModel.requestProtocolDefinitions()
             }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CheckpointStates"))) { notif in
+                guard let msg = (notif.userInfo?["message"] as? String)?
+                        .dropFirst("checkpointStates|".count) else { return }
+                if let data = msg.data(using: .utf8),
+                   let list = try? JSONDecoder().decode([CheckpointState].self, from: data) {
+                    unfinishedSessions = list
+                    showingCheckpointSheet = true
+                }
+            }
             .navigationDestination(for: ProtocolDefinition.self) { protocolDef in
                 ProtocolView(selectedProtocol: protocolDef)
             }
@@ -68,29 +61,25 @@ struct ProtocolMenuContentView: View {
                 downloadButton
             }
             .sheet(isPresented: $showingCheckpointSheet) {
-                if let protocolDef = path.last as? ProtocolDefinition ?? viewModel.protocols.first(where: { $0.title == unfinishedSessions.first?.protocolName }) {
+                if let proto = selectedProtocol {
                     CheckpointResumeSheet(
-                        protocolName: protocolDef.title,
+                        protocolName: proto.title,
                         unfinished: unfinishedSessions,
                         onResume: { cp in
-                            if let data = try? JSONEncoder().encode(cp),
-                               let json = String(data: data, encoding: .utf8) {
-                                CallCSharpCallback("resumeCheckpoint|" + json)
+                            if let d = try? JSONEncoder().encode(cp),
+                               let j = String(data: d, encoding: .utf8) {
+                                CallCSharpCallback("resumeCheckpoint|" + j)
                             }
                         },
                         onNewRun: {
-                            if let jsonData = try? JSONEncoder().encode(protocolDef),
-                               let jsonString = String(data: jsonData, encoding: .utf8) {
-                                CallCSharpCallback("selectProtocol|" + jsonString)
-                                path.append(protocolDef)
+                            if let d = try? JSONEncoder().encode(proto),
+                               let j = String(data: d, encoding: .utf8) {
+                                CallCSharpCallback("selectProtocol|" + j)
                             }
                         },
                         onDelete: { cp in
-                            Task {
-                                let cpProvider = LocalFileCheckpointDataProvider()
-                                try? await cpProvider.deleteState(sessionID: cp.sessionID)
-                                unfinishedSessions.removeAll { $0.sessionID == cp.sessionID }
-                            }
+                            CallCSharpCallback("deleteCheckpoint|\(cp.sessionID.uuidString)")
+                            unfinishedSessions.removeAll { $0.sessionID == cp.sessionID }
                         }
                     )
                 }

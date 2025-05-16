@@ -479,6 +479,12 @@ public class SwiftUIDriver : IUIDriver, IDisposable
                 case "resumeCheckpoint":
                     ResumeCheckpoint(data);
                     break;
+                case "requestCheckpointStates":
+                    SendCheckpointStates(data);
+                    break;
+                case "deleteCheckpoint":
+                    DeleteCheckpoint(data);
+                    break;
                 // Add more cases as needed
             }
         }
@@ -487,6 +493,46 @@ public class SwiftUIDriver : IUIDriver, IDisposable
             Debug.LogError($"######LABLIGHT SWIFTUIDRIVER HandleMessage - Exception in command {command}: {ex.Message}\nStackTrace: {ex.StackTrace}");
         }
     }
+
+private async void SendCheckpointStates(string protocolName)
+{
+    var provider = ServiceRegistry.GetService<ICheckpointDataProvider>();
+    if (provider == null)
+    {
+        Debug.LogError("ICheckpointDataProvider not found");
+        return;
+    }
+
+    string userId = SessionState.currentUserProfile?.GetUserId() ?? "anonymous";
+    try
+    {
+        var list = await provider.LoadStatesAsync(protocolName, userId);
+        string json = JsonConvert.SerializeObject(list);
+        SendMessageToSwiftUI($"checkpointStates|{json}");
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"Error loading checkpoint states: {ex.Message}");
+    }
+}
+
+private async void DeleteCheckpoint(string sessionGuidStr)
+{
+    if (!Guid.TryParse(sessionGuidStr, out var guid))
+    {
+        Debug.LogError($"deleteCheckpoint – invalid GUID '{sessionGuidStr}'");
+        return;
+    }
+
+    var provider = ServiceRegistry.GetService<ICheckpointDataProvider>();
+    if (provider == null)
+    {
+        Debug.LogError("ICheckpointDataProvider not found");
+        return;
+    }
+
+    await provider.DeleteStateAsync(guid);
+}
 
     private async void LoadProtocolDefinitions()
     {
