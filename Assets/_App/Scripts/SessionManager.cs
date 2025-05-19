@@ -110,18 +110,6 @@ public class SessionManager : MonoBehaviour
 
         charucoTransform = Instantiate(new GameObject("CharucoTransform"), transform.parent.transform).transform;
 
-        //Setup logger
-        /* Add service 
-         * debug
-         * voice controller
-         * audio manager
-         * well plate csv provider
-         * file upload handler
-         */
-    }
-    public void Update()
-    {
-        TrackedObjectsDebug = SessionState.TrackedObjects.ToList();
     }
 
     public void UpdateCalibration(Matrix4x4 pose)

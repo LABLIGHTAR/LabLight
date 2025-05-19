@@ -87,15 +87,6 @@ public class ProtocolState : MonoBehaviour
 
     private void InitializeSteps(ProtocolDefinition protocolDefinition)
     {
-        // var arModels = protocolDefinition.globalArObjects
-        //     .Where(x => x.arDefinitionType == ArDefinitionType.Model)
-        //     .Cast<ModelArDefinition>()
-        //     .ToList();
-
-        // if (arModels.Count > 0)
-        // {
-        //     protocolDefinition.steps.Insert(0, CreateLockingStep(arModels));
-        // }
 
         foreach (var step in protocolDefinition.steps)
         {
@@ -110,26 +101,6 @@ public class ProtocolState : MonoBehaviour
         }
         SetStep(0);
     }
-
-    //TODO: move this to a protocol definition class
-    // private StepDefinition CreateLockingStep(List<ModelArDefinition> arModels) remake
-    // {
-    //     var checkList = new List<CheckItemDefinition>
-    //     {
-    //         new CheckItemDefinition { Text = "Place the items listed below on your workspace" }
-    //     };
-
-    //     checkList.AddRange(arModels.Select(arModel => new CheckItemDefinition
-    //     {
-    //         Text = arModel.name,
-    //         operations = new List<ArOperation> { new AnchorArOperation { arDefinition = arModel } }
-    //     }));
-
-    //     return new StepDefinition
-    //     {
-    //         checklist = checkList
-    //     };
-    // }
 
     public void SetStep(int step)
     {
@@ -195,9 +166,7 @@ public class ProtocolState : MonoBehaviour
         ChecklistStream.OnNext(currentStep.Checklist?.ToList());
         ServiceRegistry.GetService<ILighthouseControl>()?.SetProtocolStatus();
     }
-
-    // Legacy CSV writer removed.  Checkpoints provide structured persistence.
-
+    
     public class StepState
     {
         public ReactiveProperty<bool> SignedOff { get; } = new ReactiveProperty<bool>();
