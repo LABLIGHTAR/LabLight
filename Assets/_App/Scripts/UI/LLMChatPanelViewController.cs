@@ -28,9 +28,14 @@ public class LLMChatPanelViewController : LLBasePanel
 
     private TouchScreenKeyboard keyboard;
 
+    private IAuthProvider authProvider;
+    private IUIDriver uiDriver;
+
     protected override void Awake()
     {
         base.Awake();
+        uiDriver = ServiceRegistry.GetService<IUIDriver>();
+        authProvider = ServiceRegistry.GetService<IAuthProvider>();
     }
 
     // Start is called before the first frame update
@@ -40,7 +45,7 @@ public class LLMChatPanelViewController : LLBasePanel
         testButton.selectEntered.AddListener(_ => Test());
         submitButton.selectEntered.AddListener(_ => Submit());
         inputField.onSubmit.AddListener(_ => Submit());
-        loginButton.selectExited.AddListener(_ => LoginAsync());
+        loginButton.selectExited.AddListener(_ => TryLogin());
         UpdateUIBasedOnAuthStatus();
     }
 
@@ -80,18 +85,18 @@ public class LLMChatPanelViewController : LLBasePanel
         string query = inputField.text;
         inputField.text = "";
         panelText.text = panelText.text + "<color=blue>" + query + "\n\n";
-        ServiceRegistry.GetService<ILLMChatProvider>().QueryAsync(query);
+        uiDriver.ChatMessageCallback(query);
     }
 
     private void UpdateUIBasedOnAuthStatus()
     {
-        bool isAuthenticated = ServiceRegistry.GetService<IUserAuthProvider>().IsAuthenticated();
+        bool isAuthenticated = authProvider.IsSignedIn;
         inputPanel.SetActive(isAuthenticated);
         loginCanvas.SetActive(!isAuthenticated);
         chatCanvas.SetActive(isAuthenticated);
     }
 
-    private async void LoginAsync()
+    private async void TryLogin()
     {
         loginButton.gameObject.SetActive(false);
 
@@ -105,26 +110,7 @@ public class LLMChatPanelViewController : LLBasePanel
             return;
         }
 
-        bool isAuthenticated = await ServiceRegistry.GetService<IUserAuthProvider>().TryAuthenticateUser(email, password);
-
-        UpdateUIBasedOnAuthStatus();
-
-        if (isAuthenticated)
-        {
-            // Login successful
-            Debug.Log("Login successful");
-            // You might want to clear the login fields here
-            emailField.text = "";
-            passwordField.text = "";
-            loginErrorText.gameObject.SetActive(false);
-        }
-        else
-        {
-            // Login failed
-            Debug.LogError("Login failed");
-            loginErrorText.gameObject.SetActive(true);
-        }
-
-        loginButton.gameObject.SetActive(true);
+        //try to login
+        uiDriver.LoginCallback(email, password);
     }
 }

@@ -18,7 +18,7 @@ public class ClaudeChatProvider : ILLMChatProvider
     // Method to query Claude with a string prompt
     public async Task QueryAsync(string query)
     {
-        if(!ServiceRegistry.GetService<IUserAuthProvider>().IsAuthenticated())
+        if(!ServiceRegistry.GetService<IAuthProvider>().IsSignedIn)
         {
             Debug.LogError("User is not authenticated. Cannot query Claude.");
             return;
@@ -40,7 +40,7 @@ public class ClaudeChatProvider : ILLMChatProvider
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("auth-token", ServiceRegistry.GetService<IUserAuthProvider>().TryGetIdToken()); // Include the Cognito ID token in the request
+            request.SetRequestHeader("auth-token", await ServiceRegistry.GetService<IAuthProvider>().GetIdTokenAsync(false)); // Include the OIDC token in the request
 
             var operation = request.SendWebRequest();
 

@@ -242,4 +242,14 @@ public class Parsers
             throw;
         }
     }
+
+    static Vector3 vec3(JArray arr)
+    {
+        return new Vector3((float)arr[0], (float)arr[1], (float)arr[2]);
+    }
+
+    static Vector2 vec2(JArray arr)
+    {
+        return new Vector2((float)arr[0], (float)arr[1]);
+    }
 } 

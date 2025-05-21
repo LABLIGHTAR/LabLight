@@ -75,3 +75,5 @@ Assets/_App/Meshes/miltenny_scan.obj
 # Firebase SDK specific folder in Assets
 /[Aa]ssets/Firebase/
 /[Aa]ssets/[Ee]ditor [Dd]efault [Rr]esources/Firebase/
+/[Aa]ssets/[Pp]lugins/[iI][oO][sS]/Firebase/
+/[Aa]ssets/[Pp]lugins/[tT][vV][oO][sS]/Firebase/

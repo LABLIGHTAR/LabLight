@@ -28,6 +28,8 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     private CompositeDisposable _disposables = new CompositeDisposable();
     private Action DisposeVoice;
 
+    private IAuthProvider authProvider;
+
     public SwiftUIDriver()
     {
         SetNativeCallback(OnMessageReceived);
@@ -35,6 +37,18 @@ public class SwiftUIDriver : IUIDriver, IDisposable
 
     public void Initialize()
     {
+        authProvider = ServiceRegistry.GetService<IAuthProvider>();
+        if (authProvider != null)
+        {
+            authProvider.OnSignInSuccess += (_) => SendAuthStatus(true);
+            authProvider.OnAuthError += (_) => SendAuthStatus(false);
+        }
+        else
+        {
+            Debug.LogError("IAuthProvider is not available");
+        }
+
+
         if (ProtocolState.Instance != null)
         {
             _disposables.Add(ProtocolState.Instance.ProtocolStream.Subscribe(OnProtocolChange));
@@ -341,24 +355,13 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     public void LoginCallback(string username, string password)
     {
         Debug.Log("######LABLIGHT SWIFTUIDRIVER triggering Login Callback: " + username + " " + password);
-        var authProvider = ServiceRegistry.GetService<IUserAuthProvider>();
         if (authProvider != null)
         {
-            authProvider.TryAuthenticateUser(username, password)
-                .ToObservable()
-                .Subscribe(
-                    result => {
-                        SendAuthStatus(result);
-                    },
-                    error => {
-                        Debug.LogError("Authentication failed: " + error.Message);
-                        SendAuthStatus(false);
-                    }
-                );
+            authProvider.SignIn(username, password);
         }
         else
         {
-            Debug.LogError("IUserAuthProvider is not available");
+            Debug.LogError("IAuthProvider is not available");
             SendAuthStatus(false);
         }
     }

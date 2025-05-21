@@ -1,0 +1,31 @@
+{
+  "project_info": {
+    "project_number": "899061949438",
+    "project_id": "lablight-fda36",
+    "storage_bucket": "lablight-fda36.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899061949438:ios:4330f052816d55202356af",
+        "android_client_info": {
+          "package_name": "com.LabLightAR.LabLightAR"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzQAJqokFbAZ_HIXR4VALxZk4bqpySyPw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 0
+        },
+        "appinvite_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -15,8 +15,32 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private TimerViewController timerPanel;
     [SerializeField] private LLMChatPanelViewController chatPanel;
 
+    private IAuthProvider authProvider;
+    private ILLMChatProvider llmChatProvider;
+
     public void Initialize()
     {
+        authProvider = ServiceRegistry.GetService<IAuthProvider>();
+        if (authProvider != null)
+        {
+            authProvider.OnSignInSuccess += (_) => DisplayProtocolMenu();
+            authProvider.OnSignOutSuccess += () => DisplayUserSelection();
+        }
+        else
+        {
+            Debug.LogError("IAuthProvider is not available");
+        }
+
+        llmChatProvider = ServiceRegistry.GetService<ILLMChatProvider>();
+        if (llmChatProvider != null)
+        {   
+            llmChatProvider.OnResponse.AddListener(chatPanel.DisplayResponse);
+        }
+        else
+        {
+            Debug.LogError("ILLMChatProvider is not available");
+        }
+
         ProtocolState.Instance.StepStream.Subscribe(stepState => OnStepChange(stepState)).AddTo(this);
         ProtocolState.Instance.ProtocolStream.Subscribe(protocol => OnProtocolChange(protocol)).AddTo(this);
     }
@@ -219,7 +243,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void CloseProtocolCallback()
     {
         checklistPanel.gameObject.SetActive(false);
-        Debug.Log("######LABLIGHT SWIFTUIDRIVER CloseProtocolCallback");
+        Debug.Log("######LABLIGHT UNITYUIDRIVER CloseProtocolCallback");
 
         SpeechRecognizer.Instance.ClearAllKeywords();
 
@@ -230,15 +254,26 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public void ChatMessageCallback(string message)
     {
-        if (chatPanel != null)
+        if (llmChatProvider != null)
         {
-            chatPanel.SendMessage(message);
+            llmChatProvider.QueryAsync(message);
+        }
+        else
+        {
+            Debug.LogError("ILLMChatProvider is not available");
         }
     }
 
     public void LoginCallback(string username, string password)
     {
-        ServiceRegistry.GetService<IUserAuthProvider>().TryAuthenticateUser(username, password);
+        if (authProvider != null)
+        {
+            authProvider.SignIn(username, password);
+        }
+        else
+        {
+            Debug.LogError("IAuthProvider is not available");
+        }
     }
 
     // Helper methods
