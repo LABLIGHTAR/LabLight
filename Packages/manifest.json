@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.clockworklabs.spacetimedbsdk": "https://github.com/clockworklabs/com.clockworklabs.spacetimedbsdk.git",
     "com.styly.enterprise-camera-access": "0.1.1",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.collab-proxy": "2.6.0",

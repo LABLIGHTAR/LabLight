@@ -17626,6 +17626,8 @@ MonoBehaviour:
   modelPath: Whisper/ggml-tiny.bin
   isModelPathInStreamingAssets: 1
   initOnAwake: 1
+  useGpu: 0
+  flashAttention: 0
   language: en
   translateToEnglish: 0
   strategy: 0
@@ -17640,7 +17642,6 @@ MonoBehaviour:
   dropOldBuffer: 1
   useVad: 1
   tokensTimestamps: 0
-  speedUp: 0
   audioCtx: 0
 --- !u!1 &2115460893
 GameObject:
