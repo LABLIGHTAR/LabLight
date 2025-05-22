@@ -67,7 +67,7 @@ public class SessionManager : MonoBehaviour
 
         SessionState.CharucoTransform = transform; 
         SessionState.WorkspaceTransform = transform; 
-        SessionState.CharucoTransform = Instantiate(new GameObject("CharucoTransform"), transform.parent.transform).transform;
+        SessionState.CharucoTransform = Instantiate(new GameObject("CharucoTransform")).transform;
 
         SubscribeToEvents();
     }
