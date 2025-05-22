@@ -101,15 +101,6 @@ public class SessionManager : MonoBehaviour
         //workspaceTransform = transform;
 
         charucoTransform = Instantiate(new GameObject("CharucoTransform"), transform.parent.transform).transform;
-
-        //Setup logger
-        /* Add service 
-         * debug
-         * voice controller
-         * audio manager
-         * well plate csv provider
-         * file upload handler
-         */
     }
     public void Update()
     {
