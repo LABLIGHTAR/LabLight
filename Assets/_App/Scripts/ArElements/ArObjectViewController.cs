@@ -95,9 +95,7 @@ public class ArObjectViewController : MonoBehaviour
                 ModelName.gameObject.SetActive(true);
             }
         }
-        transform.position = SessionManager.instance.CharucoTransform != null 
-            ? SessionManager.instance.CharucoTransform.position
-            : _defaultPosition;
+        transform.position = _defaultPosition;
     }
 
     // handle alignment visuals

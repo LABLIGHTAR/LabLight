@@ -1435,13 +1435,7 @@ GameObject:
   - component: {fileID: 248604198}
   - component: {fileID: 248604194}
   - component: {fileID: 248604193}
-  - component: {fileID: 248604203}
-  - component: {fileID: 248604197}
-  - component: {fileID: 248604196}
   - component: {fileID: 248604199}
-  - component: {fileID: 248604200}
-  - component: {fileID: 248604201}
-  - component: {fileID: 248604202}
   m_Layer: 0
   m_Name: AR Session
   m_TagString: Untagged
@@ -1491,32 +1485,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2115460895}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &248604196
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248604192}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 72c443dbaf25a7d4f956e116cb52ed5c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &248604197
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248604192}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5b7db0f748a34ff7a6915da77d01382, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MussBaseURL: http://localhost:8000
-  TrackedObjectsDebug: []
 --- !u!114 &248604198
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1541,64 +1509,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4cda5e0a8dbb426f9dd5f19a8df7c58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &248604200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248604192}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e474f3ed687867d42be9b68ec551af34, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  settingsManagerSO: {fileID: 11400000, guid: a020f9263ca8e48c7bf4ff404ec90866, type: 2}
---- !u!114 &248604201
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248604192}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4d428a578bddde4087d43e0eee3f89b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &248604202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248604192}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61c74a7ff840443ebd1e60b9f979159, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  userSelectionPanel: {fileID: 1045351954}
-  protocolPanel: {fileID: 1725938590}
-  checklistPanel: {fileID: 1725938589}
-  protocolMenuPanel: {fileID: 197844286}
-  timerPanel: {fileID: 289094604}
-  chatPanel: {fileID: 507255229}
---- !u!114 &248604203
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248604192}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bdd24eea867e5046af93da7d6b1f0d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  host: ws://localhost:3000
-  dbName: lablightdb
-  frameTickRateHz: 30
 --- !u!1 &258235053
 GameObject:
   m_ObjectHideFlags: 0
@@ -5588,6 +5498,140 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 953354395}
   m_Mesh: {fileID: -364643842604359214, guid: f3e4c687c39124f96aba60ff6feccf6c, type: 3}
+--- !u!1 &973196466
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 973196474}
+  - component: {fileID: 973196473}
+  - component: {fileID: 973196472}
+  - component: {fileID: 973196471}
+  - component: {fileID: 973196470}
+  - component: {fileID: 973196469}
+  - component: {fileID: 973196468}
+  - component: {fileID: 973196467}
+  m_Layer: 0
+  m_Name: App Session
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &973196467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973196466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e474f3ed687867d42be9b68ec551af34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  settingsManagerSO: {fileID: 11400000, guid: a020f9263ca8e48c7bf4ff404ec90866, type: 2}
+--- !u!114 &973196468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973196466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4d428a578bddde4087d43e0eee3f89b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &973196469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973196466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61c74a7ff840443ebd1e60b9f979159, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  userSelectionPanel: {fileID: 1045351954}
+  protocolPanel: {fileID: 1725938590}
+  checklistPanel: {fileID: 1725938589}
+  protocolMenuPanel: {fileID: 197844286}
+  timerPanel: {fileID: 289094604}
+  chatPanel: {fileID: 507255229}
+--- !u!114 &973196470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973196466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 550ba3e6adaf3fb4ca38c43efcdd7d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &973196471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973196466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bdd24eea867e5046af93da7d6b1f0d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  host: ws://localhost:3000
+  dbName: lablightdb
+  frameTickRateHz: 30
+--- !u!114 &973196472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973196466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72c443dbaf25a7d4f956e116cb52ed5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &973196473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973196466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5b7db0f748a34ff7a6915da77d01382, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MussBaseURL: ws://localhost:8000
+  TrackedObjectsDebug: []
+--- !u!4 &973196474
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973196466}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &974636988
 GameObject:
   m_ObjectHideFlags: 0
@@ -19720,6 +19764,7 @@ SceneRoots:
   m_Roots:
   - {fileID: 1671999108}
   - {fileID: 203844589}
+  - {fileID: 973196474}
   - {fileID: 2026256748}
   - {fileID: 1254687816}
   - {fileID: 46269582}

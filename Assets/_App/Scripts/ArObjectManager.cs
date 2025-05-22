@@ -80,7 +80,7 @@ public class ArObjectManager : MonoBehaviour
 
     private bool TryGetWorkspaceTransform()
     {
-        workspaceTransform = SessionManager.instance?.CharucoTransform;
+        workspaceTransform = SessionState.WorkspaceTransform;
         if (workspaceTransform == null)
         {
             Debug.LogError("WorkspaceTransform not found");
