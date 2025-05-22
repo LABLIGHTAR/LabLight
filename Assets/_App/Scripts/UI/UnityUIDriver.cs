@@ -155,15 +155,42 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     }
 
     // Unity Callback Methods
-    public void UserSelectionCallback(string userID)
+    public async void UserSelectionCallback(string userID)
     {
-        ServiceRegistry.GetService<IUserProfileDataProvider>()
-            .GetOrCreateUserProfile(userID)
-            .ObserveOnMainThread()
-            .Subscribe(profile => {
-                SessionState.currentUserProfile = profile;
-                DisplayProtocolMenu();
-            });
+        if (string.IsNullOrEmpty(userID))
+        {
+            Debug.LogWarning("UnityUIDriver: UserSelectionCallback received null or empty userID. Possible cancel action.");
+            // Optionally, navigate to a main menu or specific view if selection is cancelled.
+            // sessionManager?.SignOut(); // Or handle cancellation as appropriate
+            // DisplayUserSelection(); // Or another appropriate view
+            return;
+        }
+
+        if (SessionManager.instance == null)
+        {
+            Debug.LogError("UnityUIDriver: SessionManager instance is null. Cannot process user selection.");
+            return;
+        }
+
+        bool selectionSuccess = await SessionManager.instance.SelectLocalUserAsync(userID);
+
+        if (selectionSuccess)
+        {
+            // Successfully set the local user context in SessionManager.
+            // Now, determine the next step. Usually, this means displaying the protocol menu or user view.
+            Debug.Log($"UnityUIDriver: User {userID} selected. Displaying protocol menu.");
+            DisplayProtocolMenu(); 
+            // If this selection should also trigger an online sign-in and DB connection:
+            // This is where you might call SessionManager.instance.AttemptSignIn(email, password) if you have credentials,
+            // or SessionManager.instance.ConnectToDatabaseIfAuthenticated() (a new method you might add to SessionManager
+            // that checks if _firebaseUserId is set and tries to get an OIDC token and connect).
+        }
+        else
+        {    
+            Debug.LogError($"UnityUIDriver: Failed to select user {userID} via SessionManager.");
+            // Optionally, show an error to the user or return to user selection.
+            // userSelectionPanel.gameObject.SetActive(true); // Re-display if selection failed
+        }
     }
 
     public void StepNavigationCallback(int index)

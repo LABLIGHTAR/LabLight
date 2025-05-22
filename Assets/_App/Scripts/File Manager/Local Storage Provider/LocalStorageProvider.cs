@@ -116,4 +116,35 @@ public class LocalStorageProvider : ILocalStorageProvider
             return ResultVoid.CreateFailure("LOCAL_STORAGE_ERROR", $"Error deleting file: {ex.Message}");
         }
     }
+
+    public async Task<Result<System.Collections.Generic.List<string>>> ListKeysAsync(string prefix = null)
+    {
+        try
+        {
+            string directoryPath = Application.persistentDataPath;
+            if (!Directory.Exists(directoryPath))
+            {
+                // If the directory doesn't exist, there are no keys to list.
+                return Result<System.Collections.Generic.List<string>>.CreateSuccess(new System.Collections.Generic.List<string>());
+            }
+
+            var allFiles = Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly);
+            var keys = new System.Collections.Generic.List<string>();
+
+            foreach (var fullPath in allFiles)
+            {
+                string fileName = Path.GetFileName(fullPath);
+                if (prefix == null || fileName.StartsWith(prefix))
+                {
+                    keys.Add(fileName);
+                }
+            }
+            return await Task.FromResult(Result<System.Collections.Generic.List<string>>.CreateSuccess(keys));
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Error listing keys with prefix '{prefix}': {ex.Message}");
+            return Result<System.Collections.Generic.List<string>>.CreateFailure("LOCAL_STORAGE_ERROR", $"Error listing keys: {ex.Message}");
+        }
+    }
 } 

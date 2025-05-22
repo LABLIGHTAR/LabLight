@@ -29,6 +29,7 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     private Action DisposeVoice;
 
     private IAuthProvider authProvider;
+    private IFileManager fileManager;
 
     public SwiftUIDriver()
     {
@@ -38,6 +39,8 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     public void Initialize()
     {
         authProvider = ServiceRegistry.GetService<IAuthProvider>();
+        fileManager = ServiceRegistry.GetService<IFileManager>();
+
         if (authProvider != null)
         {
             authProvider.OnSignInSuccess += (_) => SendAuthStatus(true);
@@ -232,36 +235,45 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     public void UserSelectionCallback(string userID)
     {
         Debug.Log($"######LABLIGHT Starting UserSelectionCallback for ID: {userID}");
-        var profileProvider = ServiceRegistry.GetService<IUserProfileDataProvider>();
-        if (profileProvider == null)
+        if (fileManager == null)
         {
-            Debug.LogError("######LABLIGHT IUserProfileDataProvider is null");
+            Debug.LogError("######LABLIGHT IFileManager is null in UserSelectionCallback");
             return;
         }
 
-        profileProvider.GetOrCreateUserProfile(userID).Subscribe(
-            profile => {
-                Debug.Log("######LABLIGHT Profile loaded successfully");
-                if (profile == null)
+        fileManager.GetLocalUserProfilesAsync()
+            .ToObservable()
+            .ObserveOnMainThread()
+            .Subscribe(
+                result =>
                 {
-                    Debug.LogError("######LABLIGHT Profile is null after loading");
-                    return;
+                    if (result.Success && result.Data != null)
+                    {                        
+                        LocalUserProfileData selectedProfile = result.Data.FirstOrDefault(p => p.Id == userID);
+                        if (selectedProfile != null)
+                        {
+                            Debug.Log("######LABLIGHT Profile loaded successfully using FileManager");
+                            SessionState.currentUserProfile = selectedProfile;
+                            Debug.Log("######LABLIGHT Profile set in SessionState");
+                            CloseSwiftUIWindow("UserProfiles");
+                            Debug.Log("######LABLIGHT UserProfiles window closed");
+                            DisplayProtocolMenu();
+                        }
+                        else
+                        {
+                            Debug.LogError($"######LABLIGHT Profile with ID {userID} not found among local profiles.");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError($"######LABLIGHT Error loading local user profiles with FileManager: {result.Error?.Code} - {result.Error?.Message}");
+                    }
+                },
+                error =>
+                {
+                    Debug.LogError($"######LABLIGHT Exception in UserSelectionCallback (FileManager): {error}");
                 }
-                SessionState.currentUserProfile = profile;
-                Debug.Log("######LABLIGHT Profile set in SessionState");
-                
-                // Close UserProfiles window first
-                CloseSwiftUIWindow("UserProfiles");
-                Debug.Log("######LABLIGHT UserProfiles window closed");
-                
-                // Then open Protocol Menu
-                Debug.Log("######LABLIGHT About to display protocol menu");
-                DisplayProtocolMenu();
-            },
-            error => {
-                Debug.LogError($"######LABLIGHT Error in UserSelectionCallback: {error}");
-            }
-        );
+            ).AddTo(_disposables);
     }
 
     public void StepNavigationCallback(int stepIndex)
@@ -369,12 +381,11 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     public void DownloadJsonProtocolCallback()
     {
         DownloadJsonProtocolAsync();
-        LoadProtocolDefinitions();
     }
 
-    public void OnUserProfilesChange(List<UserProfileData> profiles)
+    public void OnUserProfilesChange(List<LocalUserProfileData> profiles)
     {
-        var profilesData = profiles.Select(p => new { userId = p.GetUserId(), name = p.GetName() }).ToList();
+        var profilesData = profiles.Select(p => new { userId = p.Id, name = p.Name }).ToList();
         string profilesJson = JsonConvert.SerializeObject(profilesData);
         SendMessageToSwiftUI($"userProfiles|{profilesJson}");
     }
@@ -464,20 +475,77 @@ public class SwiftUIDriver : IUIDriver, IDisposable
                     DownloadJsonProtocolCallback();
                     break;
                 case "requestUserProfiles":
-                    var userProfileProvider = ServiceRegistry.GetService<IUserProfileDataProvider>();
-                    userProfileProvider.GetAllUserProfiles()
+                    if (fileManager == null)
+                    {
+                        Debug.LogError("######LABLIGHT IFileManager is null in HandleMessage(requestUserProfiles)");
+                        break;
+                    }
+                    fileManager.GetLocalUserProfilesAsync()
+                        .ToObservable()
                         .ObserveOnMainThread()
-                        .Subscribe(OnUserProfilesChange);
+                        .Subscribe(result => {
+                            if(result.Success && result.Data != null)
+                            {
+                                OnUserProfilesChange(result.Data);
+                            }
+                            else
+                            {
+                                Debug.LogError($"Error fetching user profiles: {result.Error?.Code} - {result.Error?.Message}");
+                                OnUserProfilesChange(new List<LocalUserProfileData>());
+                            }
+                        }, error => {
+                             Debug.LogError($"Exception fetching user profiles: {error}");
+                             OnUserProfilesChange(new List<LocalUserProfileData>());
+                        })
+                        .AddTo(_disposables);
                     break;
                 case "selectUser":
                     UserSelectionCallback(data);
                     break;
                 case "createUser":
-                    var provider = ServiceRegistry.GetService<IUserProfileDataProvider>();
-                    provider.SaveUserProfileData(data, new UserProfileData(data));
-                    provider.GetAllUserProfiles()
+                    if (fileManager == null)
+                    {
+                        Debug.LogError("######LABLIGHT IFileManager is null in HandleMessage(createUser)");
+                        break;
+                    }
+                    var newUserProfile = new LocalUserProfileData
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = data,
+                        Email = "",
+                        CreatedAtUtc = DateTime.UtcNow,
+                        LastOnlineUtc = DateTime.UtcNow,
+                        IsOnline = false
+                    };
+                    fileManager.SaveLocalUserProfileAsync(newUserProfile)
+                        .ToObservable()
                         .ObserveOnMainThread()
-                        .Subscribe(OnUserProfilesChange);
+                        .Subscribe(saveResult => {
+                            if(saveResult.Success)
+                            {
+                                fileManager.GetLocalUserProfilesAsync()
+                                    .ToObservable()
+                                    .ObserveOnMainThread()
+                                    .Subscribe(profilesResult => {
+                                        if(profilesResult.Success && profilesResult.Data != null)
+                                        {
+                                            OnUserProfilesChange(profilesResult.Data);
+                                        }
+                                        else
+                                        {
+                                            Debug.LogError($"Error fetching user profiles after create: {profilesResult.Error?.Code} - {profilesResult.Error?.Message}");
+                                        }
+                                    },profilesError => {
+                                        Debug.LogError($"Exception fetching user profiles after create: {profilesError}");
+                                    }).AddTo(_disposables);
+                            }
+                            else
+                            {
+                                Debug.LogError($"Error creating user profile: {saveResult.Error?.Code} - {saveResult.Error?.Message}");
+                            }
+                        }, saveError => {
+                            Debug.LogError($"Exception creating user profile: {saveError}");
+                        }).AddTo(_disposables);
                     break;
                 // Add more cases as needed
             }
@@ -490,23 +558,32 @@ public class SwiftUIDriver : IUIDriver, IDisposable
 
     private async void LoadProtocolDefinitions()
     {
-        var protocolDataProvider = ServiceRegistry.GetService<IProtocolDataProvider>();
-        if (protocolDataProvider == null)
+        if (fileManager == null)
         {
-            Debug.LogError("IProtocolDataProvider not found in ServiceRegistry");
+            Debug.LogError("IFileManager not found in ServiceRegistry in LoadProtocolDefinitions");
+            SendMessageToSwiftUI("protocolDefinitions|[]"); // Send empty list on error
             return;
         }
 
         try
         {
-            var protocolDefinitions = await protocolDataProvider.GetProtocolList();
-            protocolDefinitions.AddRange(await ((LocalFileDataProvider)ServiceRegistry.GetService<ITextDataProvider>())?.GetProtocolList());
-            string protocolDefinitionsJson = JsonConvert.SerializeObject(protocolDefinitions);
-            SendMessageToSwiftUI($"protocolDefinitions|{protocolDefinitionsJson}");
+            Result<List<ProtocolData>> result = await fileManager.GetAvailableProtocolsAsync();
+
+            if (result.Success && result.Data != null)
+            {
+                string protocolDefinitionsJson = JsonConvert.SerializeObject(result.Data);
+                SendMessageToSwiftUI($"protocolDefinitions|{protocolDefinitionsJson}");
+            }
+            else
+            {
+                Debug.LogError($"Error loading available protocols via FileManager: {result.Error?.Code} - {result.Error?.Message}");
+                SendMessageToSwiftUI("protocolDefinitions|[]"); // Send empty list on error
+            }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Error loading protocol list: {ex.Message}");
+            Debug.LogError($"Exception in LoadProtocolDefinitions: {ex.Message}");
+            SendMessageToSwiftUI("protocolDefinitions|[]"); // Send empty list on error
         }
     }
 
@@ -544,11 +621,16 @@ public class SwiftUIDriver : IUIDriver, IDisposable
 
                 if (!string.IsNullOrEmpty(fileName))
                 {
-                    var protocolName = Path.GetDirectoryName(fileName);
+                    var protocolName = Path.GetFileNameWithoutExtension(fileName);
 
-                    var lfdp = new LocalFileDataProvider();
+                    if (fileManager == null)
+                    {
+                        Debug.LogError("######LABLIGHT IFileManager is null in DownloadJsonProtocolAsync");
+                        return null;
+                    }
                     
-                    lfdp.SaveTextFile(protocolName + ".json", request.downloadHandler.text);
+                    await fileManager.SaveProtocolAsync(null, protocolName, request.downloadHandler.text, false, 0);
+                    Debug.Log($"Protocol {protocolName} downloaded and save requested via FileManager.");
                 }
                 else
                 {

@@ -2,6 +2,8 @@ using UniRx;
 using UnityEngine;
 using Lighthouse.MessagePack;
 using UnityEngine.Events;
+using System.Collections.Generic;
+using UnityEngine.XR.ARFoundation;
 
 /// <summary>
 /// Central state containing observable values
@@ -10,7 +12,7 @@ public class SessionState : MonoBehaviour
 {
     public static SessionState Instance;
     public static string deviceId;
-    public static UserProfileData currentUserProfile;
+    public static LocalUserProfileData currentUserProfile;
 
     private static bool _connected = false;
     private static bool _recording;
