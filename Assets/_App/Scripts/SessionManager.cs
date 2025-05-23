@@ -49,6 +49,9 @@ public class SessionManager : MonoBehaviour
         LLMChatProvider = new ClaudeChatProvider();
         ServiceRegistry.RegisterService<ILLMChatProvider>(LLMChatProvider);
 
+        var uiCallbackHandler = new UICallbackHandler();
+        ServiceRegistry.RegisterService<IUICallbackHandler>(uiCallbackHandler);
+
         #if UNITY_VISIONOS && !UNITY_EDITOR
         UIDriver = new SwiftUIDriver();
         ServiceRegistry.RegisterService<IUIDriver>(UIDriver);

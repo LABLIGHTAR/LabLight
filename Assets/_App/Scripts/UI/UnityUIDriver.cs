@@ -5,66 +5,114 @@ using UniRx;
 using System.Linq;
 using Newtonsoft.Json;
 
+/// <summary>
+/// Unity-specific implementation of the IUIDriver interface.
+/// Manages Unity UI panels and delegates callback logic to IUICallbackHandler.
+/// </summary>
 public class UnityUIDriver : MonoBehaviour, IUIDriver
 {
-    // References to UI panels/views
+    #region Serialized Fields (UI Panel References)
     [SerializeField] private UserSelectionPanelViewController userSelectionPanel;
     [SerializeField] private ProtocolPanelViewController protocolPanel;
     [SerializeField] private ChecklistPanelViewController checklistPanel;
     [SerializeField] private ProtocolMenuViewController protocolMenuPanel;
     [SerializeField] private TimerViewController timerPanel;
     [SerializeField] private LLMChatPanelViewController chatPanel;
+    #endregion
 
-    private IAuthProvider authProvider;
-    private ILLMChatProvider llmChatProvider;
+    #region Private Fields
+    private IAuthProvider _authProvider;
+    private ILLMChatProvider _llmChatProvider;
+    private IUICallbackHandler _uiCallbackHandler;
+    #endregion
 
+    #region Unity Lifecycle Methods (Initialization & Cleanup)
     public void Initialize()
     {
-        authProvider = ServiceRegistry.GetService<IAuthProvider>();
-        if (authProvider != null)
+        _authProvider = ServiceRegistry.GetService<IAuthProvider>();
+        if (_authProvider != null)
         {
-            authProvider.OnSignInSuccess += (_) => DisplayProtocolMenu();
-            authProvider.OnSignOutSuccess += () => DisplayUserSelection();
+            _authProvider.OnSignInSuccess += HandleSignInSuccess;
+            _authProvider.OnSignOutSuccess += HandleSignOutSuccess;
         }
         else
         {
-            Debug.LogError("IAuthProvider is not available");
+            Debug.LogError("UnityUIDriver: IAuthProvider is not available from ServiceRegistry.");
         }
 
-        llmChatProvider = ServiceRegistry.GetService<ILLMChatProvider>();
-        if (llmChatProvider != null)
-        {   
-            llmChatProvider.OnResponse.AddListener(chatPanel.DisplayResponse);
+        _llmChatProvider = ServiceRegistry.GetService<ILLMChatProvider>();
+        if (_llmChatProvider != null)
+        {
+            if (chatPanel != null) _llmChatProvider.OnResponse.AddListener(chatPanel.DisplayResponse);
+            else Debug.LogError("UnityUIDriver: ChatPanel is null, cannot subscribe to LLMChatProvider.OnResponse.");
         }
         else
         {
-            Debug.LogError("ILLMChatProvider is not available");
+            Debug.LogError("UnityUIDriver: ILLMChatProvider is not available from ServiceRegistry.");
         }
 
-        ProtocolState.Instance.StepStream.Subscribe(stepState => OnStepChange(stepState)).AddTo(this);
-        ProtocolState.Instance.ProtocolStream.Subscribe(protocol => OnProtocolChange(protocol)).AddTo(this);
+        _uiCallbackHandler = ServiceRegistry.GetService<IUICallbackHandler>();
+        if (_uiCallbackHandler == null)
+        {
+            Debug.LogError("UnityUIDriver: IUICallbackHandler is not available from ServiceRegistry.");
+        }
+
+        if (ProtocolState.Instance != null)
+        {
+            ProtocolState.Instance.StepStream.Subscribe(OnStepChange).AddTo(this);
+            ProtocolState.Instance.ProtocolStream.Subscribe(OnProtocolChange).AddTo(this);
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: ProtocolState.Instance is null. Cannot subscribe to streams.");
+        }
     }
 
     void OnDestroy()
     {
-        if (protocolPanel != null) Destroy(protocolPanel.gameObject);
-        if (checklistPanel != null) Destroy(checklistPanel.gameObject);
-        if (protocolMenuPanel != null) Destroy(protocolMenuPanel.gameObject);
-        if (timerPanel != null) Destroy(timerPanel.gameObject);
-        if (chatPanel != null) Destroy(chatPanel.gameObject);
+        if (_authProvider != null)
+        {
+            _authProvider.OnSignInSuccess -= HandleSignInSuccess;
+            _authProvider.OnSignOutSuccess -= HandleSignOutSuccess;
+        }
+        if (_llmChatProvider != null && chatPanel != null)
+        {
+            _llmChatProvider.OnResponse.RemoveListener(chatPanel.DisplayResponse);
+        }
+    }
+    #endregion
+
+    #region Auth Event Handlers (Local UI Reactions)
+    private void HandleSignInSuccess(string oidcToken)
+    {
+        DisplayProtocolMenu();
     }
 
-    // UI Update methods
+    private void HandleSignOutSuccess()
+    {
+        DisplayUserSelection();
+    }
+    #endregion
+
+    #region UI Update Methods (Implementing IUIDriver)
     public void OnProtocolChange(ProtocolDefinition protocol)
     {
+        if (checklistPanel == null || protocolMenuPanel == null) 
+        {
+            Debug.LogError("UnityUIDriver: ChecklistPanel or ProtocolMenuPanel is not assigned.");
+            return;
+        }
+
         if (protocol == null)
         {
             checklistPanel.gameObject.SetActive(false);
             protocolMenuPanel.gameObject.SetActive(true);
-            return;
         }
-        protocolMenuPanel.gameObject.SetActive(false);
-        checklistPanel.gameObject.SetActive(true);
+        else
+        {
+            protocolMenuPanel.gameObject.SetActive(false);
+            checklistPanel.gameObject.SetActive(true);
+        }
     }
 
     public void OnStepChange(ProtocolState.StepState stepState)
@@ -90,230 +138,173 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     {
         return;
     }
+    #endregion
 
+    #region UI Display Methods (Implementing IUIDriver)
     public void DisplayUserSelection()
     {
+        if (userSelectionPanel == null) { Debug.LogError("UnityUIDriver: UserSelectionPanel is null."); return; }
+        HideAllPanels();
         userSelectionPanel.gameObject.SetActive(true);
     }
 
-    // UI Display methods
     public void DisplayProtocolMenu()
     {
-        if (protocolMenuPanel != null)
-        {
-            Debug.Log("Displaying protocol menu");
-            protocolMenuPanel.gameObject.SetActive(true);
-        }
-        else
-        {
-            Debug.LogError("Protocol menu panel is null");
-        }
+        if (protocolMenuPanel == null) { Debug.LogError("UnityUIDriver: ProtocolMenuPanel is null."); return; }
+        Debug.Log("UnityUIDriver: Displaying protocol menu");
+        HideAllPanels();
+        protocolMenuPanel.gameObject.SetActive(true);
     }
 
     public void DisplayTimer(int seconds)
     {
+        if (timerPanel == null) { Debug.LogError("UnityUIDriver: TimerPanel is null."); return; }
         timerPanel.gameObject.SetActive(true);
         timerPanel.SetTimer(seconds);
     }
 
-    //TODO: implement Unity calculator
     public void DisplayCalculator()
     {
-        return;
-        //calculatorPanel.gameObject.SetActive(true);
+        Debug.LogWarning("UnityUIDriver: DisplayCalculator is not yet implemented.");
     }
 
-    //TODO: implement Unity web browser
     public void DisplayWebPage(string url)
     {
-        Debug.Log("Displaying web page at " + url);
-        return;
-        //webBrowserPanel.gameObject.SetActive(true);
-        //webBrowserPanel.LoadUrl(url);
+        Debug.LogWarning($"UnityUIDriver: DisplayWebPage for {url} is not yet implemented.");
     }
 
     public void DisplayLLMChat()
     {
+        if (chatPanel == null) { Debug.LogError("UnityUIDriver: ChatPanel is null."); return; }
         chatPanel.gameObject.SetActive(true);
     }
 
-    //TODO: implement Unity video player
     public void DisplayVideoPlayer(string url)
     {
-        Debug.Log("Displaying video at " + url);
-        return;
-        //videoPlayerPanel.gameObject.SetActive(true);
-        //videoPlayerPanel.LoadVideo(url);
+        Debug.LogWarning($"UnityUIDriver: DisplayVideoPlayer for {url} is not yet implemented.");
     }
 
-    //TODO: implement Unity PDF reader
     public void DisplayPDFReader(string url)
     {
-        return;
-        //pdfReaderPanel.gameObject.SetActive(true);
-        //pdfReaderPanel.LoadPDF(url);
+        Debug.LogWarning($"UnityUIDriver: DisplayPDFReader for {url} is not yet implemented.");
     }
+    #endregion
 
-    // Unity Callback Methods
+    #region Callback Methods (Implementing IUIDriver, Delegating to Handler)
     public async void UserSelectionCallback(string userID)
     {
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in UserSelectionCallback."); return; }
+
         if (string.IsNullOrEmpty(userID))
         {
-            Debug.LogWarning("UnityUIDriver: UserSelectionCallback received null or empty userID. Possible cancel action.");
-            // Optionally, navigate to a main menu or specific view if selection is cancelled.
-            // sessionManager?.SignOut(); // Or handle cancellation as appropriate
-            // DisplayUserSelection(); // Or another appropriate view
+            Debug.LogWarning("UnityUIDriver: UserSelectionCallback received null or empty userID.");
+            await _uiCallbackHandler.HandleUserSelection(userID);
             return;
         }
 
-        if (SessionManager.instance == null)
+        try
         {
-            Debug.LogError("UnityUIDriver: SessionManager instance is null. Cannot process user selection.");
-            return;
+            await _uiCallbackHandler.HandleUserSelection(userID);
+            Debug.Log($"UnityUIDriver: User {userID} selected via handler. Displaying protocol menu.");
+            DisplayProtocolMenu();
+            if (userSelectionPanel != null) userSelectionPanel.gameObject.SetActive(false);
         }
-
-        bool selectionSuccess = await SessionManager.instance.SelectLocalUserAsync(userID);
-
-        if (selectionSuccess)
+        catch (Exception ex)
         {
-            // Successfully set the local user context in SessionManager.
-            // Now, determine the next step. Usually, this means displaying the protocol menu or user view.
-            Debug.Log($"UnityUIDriver: User {userID} selected. Displaying protocol menu.");
-            DisplayProtocolMenu(); 
-            // If this selection should also trigger an online sign-in and DB connection:
-            // This is where you might call SessionManager.instance.AttemptSignIn(email, password) if you have credentials,
-            // or SessionManager.instance.ConnectToDatabaseIfAuthenticated() (a new method you might add to SessionManager
-            // that checks if _firebaseUserId is set and tries to get an OIDC token and connect).
-        }
-        else
-        {    
-            Debug.LogError($"UnityUIDriver: Failed to select user {userID} via SessionManager.");
-            // Optionally, show an error to the user or return to user selection.
-            // userSelectionPanel.gameObject.SetActive(true); // Re-display if selection failed
+            Debug.LogError($"UnityUIDriver: Error during user selection for {userID} via handler: {ex.Message}");
         }
     }
 
     public void StepNavigationCallback(int index)
     {
-        if(index < 0 || index >= ProtocolState.Instance.Steps.Count)
-        {
-            return;
-        }
-        Debug.Log("Navigating to step " + index);
-        ProtocolState.Instance.SetStep(index);
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in StepNavigationCallback."); return; }
+        _uiCallbackHandler.HandleStepNavigation(index);
     }
 
     public void CheckItemCallback(int index)
     {
-        var currentStepState = ProtocolState.Instance.CurrentStepState.Value;
-        if (currentStepState == null || currentStepState.Checklist == null)
-        {
-            return;
-        }
-
-        if (index < 0 || index >= currentStepState.Checklist.Count)
-        {
-            return;
-        }
-
-        currentStepState.Checklist[index].IsChecked.Value = true;
-        currentStepState.Checklist[index].CompletionTime.Value = DateTime.Now;
-        
-        // Find next unchecked item
-        var nextUncheckedItem = currentStepState.Checklist
-            .Skip(index + 1)
-            .FirstOrDefault(item => !item.IsChecked.Value);
-
-        if (nextUncheckedItem != null)
-        {
-            ProtocolState.Instance.SetCheckItem(currentStepState.Checklist.IndexOf(nextUncheckedItem));
-        }
-        else
-        {
-            // If no more unchecked items, stay on the last checked item
-            ProtocolState.Instance.SetCheckItem(currentStepState.Checklist.Count - 1);
-        }
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in CheckItemCallback."); return; }
+        _uiCallbackHandler.HandleCheckItem(index);
     }
 
     public void UncheckItemCallback(int index)
     {
-        ProtocolState.Instance.CurrentStepState.Value.Checklist[index].IsChecked.Value = false;
-        if(index - 1 >= 0)
-        {
-            ProtocolState.Instance.SetCheckItem(index - 1);
-        }
-        else
-        {
-            ProtocolState.Instance.SetCheckItem(index);
-        }
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in UncheckItemCallback."); return; }
+        _uiCallbackHandler.HandleUncheckItem(index);
     }
 
     public void SignOffChecklistCallback()
     {
-        ProtocolState.Instance.SignOff();
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in SignOffChecklistCallback."); return; }
+        _uiCallbackHandler.HandleSignOffChecklist();
     }
 
     public void ProtocolSelectionCallback(string protocolDefinitionJson)
     {
-        var protocolDefinition = JsonConvert.DeserializeObject<ProtocolDefinition>(protocolDefinitionJson);
-        ProtocolState.Instance.SetProtocolDefinition(protocolDefinition);
-    }
-
-    public void ChecklistSignOffCallback(bool isSignedOff)
-    {
-        if (ProtocolState.Instance.CurrentStepState.Value != null)
-        {
-            ProtocolState.Instance.CurrentStepState.Value.SignedOff.Value = isSignedOff;
-        }
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in ProtocolSelectionCallback."); return; }
+        _uiCallbackHandler.HandleProtocolSelection(protocolDefinitionJson);
     }
 
     public void CloseProtocolCallback()
     {
-        checklistPanel.gameObject.SetActive(false);
-        Debug.Log("######LABLIGHT UNITYUIDRIVER CloseProtocolCallback");
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in CloseProtocolCallback."); return; }
+        _uiCallbackHandler.HandleCloseProtocol();
 
-        SpeechRecognizer.Instance.ClearAllKeywords();
-
-        ProtocolState.Instance.ActiveProtocol.Value = null;
-        SceneLoader.Instance.LoadSceneClean("ProtocolMenu");
-        protocolMenuPanel.gameObject.SetActive(true);  
+        if (checklistPanel != null) checklistPanel.gameObject.SetActive(false);
+        Debug.Log("UnityUIDriver: CloseProtocolCallback - UI specific actions post-handler.");
+        
+        SceneLoader.Instance.LoadSceneClean("ProtocolMenu"); 
+        if (protocolMenuPanel != null) protocolMenuPanel.gameObject.SetActive(true);
     }
 
     public void ChatMessageCallback(string message)
     {
-        if (llmChatProvider != null)
-        {
-            llmChatProvider.QueryAsync(message);
-        }
-        else
-        {
-            Debug.LogError("ILLMChatProvider is not available");
-        }
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in ChatMessageCallback."); return; }
+        _uiCallbackHandler.HandleChatMessage(message);
     }
 
-    public void LoginCallback(string username, string password)
+    public async void LoginCallback(string username, string password)
     {
-        if (authProvider != null)
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in LoginCallback."); return; }
+        try
         {
-            authProvider.SignIn(username, password);
+            await _uiCallbackHandler.HandleLogin(username, password);
         }
-        else
+        catch (Exception ex)
         {
-            Debug.LogError("IAuthProvider is not available");
+            Debug.LogError($"UnityUIDriver: Login attempt via handler failed for {username}. Error: {ex.Message}");
         }
     }
 
-    // Helper methods
+    public async void CreateUserCallback(string userName)
+    {
+        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in CreateUserCallback."); return; }
+        if (string.IsNullOrWhiteSpace(userName)) { Debug.LogWarning("UnityUIDriver: CreateUserCallback received null or empty userName."); return; }
+
+        Debug.Log($"UnityUIDriver: Attempting to create user: {userName}");
+        try
+        {
+            List<LocalUserProfileData> updatedProfiles = await _uiCallbackHandler.HandleCreateUser(userName);
+            Debug.Log($"UnityUIDriver: User {userName} created successfully. {updatedProfiles.Count} total profiles.");
+            if (userSelectionPanel != null && userSelectionPanel.gameObject.activeInHierarchy)
+            {
+                Debug.Log("UnityUIDriver: User creation successful, UserSelectionPanel might need refresh.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"UnityUIDriver: Error creating user {userName} via handler: {ex.Message}");
+        }
+    }
+    #endregion
+
+    #region Helper Methods
     private void HideAllPanels()
     {
+        if (userSelectionPanel != null) userSelectionPanel.gameObject.SetActive(false);
         if (protocolPanel != null) protocolPanel.gameObject.SetActive(false);
         if (checklistPanel != null) checklistPanel.gameObject.SetActive(false);
         if (protocolMenuPanel != null) protocolMenuPanel.gameObject.SetActive(false);
-        if (timerPanel != null) timerPanel.gameObject.SetActive(false);
-        //if (calculatorPanel != null) calculatorPanel.gameObject.SetActive(false);
-        //if (webBrowserPanel != null) webBrowserPanel.gameObject.SetActive(false);
-        if (chatPanel != null) chatPanel.gameObject.SetActive(false);
-        //if (videoPlayerPanel != null) videoPlayerPanel.gameObject.SetActive(false);
-        //if (pdfReaderPanel != null) pdfReaderPanel.gameObject.SetActive(false);
     }
+    #endregion
 }

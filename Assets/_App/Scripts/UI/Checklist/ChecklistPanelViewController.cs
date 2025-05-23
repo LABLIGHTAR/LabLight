@@ -431,40 +431,6 @@ public class ChecklistPanelViewController : LLBasePanel
     {
         UIDriver.CloseProtocolCallback();
     }
-
-    /// <summary>
-    /// Writes the checklist to a CSV file for export
-    /// </summary>
-    public void WriteChecklistToCSV(ReactiveCollection<ProtocolState.CheckItemState> CheckList)
-    {
-        if (ProtocolState.Instance.CsvPath.Value == null)
-        {
-            Debug.LogWarning("no CSV file initalized");
-            return;
-        }
-
-        // Initalize text writer to specified file and append
-        var tw = new StreamWriter(ProtocolState.Instance.CsvPath.Value, true);
-        string line;
-
-        // Write checklist items to CSV
-        if (CheckList != null)
-        {
-            Debug.Log("######LABLIGHT Writing checklist to CSV " + ProtocolState.Instance.CsvPath.Value);
-            foreach (var item in CheckList)
-            {
-                line = item.Text;
-                if (line.Contains(","))
-                {
-                    line = line.Replace(",", "");
-                }
-
-                tw.WriteLine(line + ',' + "Completed, " + item.CompletionTime.Value);
-            }
-            tw.Close();
-        }
-    }
-
     void SetupButtonEvents()
     {
         closeProtocolButton.selectEntered.AddListener(_ => CloseProtocol());
