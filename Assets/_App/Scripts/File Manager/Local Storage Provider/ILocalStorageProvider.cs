@@ -12,4 +12,5 @@ public interface ILocalStorageProvider
     Task<Result<byte[]>> ReadBinaryAsync(string key); // Using byte[] for FileObject
     Task<ResultVoid> WriteBinaryAsync(string key, byte[] data); // Using byte[] for FileObject
     Task<ResultVoid> DeleteAsync(string key);
+    Task<Result<System.Collections.Generic.List<string>>> ListKeysAsync(string prefix = null);
 }

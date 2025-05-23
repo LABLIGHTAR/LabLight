@@ -19,7 +19,6 @@ public class ProtocolMenuViewController : LLBasePanel
     [SerializeField] GameObject buttonPrefab;
     [SerializeField] GameObject previousButton;
     [SerializeField] GameObject nextButton;
-    [SerializeField] GameObject downloadButton;
     [SerializeField] XRSimpleInteractable closeAppButton;
 
     [Header("Popups")]
@@ -28,32 +27,18 @@ public class ProtocolMenuViewController : LLBasePanel
     
     private int currentPage = 0;
     private int maxPage = 0;
-    List<ProtocolDefinition> protocols;
+    List<ProtocolData> protocols;
     List<ProtocolMenuButton> buttons = new List<ProtocolMenuButton>();
+    private IFileManager fileManager;
 
     protected override void Awake()
     {
         base.Awake();
-
-        SessionState.JsonFileDownloadable.Subscribe(jsonFileInfo =>
+        fileManager = ServiceRegistry.GetService<IFileManager>();
+        if (fileManager == null)
         {
-            if (string.IsNullOrEmpty(jsonFileInfo))
-            {
-                downloadButton.GetComponent<XRSimpleInteractable>().enabled = false;
-            }
-            else
-            {
-                downloadButton.GetComponent<XRSimpleInteractable>().enabled = true;
-                downloadButton.GetComponent<MeshRenderer>().material.color = Color.green;
-            }
-        });
-
-        downloadButton.GetComponent<XRSimpleInteractable>().selectEntered.AddListener(async _ =>
-        {
-            await DownloadJsonProtocolAsync();
-            LoadProtocols();
-            Build(currentPage);
-        });
+            Debug.LogError("ProtocolMenuViewController: IFileManager service not found!");
+        }
     }
 
     /// <summary>
@@ -68,7 +53,7 @@ public class ProtocolMenuViewController : LLBasePanel
 
     void OnEnable()
     {
-        headerText.text = "Hello " + SessionState.currentUserProfile.GetName() + ", Select a Protocol";
+        headerText.text = "Hello " + SessionState.currentUserProfile.Name + ", Select a Protocol";
         LoadProtocols();
     }
 
@@ -131,15 +116,43 @@ public class ProtocolMenuViewController : LLBasePanel
             buttonGrid.transform.GetChild(i).gameObject.SetActive(false);
             Destroy(buttonGrid.transform.GetChild(i).gameObject);
         }
+        buttons.Clear(); // Clear the list of button scripts as their GameObjects are destroyed
 
         // Build the requested page
+        if (protocols == null) // Guard against null protocols list
+        {
+            Debug.LogWarning("ProtocolMenuViewController.Build: Protocols list is null.");
+            return;
+        }
+
         for (int i = currentPage * 8; i < Math.Min((currentPage + 1) * 8, protocols.Count); i++)
         {
-            var protocol = protocols[i];
-            var button = Instantiate(buttonPrefab, buttonGrid.transform);
-            ProtocolMenuButton buttonScript = button.GetComponent<ProtocolMenuButton>();
-            buttons.Add(buttonScript);
-            buttonScript.Initialize(protocol);
+            var protocolDataEntry = protocols[i]; // This is ProtocolData
+            if (protocolDataEntry == null || string.IsNullOrEmpty(protocolDataEntry.Content))
+            {
+                Debug.LogWarning($"ProtocolMenuViewController.Build: ProtocolData at index {i} is null or has no content. Skipping.");
+                continue;
+            }
+
+            try
+            {
+                ProtocolDefinition protocolDefinition = Parsers.ParseProtocol(protocolDataEntry.Content);
+                if (protocolDefinition != null)
+                {
+                    var button = Instantiate(buttonPrefab, buttonGrid.transform);
+                    ProtocolMenuButton buttonScript = button.GetComponent<ProtocolMenuButton>();
+                    buttons.Add(buttonScript); // Add the new button script to the list
+                    buttonScript.Initialize(protocolDefinition); // Initialize with ProtocolDefinition
+                }
+                else
+                {
+                    Debug.LogError($"ProtocolMenuViewController.Build: Failed to parse protocol content for ID {protocolDataEntry.Id}. Content: {protocolDataEntry.Content}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"ProtocolMenuViewController.Build: Exception parsing protocol content for ID {protocolDataEntry.Id}. Error: {ex.Message}. Content: {protocolDataEntry.Content}");
+            }
         }
     }
 
@@ -148,80 +161,28 @@ public class ProtocolMenuViewController : LLBasePanel
     /// </summary>
     async void LoadProtocols()
     {
-        // Load protocol list
-        if(ServiceRegistry.GetService<IProtocolDataProvider>() != null)
+        if (fileManager == null)
         {
-            protocols = await ServiceRegistry.GetService<IProtocolDataProvider>()?.GetProtocolList();
-            protocols.AddRange(await ((LocalFileDataProvider)ServiceRegistry.GetService<ITextDataProvider>())?.GetProtocolList());
-            maxPage = (int)Math.Ceiling((float)protocols.Count / 8);
-            currentPage = 0;
-
-            // Build page 1
+            Debug.LogWarning("Cannot load protocols, IFileManager service is NULL");
+            protocols = new List<ProtocolData>();
             Build(currentPage);
+            return;
+        }
+
+        Result<List<ProtocolData>> result = await fileManager.GetAvailableProtocolsAsync();
+
+        if (result.Success && result.Data != null)
+        {
+            protocols = result.Data;
         }
         else
         {
-            Debug.LogWarning("Cannot load protocols, protocol data provider service NULL");
+            Debug.LogWarning($"Cannot load protocols: {result.Error?.Code} - {result.Error?.Message}. Displaying empty list.");
+            protocols = new List<ProtocolData>();
         }
-    }
-
-    public async Task<string> DownloadJsonProtocolAsync()
-    {
-        string fileServerUri = ServiceRegistry.GetService<ILighthouseControl>()?.GetFileServerUri();
-
-        if (!string.IsNullOrEmpty(fileServerUri))
-        {
-            string uri;
-
-            bool filenameKnown = !string.IsNullOrEmpty(SessionState.JsonFileDownloadable.Value);
-            if (filenameKnown)
-            {
-                uri = fileServerUri + "/GetFile?Filename=" + SessionState.JsonFileDownloadable.Value;
-            }
-            else
-            {
-                uri = fileServerUri + "/GetProtocolJson";
-            }
-
-            Debug.Log("Downloading from " + uri);
-
-            UnityWebRequest request = UnityWebRequest.Get(uri);
-            request.SendWebRequest();
-
-            while (!request.isDone)
-            {
-                await Task.Yield();
-            }
-
-            if (request.result == UnityWebRequest.Result.Success)
-            {
-                var fileName = filenameKnown ? SessionState.JsonFileDownloadable.Value : request.GetResponseHeader("File-Name");
-
-                if (!string.IsNullOrEmpty(fileName))
-                {
-                    var protocolName = Path.GetDirectoryName(fileName);
-
-                    var lfdp = new LocalFileDataProvider();
-                    
-                    lfdp.SaveTextFile(protocolName + ".json", request.downloadHandler.text);
-                }
-                else
-                {
-                    Debug.LogError("There is no 'File-Name' in the response header.");
-                }
-
-                SessionState.JsonFileDownloadable.Value = string.Empty;
-            }
-            else
-            {
-                Debug.LogError(request.error);
-            }
-        }
-        else
-        {
-            Debug.LogError("Could not retrieve FileServerUri from LightHouse");
-        }
-
-        return null;
+        
+        maxPage = (int)Math.Ceiling((float)protocols.Count / 8);
+        currentPage = 0; 
+        Build(currentPage);
     }
 }

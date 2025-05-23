@@ -21,7 +21,7 @@ public class DetectedObjectsManager : MonoBehaviour
 
     private void processAddedObject(TrackedObject trackedObject)
     {
-        Transform parent = SessionManager.instance.CharucoTransform;
+        Transform parent = SessionState.CharucoTransform;
         foreach(TrackedObject to in trackedObjectLabels.Keys)
         {
             if(Vector3.Distance(new Vector3(to.position.x, to.position.y, to.position.z), new Vector3(trackedObject.position.x, to.position.y, trackedObject.position.y)) < duplicateDetectionThreshold)
@@ -30,7 +30,7 @@ public class DetectedObjectsManager : MonoBehaviour
                 return;
             }
         }
-        instantiateLabel(SessionManager.instance.CharucoTransform, trackedObject);
+        instantiateLabel(SessionState.CharucoTransform, trackedObject);
     }
 
     private void processRemovedObject(TrackedObject trackedObject)

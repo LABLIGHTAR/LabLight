@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using UnityEngine; // For Debug.Log, assuming Unity environment
+using System.Collections.Generic; // Added for List<T>
+using System; // Added for Exception
 // TODO: Consider adding System.IO for Path.Combine if robust key sanitization/construction is needed.
 
 public class FileManager : IFileManager
@@ -483,6 +485,311 @@ public class FileManager : IFileManager
 
         Debug.Log($"FileManager.DeleteMediaFileAsync: Media '{objectKey}' deletion process completed.");
         return ResultVoid.CreateSuccess();
+    }
+    #endregion
+
+    #region User Profile Management
+    private const string UserProfilePrefix = "userprofile_";
+    private string GetUserProfileCacheKey(string userId) => $"{UserProfilePrefix}{userId}.json";
+
+    public async Task<ResultVoid> SaveLocalUserProfileAsync(LocalUserProfileData userProfile)
+    {
+        if (userProfile == null || string.IsNullOrEmpty(userProfile.Id) || string.IsNullOrEmpty(userProfile.Email))
+        {
+            Debug.LogError("FileManager.SaveLocalUserProfileAsync: UserProfile, ID, or Email cannot be null or empty.");
+            return ResultVoid.CreateFailure("INVALID_ARGUMENT", "User profile, ID, or Email must be provided.");
+        }
+
+        string cacheKey = GetUserProfileCacheKey(userProfile.Id);
+        Debug.Log($"FileManager.SaveLocalUserProfileAsync: Saving user profile for ID {userProfile.Id}. Cache key: {cacheKey}");
+
+        try
+        {
+            string userProfileJson = JsonUtility.ToJson(userProfile); // Assuming Unity environment for JsonUtility
+            ResultVoid writeResult = await _localStorageProvider.WriteTextAsync(cacheKey, userProfileJson);
+            if (!writeResult.Success)
+            {
+                Debug.LogError($"FileManager.SaveLocalUserProfileAsync: Failed to write user profile {userProfile.Id} to local cache. Error: {writeResult.Error?.Code} - {writeResult.Error?.Message}");
+                return ResultVoid.CreateFailure(ErrorLocalCacheWriteFailed, writeResult.Error?.Message ?? "Failed to save user profile locally.");
+            }
+            return ResultVoid.CreateSuccess();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"FileManager.SaveLocalUserProfileAsync: Exception while saving user profile {userProfile.Id}: {ex.Message}");
+            return ResultVoid.CreateFailure("LOCAL_STORAGE_ERROR", $"An unexpected error occurred while saving the user profile: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<System.Collections.Generic.List<LocalUserProfileData>>> GetLocalUserProfilesAsync()
+    {
+        Debug.Log("FileManager.GetLocalUserProfilesAsync: Attempting to get all local user profiles.");
+        Result<System.Collections.Generic.List<string>> keysResult = await _localStorageProvider.ListKeysAsync(UserProfilePrefix);
+
+        if (!keysResult.Success)
+        {
+            Debug.LogError($"FileManager.GetLocalUserProfilesAsync: Failed to list user profile keys. Error: {keysResult.Error?.Code} - {keysResult.Error?.Message}");
+            return Result<System.Collections.Generic.List<LocalUserProfileData>>.CreateFailure(keysResult.Error?.Code ?? "LOCAL_STORAGE_ERROR", keysResult.Error?.Message ?? "Failed to retrieve user profile keys.");
+        }
+
+        var profiles = new System.Collections.Generic.List<LocalUserProfileData>();
+        if (keysResult.Data == null || keysResult.Data.Count == 0)
+        {
+            Debug.Log("FileManager.GetLocalUserProfilesAsync: No local user profiles found.");
+            return Result<System.Collections.Generic.List<LocalUserProfileData>>.CreateSuccess(profiles); // Return empty list
+        }
+
+        foreach (string key in keysResult.Data)
+        {
+            Result<string> readResult = await _localStorageProvider.ReadTextAsync(key);
+            if (readResult.Success && !string.IsNullOrEmpty(readResult.Data))
+            {
+                try
+                {
+                    LocalUserProfileData profile = JsonUtility.FromJson<LocalUserProfileData>(readResult.Data);
+                    profiles.Add(profile);
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogWarning($"FileManager.GetLocalUserProfilesAsync: Failed to deserialize user profile from key '{key}'. Skipping. Error: {ex.Message}");
+                    // Optionally, you could collect these errors or handle them more gracefully.
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"FileManager.GetLocalUserProfilesAsync: Failed to read user profile data for key '{key}' or data was empty. Error: {readResult.Error?.Code} - {readResult.Error?.Message}");
+            }
+        }
+        return Result<System.Collections.Generic.List<LocalUserProfileData>>.CreateSuccess(profiles);
+    }
+
+    public async Task<ResultVoid> DeleteLocalUserProfileAsync(string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            Debug.LogError("FileManager.DeleteLocalUserProfileAsync: User ID cannot be null or empty.");
+            return ResultVoid.CreateFailure("INVALID_ARGUMENT", "User ID must be provided.");
+        }
+
+        string cacheKey = GetUserProfileCacheKey(userId);
+        Debug.Log($"FileManager.DeleteLocalUserProfileAsync: Attempting to delete user profile {userId}. Cache key: {cacheKey}");
+
+        ResultVoid deleteResult = await _localStorageProvider.DeleteAsync(cacheKey);
+        if (!deleteResult.Success)
+        {
+            Debug.LogError($"FileManager.DeleteLocalUserProfileAsync: Failed to delete user profile {userId} from local cache. Error: {deleteResult.Error?.Code} - {deleteResult.Error?.Message}");
+            return ResultVoid.CreateFailure(ErrorLocalCacheDeleteFailed, deleteResult.Error?.Message ?? "Failed to delete user profile locally.");
+        }
+
+        return ResultVoid.CreateSuccess();
+    }
+
+    public async Task<Result<LocalUserProfileData>> GetLocalUserProfileAsync(string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Result<LocalUserProfileData>.CreateFailure("ARG_NULL", "User ID cannot be null or empty.");
+        }
+
+        string fileName = GetUserProfileCacheKey(userId);
+        try
+        {
+            Result<string> readResult = await _localStorageProvider.ReadTextAsync(fileName);
+            if (!readResult.Success || string.IsNullOrEmpty(readResult.Data))
+            {
+                return Result<LocalUserProfileData>.CreateFailure("NOT_FOUND", $"Local user profile not found for ID: {userId}. Error: {readResult.Error?.Message}");
+            }
+
+            LocalUserProfileData userProfile = JsonUtility.FromJson<LocalUserProfileData>(readResult.Data);
+            if (userProfile == null)
+            {
+                return Result<LocalUserProfileData>.CreateFailure("DESERIALIZATION_FAILED", $"Failed to deserialize user profile for ID: {userId}.");
+            }
+            return Result<LocalUserProfileData>.CreateSuccess(userProfile);
+        }
+        catch (Exception ex) // Ensure System is imported for Exception
+        {
+            Debug.LogError($"FileManager: Exception in GetLocalUserProfileAsync for user ID {userId}: {ex.Message}");
+            return Result<LocalUserProfileData>.CreateFailure("EXCEPTION", ex.Message);
+        }
+    }
+    #endregion
+
+    #region Prefab Management
+    // Constants for prefab related errors if needed
+    private const string ErrorPrefabNotFound = "PREFAB_NOT_FOUND";
+    private const string ErrorPrefabLoadFailed = "PREFAB_LOAD_FAILED";
+
+    public async Task<Result<GameObject>> GetPrefabAsync(string resourcePath)
+    {
+        if (string.IsNullOrEmpty(resourcePath))
+        {
+            Debug.LogError("FileManager.GetPrefabAsync: resourcePath cannot be null or empty.");
+            return Result<GameObject>.CreateFailure("INVALID_ARGUMENT", "Resource path must be provided.");
+        }
+
+        Debug.Log($"FileManager.GetPrefabAsync: Attempting to load prefab from Resources path: {resourcePath}");
+
+        try
+        {
+            // Resources.LoadAsync is asynchronous but doesn't directly return a Task for await.
+            // We await its completion using a simple yield pattern if this were a coroutine, 
+            // or use TaskCompletionSource for a true async/await pattern.
+            // For simplicity and to fit the Task<Result<T>> pattern, we can wrap it.
+
+            var tcs = new TaskCompletionSource<GameObject>();
+
+            ResourceRequest request = Resources.LoadAsync<GameObject>(resourcePath);
+            request.completed += operation =>
+            {
+                if (request.asset == null)
+                {
+                    Debug.LogWarning($"FileManager.GetPrefabAsync: Prefab not found at Resources path: {resourcePath}");
+                    tcs.SetResult(null); // Resolve with null if not found, to be handled by caller
+                }
+                else
+                {
+                    tcs.SetResult(request.asset as GameObject);
+                }
+            };
+
+            GameObject prefab = await tcs.Task;
+
+            if (prefab != null)
+            {
+                Debug.Log($"FileManager.GetPrefabAsync: Successfully loaded prefab '{prefab.name}' from Resources path: {resourcePath}");
+                return Result<GameObject>.CreateSuccess(prefab);
+            }
+            else
+            {
+                // This case is already logged by the request.completed callback if asset is null
+                return Result<GameObject>.CreateFailure(ErrorPrefabNotFound, $"Prefab not found at Resources path: {resourcePath}");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"FileManager.GetPrefabAsync: Error loading prefab from Resources path '{resourcePath}': {ex.Message}");
+            return Result<GameObject>.CreateFailure(ErrorPrefabLoadFailed, $"Failed to load prefab: {ex.Message}");
+        }
+    }
+    #endregion
+
+    #region Protocol Discovery
+    private const string ErrorProtocolsUnavailable = "PROTOCOLS_UNAVAILABLE";
+    private const string ProtocolFilePrefix = "protocol_"; // For ListKeysAsync
+    private const string ProtocolFileExtension = ".json"; // For ListKeysAsync
+
+    public async Task<Result<List<ProtocolData>>> GetAvailableProtocolsAsync()
+    {
+        Debug.Log("FileManager.GetAvailableProtocolsAsync: Attempting to get all available protocols.");
+
+        if (!_database.IsConnected)
+        {
+            Debug.LogWarning("FileManager.GetAvailableProtocolsAsync: Offline. Attempting to load available protocols from local cache.");
+            var localProtocols = new List<ProtocolData>();
+            Result<List<string>> keysResult = await _localStorageProvider.ListKeysAsync(ProtocolFilePrefix);
+
+            if (keysResult.Success && keysResult.Data != null)
+            {
+                foreach (string key in keysResult.Data)
+                {
+                    if (key.EndsWith(ProtocolFileExtension))
+                    {
+                        Result<string> contentResult = await _localStorageProvider.ReadTextAsync(key);
+                        if (contentResult.Success && !string.IsNullOrEmpty(contentResult.Data))
+                        {
+                            try
+                            {
+                                // Extract ID from key: protocol_123.json -> 123
+                                string idString = key.Substring(ProtocolFilePrefix.Length, key.Length - ProtocolFilePrefix.Length - ProtocolFileExtension.Length);
+                                if (uint.TryParse(idString, out uint protocolId))
+                                {
+                                    // Create a ProtocolData object. 
+                                    // NOTE: This will only have ID and Content populated from the current caching strategy.
+                                    // Other metadata fields (Name, Author, etc.) will be default/empty.
+                                    // For full metadata offline, the entire ProtocolData object should be cached.
+                                    localProtocols.Add(new ProtocolData 
+                                    { 
+                                        Id = protocolId, 
+                                        Content = contentResult.Data,
+                                        // Name, IsPublic, OrganizationId, CreatedAtUtc, AuthorName etc. will be missing or default
+                                        // Consider adding a flag or property to ProtocolData like "IsPartial" or "IsOfflineCache"
+                                        Name = $"Protocol {protocolId} (Offline Cache)" // Placeholder name
+                                    });
+                                }
+                                else
+                                {
+                                    Debug.LogWarning($"FileManager.GetAvailableProtocolsAsync: Could not parse protocol ID from cache key: {key}");
+                                }
+                            }
+                            catch (System.Exception ex)
+                            {
+                                Debug.LogWarning($"FileManager.GetAvailableProtocolsAsync: Failed to process cached protocol from key '{key}'. Skipping. Error: {ex.Message}");
+                            }
+                        }
+                    }
+                }
+                Debug.Log($"FileManager.GetAvailableProtocolsAsync: Found {localProtocols.Count} protocols in local cache while offline.");
+                return Result<List<ProtocolData>>.CreateSuccess(localProtocols);
+            }
+            else
+            {
+                Debug.LogWarning("FileManager.GetAvailableProtocolsAsync: Offline and failed to list protocol keys from local cache or no keys found.");
+                return Result<List<ProtocolData>>.CreateSuccess(new List<ProtocolData>()); // Return empty list
+            }
+        }
+
+        // Online Case: Fetch from Database
+        try
+        {
+            IEnumerable<ProtocolData> protocolsFromDb = _database.GetCachedProtocols();
+            if (protocolsFromDb == null)
+            {
+                 Debug.LogWarning("FileManager.GetAvailableProtocolsAsync: Database returned null for GetCachedProtocols.");
+                 return Result<List<ProtocolData>>.CreateSuccess(new List<ProtocolData>());
+            }
+            
+            List<ProtocolData> protocolList = new List<ProtocolData>(protocolsFromDb);
+            Debug.Log($"FileManager.GetAvailableProtocolsAsync: Successfully fetched {protocolList.Count} available protocols from database cache.");
+            return await Task.FromResult(Result<List<ProtocolData>>.CreateSuccess(protocolList));
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"FileManager.GetAvailableProtocolsAsync: Exception while fetching available protocols: {ex.Message}");
+            return Result<List<ProtocolData>>.CreateFailure(ErrorProtocolsUnavailable, $"An error occurred while fetching available protocols: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<List<ProtocolData>>> GetSavedProtocolsAsync()
+    {
+        Debug.Log("FileManager.GetSavedProtocolsAsync: Attempting to get saved protocols.");
+
+        if (!_database.IsConnected)
+        {
+            // TODO: Similar to GetAvailableProtocolsAsync, consider an offline strategy if needed.
+            Debug.LogWarning("FileManager.GetSavedProtocolsAsync: Offline. Cannot fetch saved protocols from the database.");
+            return Result<List<ProtocolData>>.CreateFailure(ErrorOfflineOperationUnsupported, "Cannot fetch saved protocols while offline.");
+        }
+
+        try
+        {
+            IEnumerable<ProtocolData> savedProtocolsFromDb = _database.GetSavedProtocols(); // Synchronous as per IDatabase
+            if (savedProtocolsFromDb == null)
+            {
+                Debug.LogWarning("FileManager.GetSavedProtocolsAsync: Database returned null for GetSavedProtocols.");
+                return Result<List<ProtocolData>>.CreateSuccess(new List<ProtocolData>()); // Return empty list
+            }
+
+            List<ProtocolData> savedProtocolList = new List<ProtocolData>(savedProtocolsFromDb);
+
+            Debug.Log($"FileManager.GetSavedProtocolsAsync: Successfully fetched {savedProtocolList.Count} saved protocols from database cache.");
+            return await Task.FromResult(Result<List<ProtocolData>>.CreateSuccess(savedProtocolList));
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"FileManager.GetSavedProtocolsAsync: Exception while fetching saved protocols: {ex.Message}");
+            return Result<List<ProtocolData>>.CreateFailure(ErrorProtocolsUnavailable, $"An error occurred while fetching saved protocols: {ex.Message}");
+        }
     }
     #endregion
 }
