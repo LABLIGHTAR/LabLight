@@ -1,0 +1,6 @@
+/* Styles specific to UserRegistrationMenu.uxml */
+
+/* 
+Removed example styles as they are now defined in CoreStyles.uss 
+and applied via the '.new-user-input' class.
+*/ 

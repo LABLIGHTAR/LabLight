@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="user-item" class="user-item">
+        <ui:VisualElement name="user-image" class="user-item-image" />
+        <ui:Label name="user-name-label" class="user-item-name-label" text="User Name" />
+    </ui:VisualElement>
+</ui:UXML> 

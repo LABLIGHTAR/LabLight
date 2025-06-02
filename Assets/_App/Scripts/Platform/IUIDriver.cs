@@ -21,6 +21,7 @@ public interface IUIDriver
     #region UI Display Methods (Platform-Specific Commands to Show UI)
     void DisplayUserSelection();
     void DisplayProtocolMenu();
+    void DisplayUserRegistration();
     void DisplayTimer(int seconds);
     void DisplayCalculator();
     void DisplayWebPage(string url);
@@ -42,5 +43,6 @@ public interface IUIDriver
     void ChatMessageCallback(string message);
     void LoginCallback(string username, string password);
     void CreateUserCallback(string userName);
+    void AuthRegistrationCallback(string displayName, string email, string password);
     #endregion
 }

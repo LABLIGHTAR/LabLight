@@ -11,6 +11,7 @@ public interface IUICallbackHandler
     Task HandleUserSelection(string userId);
     Task HandleLogin(string username, string password);
     Task<List<LocalUserProfileData>> HandleCreateUser(string userName);
+    Task HandleAuthRegistration(string displayName, string email, string password);
     #endregion
 
     #region Protocol Navigation & Interaction Callbacks

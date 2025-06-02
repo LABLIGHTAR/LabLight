@@ -231,6 +231,11 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     public void DisplayLLMChat() { OpenSwiftUIWindow("LLMChat"); }
     public void DisplayVideoPlayer(string url) { OpenSwiftVideoWindow(url); }
     public void DisplayPDFReader(string url) { OpenSwiftPdfWindow(url); }
+    public void DisplayUserRegistration() 
+    {
+        OpenSwiftUIWindow("UserRegistration"); // Assuming a SwiftUI view named "UserRegistration"
+        Debug.Log("SwiftUIDriver: DisplayUserRegistration called. Instructing SwiftUI to open UserRegistration view.");
+    }
     #endregion
 
     #region Callback Methods (Implementing IUIDriver, Delegating to Handler)
@@ -364,6 +369,31 @@ public class SwiftUIDriver : IUIDriver, IDisposable
         {
             Debug.LogError($"SwiftUIDriver: Error creating user {userName} via handler: {ex.Message}");
             OnUserProfilesChange(new List<LocalUserProfileData>());
+        }
+    }
+
+    public async void AuthRegistrationCallback(string displayName, string email, string password)
+    {
+        if (_uiCallbackHandler == null) 
+        { 
+            Debug.LogError("SwiftUIDriver: _uiCallbackHandler is null in AuthRegistrationCallback."); 
+            // Consider sending a specific error message back to SwiftUI if needed
+            // SendMessageToSwiftUI("registrationError|Internal error: UI Callback Handler not found.");
+            return; 
+        }
+        Debug.Log($"SwiftUIDriver: Triggering AuthRegistration via Handler for {displayName} ({email})");
+        try
+        {
+            await _uiCallbackHandler.HandleAuthRegistration(displayName, email, password);
+            // Similar to LoginCallback, SendAuthStatus is handled by _authProvider event subscriptions
+            // upon successful sign-up and subsequent sign-in.
+            // If HandleAuthRegistration itself needs to directly inform SwiftUI of success/failure beyond auth state,
+            // additional SendMessageToSwiftUI calls could be made here.
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"SwiftUIDriver: AuthRegistration via handler failed for {email}: {ex.Message}");
+            // SendMessageToSwiftUI($"registrationError|{ex.Message}"); // Inform SwiftUI about the error
         }
     }
     #endregion

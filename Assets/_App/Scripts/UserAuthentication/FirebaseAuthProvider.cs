@@ -36,6 +36,7 @@ public class FirebaseAuthProvider : MonoBehaviour, IAuthProvider
 
     public bool IsSignedIn => CurrentAuthStatus == AuthStatus.SignedIn;
     public string CurrentUserId => user?.UserId ?? string.Empty;
+    public string CurrentUserEmail => user?.Email ?? string.Empty;
 
     public async Task<string> GetIdTokenAsync(bool forceRefresh)
     {
@@ -79,10 +80,31 @@ public class FirebaseAuthProvider : MonoBehaviour, IAuthProvider
 
     void InitializeFirebase()
     {
-        SetAuthStatus(AuthStatus.Authenticating, "Initializing Firebase...");
+        Debug.Log("FirebaseAuthProvider: Initializing...");
+
         auth = FirebaseAuth.DefaultInstance;
-        auth.StateChanged += AuthStateChanged;
-        AuthStateChanged(this, null); // Perform initial check explicitly
+        auth.StateChanged += AuthStateChanged; // Subscribe to state changes FIRST
+
+        if (auth.CurrentUser != null)
+        {
+            Debug.Log($"FirebaseAuthProvider: Previous user ({auth.CurrentUser.UserId}) detected. Signing out to prevent auto-login.");
+            // Set status to Authenticating to indicate activity before AuthStateChanged updates it.
+            SetAuthStatus(AuthStatus.Authenticating, "Clearing previous session...");
+            auth.SignOut();
+            // AuthStateChanged will be triggered by SignOut().
+            // It will see _isInitialized = false, currentFirebaseUser = null.
+            // It will then set _isInitialized = true, user = null, AuthStatus = Idle, and invoke OnInitialAuthChecked(false).
+        }
+        else
+        {
+            Debug.Log("FirebaseAuthProvider: No previous user session found. Proceeding with initial state check.");
+            // Set status to Authenticating to indicate activity before AuthStateChanged updates it.
+            SetAuthStatus(AuthStatus.Authenticating, "Performing initial authentication check...");
+            // Manually call AuthStateChanged to process the initial "no user" state.
+            // This will also go through the !_isInitialized path, find currentFirebaseUser as null,
+            // set state to Idle, and invoke OnInitialAuthChecked(false).
+            AuthStateChanged(this, null);
+        }
     }
 
     private void SetAuthStatus(AuthStatus newStatus, string message = null)

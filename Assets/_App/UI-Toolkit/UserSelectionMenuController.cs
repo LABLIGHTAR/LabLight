@@ -1,0 +1,182 @@
+using UnityEngine;
+using UnityEngine.UIElements;
+using System.Collections.Generic;
+using System.Linq;
+
+public class UserSelectionMenuController : MonoBehaviour
+{
+    public VisualTreeAsset userItemTemplate; // Assign this in the Inspector (a simple UXML for a user item)
+    private IUIDriver _uiDriver;
+    private IFileManager _fileManager;
+
+    private ScrollView _userScrollView;
+    private Button _loginButton;
+    private Button _registerButton;
+    private TextField _newUserNameField; 
+    private Button _createUserButton;
+
+    private List<LocalUserProfileData> _userProfiles;
+    private string _selectedUserId = null;
+
+    void OnEnable()
+    {
+        _uiDriver = ServiceRegistry.GetService<IUIDriver>();
+        if (_uiDriver == null)
+        {
+            Debug.LogError("UserSelectionMenuController: UnityUIDriver not found.");
+            return;
+        }
+
+        _fileManager = ServiceRegistry.GetService<IFileManager>();
+        if (_fileManager == null)
+        {
+            Debug.LogError("UserSelectionMenuController: IFileManager not found.");
+            // Handle this case, perhaps disable UI or show an error
+            return;
+        }
+
+        var root = GetComponent<UIDocument>().rootVisualElement;
+        if (root == null)
+        {
+            Debug.LogError("UserSelectionMenuController: Root VisualElement not found.");
+            return;
+        }
+
+        _userScrollView = root.Q<ScrollView>("user-scroll-view");
+        _loginButton = root.Q<Button>("login-button");
+        _registerButton = root.Q<Button>("register-button");
+
+        if (_userScrollView == null) Debug.LogError("UserScrollView is null");
+        if (_loginButton == null) Debug.LogError("LoginButton is null");
+        if (_registerButton == null) Debug.LogError("RegisterButton is null");
+
+
+        _loginButton?.RegisterCallback<ClickEvent>(OnLoginClicked);
+        _registerButton?.RegisterCallback<ClickEvent>(OnRegisterClicked);
+
+        LoadAndDisplayUserProfiles();
+    }
+
+    void OnDisable()
+    {
+        _loginButton?.UnregisterCallback<ClickEvent>(OnLoginClicked);
+        _registerButton?.UnregisterCallback<ClickEvent>(OnRegisterClicked);
+
+        // Clean up user item callbacks
+        if (_userScrollView != null)
+        {
+            var userItems = _userScrollView.Children().ToList();
+            foreach (var userItem in userItems)
+            {
+                // Unregister the specific callback that was registered.
+                userItem.UnregisterCallback<ClickEvent, VisualElement>(OnUserItemSelected);
+            }
+        }
+    }
+
+    private async void LoadAndDisplayUserProfiles()
+    {
+        if (_fileManager == null) return;
+
+        var result = await _fileManager.GetLocalUserProfilesAsync();
+        if (result.Success && result.Data != null)
+        {
+            _userProfiles = result.Data;
+            PopulateUserList(_userProfiles);
+        }
+        else
+        {
+            Debug.LogError($"Failed to load user profiles: {result.Error?.Message}");
+            _userProfiles = new List<LocalUserProfileData>(); // Initialize with empty list
+            PopulateUserList(_userProfiles); // Show empty or error state
+        }
+    }
+
+
+    void PopulateUserList(List<LocalUserProfileData> users)
+    {
+        if (_userScrollView == null) return;
+        _userScrollView.Clear(); // Clear existing items
+
+        if (users == null || !users.Any()) {
+            _userScrollView.style.display = DisplayStyle.None; // Hide the scroll view
+            return;
+        }
+
+        _userScrollView.style.display = DisplayStyle.Flex; // Ensure scroll view is visible
+
+        foreach (var user in users)
+        {
+            VisualElement userItem;
+            if (userItemTemplate != null)
+            {
+                userItem = userItemTemplate.Instantiate();
+                userItem.userData = user.Id; // Store user ID for click handling
+                userItem.Q<Label>("user-name-label").text = user.Name; // Assuming your template has a label with this name
+                // Potentially set user image here if your template supports it
+                // userItem.Q<VisualElement>("user-image").style.backgroundImage = new StyleBackground(user.ProfilePicture); // Example
+                 userItem.AddToClassList("user-item"); // Apply general styling
+            }
+            else // Fallback if no template is assigned - simple label item
+            {
+                userItem = new Button(() => OnUserItemSelected(user.Id)) { text = user.Name };
+                userItem.AddToClassList("user-item-button-fallback"); // Style this class in USS if needed
+                userItem.userData = user.Id; // Store user ID
+            }
+
+            userItem.RegisterCallback<ClickEvent, VisualElement>(OnUserItemSelected, userItem);
+            _userScrollView.Add(userItem);
+        }
+    }
+    
+    // Overload or modified method to handle click event with a stored ID
+    void OnUserItemSelected(ClickEvent evt, VisualElement clickedItem)
+    {
+        if (clickedItem.userData is string userId)
+        {
+            _selectedUserId = userId;
+            Debug.Log($"User selected: {userId}");
+
+            // Optionally, provide visual feedback for selection
+            foreach (var child in _userScrollView.Children())
+            {
+                child.RemoveFromClassList("user-item-selected"); // Assuming you have a .user-item-selected style
+            }
+            clickedItem.AddToClassList("user-item-selected");
+
+            // For now, we select and wait for Login button. 
+            // If clicking a user should directly log them in:
+            // _uiDriver?.UserSelectionCallback(userId);
+        }
+    }
+
+    // Keep this if you want explicit user item clicks to do something distinct
+    void OnUserItemSelected(string userId)
+    {
+        _selectedUserId = userId;
+        Debug.Log($"User selected by direct call: {userId}");
+        // Potentially update UI to show selection
+        // This might be called if you directly create buttons with actions
+    }
+
+
+    void OnLoginClicked(ClickEvent evt)
+    {
+        if (!string.IsNullOrEmpty(_selectedUserId))
+        {
+            Debug.Log($"Login button clicked for user: {_selectedUserId}");
+            _uiDriver?.UserSelectionCallback(_selectedUserId); 
+        }
+        else
+        {
+            Debug.LogWarning("Login button clicked, but no user selected.");
+            // Optionally, show a message to the user to select a profile first
+        }
+    }
+
+    void OnRegisterClicked(ClickEvent evt)
+    {
+        Debug.Log("Register button clicked. Navigating to user registration screen.");
+        _uiDriver?.DisplayUserRegistration();
+    }
+} 

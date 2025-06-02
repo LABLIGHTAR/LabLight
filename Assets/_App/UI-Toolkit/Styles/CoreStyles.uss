@@ -1,0 +1,83 @@
+/* Core styles for common UI elements */
+.glassmorphic-panel {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    margin-bottom: auto;
+
+    width: 50%;
+    min-height: 50%;
+    max-width: 50%;
+
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 25px;
+    padding: 25px;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.title-label {
+    font-size: 12px;
+    -unity-font-style: bold;
+    color: white;
+    margin-bottom: 20px;
+    -unity-text-align: upper-center;
+}
+
+.action-button {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-radius: 15px; /* More rounded */
+    padding: 12px 25px;
+    margin: 8px 0;
+    min-width: 200px; /* Wider buttons */
+    font-size: 16px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    -unity-font-style: bold;
+}
+
+.action-button:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.action-button:active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Input Field Styles */
+.new-user-input { /* This is the TextField itself */
+    width: 100%; 
+    margin-bottom: 15px; /* Spacing between fields */
+}
+
+.new-user-input > .unity-label { /* Target the direct child label of the TextField */
+    color: white;
+    font-size: 16px;
+    margin-bottom: 5px; /* Space between label and input */
+    -unity-font-style: bold;
+}
+
+.new-user-input > .unity-text-input,
+.new-user-input > .unity-base-text-field__input { /* Target the direct child text input element and its more specific internal class */
+    background-color: rgba(0, 0, 0, 0.25); /* Slightly transparent dark background */
+    color: white; /* White text for input */
+    border-color: rgba(255, 255, 255, 0.2); /* Subtle border */
+    border-width: 1px;
+    border-radius: 8px; /* Rounded corners for the input box */
+    padding: 10px 12px; /* Comfortable padding */
+    min-height: 40px; /* Ensure a decent height */
+}
+
+/* Optional: Style for when the input field is focused */
+.new-user-input > .unity-text-input:focus,
+.new-user-input > .unity-base-text-field__input:focus {
+    border-color: rgba(100, 150, 255, 0.8); /* Highlight border on focus */
+    background-color: rgba(0, 0, 0, 0.4);
+} 

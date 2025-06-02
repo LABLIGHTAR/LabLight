@@ -5,6 +5,8 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using Lighthouse.MessagePack;
+using System.Threading.Tasks;
+using System;
 
 /// <summary>
 /// The SessionManager is the app entry point.
@@ -55,13 +57,17 @@ public class SessionManager : MonoBehaviour
         #if UNITY_VISIONOS && !UNITY_EDITOR
         UIDriver = new SwiftUIDriver();
         ServiceRegistry.RegisterService<IUIDriver>(UIDriver);
-        Destroy(GetComponent<UnityUIDriver>());
+        UIDriver.Initialize();
+        var unityDriverComponent = GetComponent<UnityUIDriver>();
+        if (unityDriverComponent != null) Destroy(unityDriverComponent);
         #elif UNITY_EDITOR
         UIDriver = GetComponent<UnityUIDriver>();
+        if (UIDriver == null) Debug.LogError("SessionManager: UnityUIDriver component not found in Editor mode!");
         ServiceRegistry.RegisterService<IUIDriver>(UIDriver);
+        UIDriver?.Initialize();
         #endif
         
-        if (UIDriver == null) Debug.LogError("SessionManager: UIDriver failed to initialize!");
+        if (UIDriver == null) Debug.LogError("SessionManager: UIDriver failed to obtain a reference or initialize!");
         else UIDriver.DisplayUserSelection();
 
         //Set up default state
@@ -182,7 +188,32 @@ public class SessionManager : MonoBehaviour
         }
     }
 
-    private void HandleAuthSignInSuccessToken(string oidcToken)
+    private async Task CreateAndSetLocalProfileAsync(string firebaseUserId, string name, string email, DateTime? dbCreatedAtUtc = null, bool isNewUserRegistration = false)
+    {
+        Debug.Log($"SessionManager: Creating/updating local profile for FirebaseID: {firebaseUserId}, Name: {name}, Email: {email}");
+        var localProfile = new LocalUserProfileData
+        {
+            Id = firebaseUserId,
+            Name = name,
+            Email = email,
+            CreatedAtUtc = isNewUserRegistration ? DateTime.UtcNow : (dbCreatedAtUtc ?? DateTime.UtcNow),
+            LastOnlineUtc = DateTime.UtcNow, 
+            IsOnline = true
+        };
+
+        ResultVoid saveResult = await FileManager.SaveLocalUserProfileAsync(localProfile);
+        if (saveResult.Success)
+        {
+            SessionState.currentUserProfile = localProfile;
+            Debug.Log($"SessionManager: Successfully saved and set local profile for {localProfile.Name} (ID: {localProfile.Id}).");
+        }
+        else
+        {
+            Debug.LogError($"SessionManager: Failed to save local profile for {name} (FirebaseID: {firebaseUserId}): {saveResult.Error?.Code} - {saveResult.Error?.Message}");
+        }
+    }
+
+    private async void HandleAuthSignInSuccessToken(string oidcToken)
     {
         Debug.Log("SessionManager: Auth SignIn Success, received OIDC token.");
         SessionState.FirebaseUserId = AuthProvider.CurrentUserId;
@@ -193,8 +224,16 @@ public class SessionManager : MonoBehaviour
             return;
         }
 
-        SessionState.SpacetimeIdentity = null;
-        SessionState.currentUserProfile = null;
+        // If this sign-in is due to a new registration, create the local profile now.
+        if (!string.IsNullOrEmpty(SessionState.PendingDisplayName) && !string.IsNullOrEmpty(SessionState.PendingEmail))
+        {
+            Debug.Log($"SessionManager: New user registration detected for {SessionState.PendingDisplayName}. Creating local profile via helper.");
+            await CreateAndSetLocalProfileAsync(SessionState.FirebaseUserId, SessionState.PendingDisplayName, SessionState.PendingEmail, isNewUserRegistration: true);
+            // PendingDisplayName and PendingEmail will be cleared by HandleDatabaseConnectedIdentity after DB registration.
+        }
+
+        SessionState.SpacetimeIdentity = null; // Will be set by HandleDatabaseConnectedIdentity
+        // SessionState.currentUserProfile might have been set above if new user, or will be loaded/set by HandleDatabaseConnectedIdentity for existing users
 
         if (Database != null)
         {
@@ -259,27 +298,12 @@ public class SessionManager : MonoBehaviour
             Debug.Log($"SessionManager: DB Connected. Registering profile for new user: {SessionState.PendingDisplayName}, Email: {SessionState.PendingEmail}");
             Database.RegisterProfile(SessionState.PendingDisplayName);
 
-            var newUserProfile = new LocalUserProfileData
-            {
-                Id = SessionState.FirebaseUserId,
-                Name = SessionState.PendingDisplayName,
-                Email = SessionState.PendingEmail
-            };
-
-            ResultVoid saveResult = await FileManager.SaveLocalUserProfileAsync(newUserProfile);
-            if (saveResult.Success)
-            {
-                SessionState.currentUserProfile = newUserProfile;
-                Debug.Log($"SessionManager: New user profile for {SessionState.PendingDisplayName} registered and saved locally.");
-                // UIDriver?.ShowUserView();
-            }
-            else
-            {
-                Debug.LogError($"SessionManager: Failed to save new user profile locally: {saveResult.Error?.Code} - {saveResult.Error?.Message}");
-                // UIDriver?.ShowError("Failed to save user profile locally.");
-            }
+            // Local profile should have been created in HandleAuthSignInSuccessToken.
+            // We just clear the pending state here.
             SessionState.PendingDisplayName = null;
             SessionState.PendingEmail = null;
+            
+            // UIDriver?.ShowUserView(); // This would typically show the view now that user is fully set up.
         }
         else if (!string.IsNullOrEmpty(SessionState.FirebaseUserId))
         {
@@ -297,10 +321,13 @@ public class SessionManager : MonoBehaviour
                 UserData dbProfile = Database.GetCachedUserProfile(SessionState.SpacetimeIdentity);
                 if (dbProfile != null)
                 {
-                    Debug.Log($"SessionManager: Found profile in DB cache for {dbProfile.Name}. Creating/Saving local version.");
-                    var localProfileFromDB = new LocalUserProfileData { Id = SessionState.FirebaseUserId, Name = dbProfile.Name, Email = string.Empty };
-                    await FileManager.SaveLocalUserProfileAsync(localProfileFromDB);
-                    SessionState.currentUserProfile = localProfileFromDB;
+                    Debug.Log($"SessionManager: Found profile in DB cache for {dbProfile.Name}. Creating/Saving local version via helper.");
+                    
+                    string userEmail = AuthProvider?.CurrentUserEmail ?? string.Empty;
+                    // Note: Fallback to SessionState.PendingEmail is removed here as this path is specifically for existing users (not new registrations)
+                    // If AuthProvider.CurrentUser.Email is empty for an existing user, it might indicate an issue or that the email is not stored in Firebase Auth.
+
+                    await CreateAndSetLocalProfileAsync(SessionState.FirebaseUserId, dbProfile.Name, userEmail, dbProfile.CreatedAtUtc, isNewUserRegistration: false);
                     // UIDriver?.ShowUserView();
                 }
                 else

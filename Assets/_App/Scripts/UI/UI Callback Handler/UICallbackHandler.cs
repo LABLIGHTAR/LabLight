@@ -153,6 +153,44 @@ public class UICallbackHandler : IUICallbackHandler
             throw;
         }
     }
+
+    public async Task HandleAuthRegistration(string displayName, string email, string password)
+    {
+        if (_authProvider == null)
+        {
+            Debug.LogError("UICallbackHandler: IAuthProvider is not available in HandleAuthRegistration.");
+            throw new InvalidOperationException("IAuthProvider is not available.");
+        }
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(displayName))
+        {
+            Debug.LogError("UICallbackHandler: DisplayName, Email, or password cannot be empty for HandleAuthRegistration.");
+            throw new ArgumentException("DisplayName, Email, or password cannot be empty.");
+        }
+
+        // Store details for local profile creation after successful Firebase sign-up & sign-in
+        SessionState.PendingDisplayName = displayName;
+        SessionState.PendingEmail = email;
+
+        Debug.Log($"UICallbackHandler: Attempting registration for user: {displayName} ({email}). Pending details stored.");
+        try
+        {
+            // Step 1: Create the Firebase user
+            _authProvider.SignUp(email, password); // Call SignUp directly
+            Debug.Log($"UICallbackHandler: Firebase SignUp initiated for {email}. Waiting for AuthStateChanged to confirm sign-in.");
+
+            // Step 2: Local profile creation will now be handled in SessionManager.HandleAuthSignInSuccessToken
+            // based on SessionState.PendingDisplayName/Email and the FirebaseUserId obtained upon sign-in.
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"UICallbackHandler: Exception during HandleAuthRegistration for {email}: {ex.Message}");
+            // Clear pending details on error to prevent incorrect profile creation later
+            SessionState.PendingDisplayName = null;
+            SessionState.PendingEmail = null;
+            // Re-throw so the caller (UnityUIDriver) can potentially update the UI with the error.
+            throw;
+        }
+    }
     #endregion
 
     #region Protocol Navigation & Interaction Callbacks

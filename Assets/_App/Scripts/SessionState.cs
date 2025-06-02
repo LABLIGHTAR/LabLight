@@ -118,4 +118,72 @@ public class SessionState : MonoBehaviour
     public static ReactiveProperty<string> CsvFileDownloadable = new ReactiveProperty<string>();
     public static ReactiveProperty<string> JsonFileDownloadable = new ReactiveProperty<string>();
     #endregion
+
+    #region Data Clearing (Editor Utility)
+    public static void ClearLocalUserProfilesAndPlayerPrefs_EditorOnly()
+    {
+        Debug.LogWarning("SessionState (Editor Utility): Attempting to clear local user profiles and PlayerPrefs...");
+
+        // 1. Clear user profile files directly from persistentDataPath
+        // IMPORTANT: Define how your user profile keys (filenames) are identified.
+        string userProfileKeyPrefix = "userprofile_"; // ADJUST THIS PREFIX TO MATCH YOUR FILENAMING
+        // Example: If files are like "userprofile_abc.json", prefix is "userprofile_"
+
+        if (string.IsNullOrEmpty(Application.persistentDataPath))
+        {
+            Debug.LogError("SessionState (Editor Utility): Application.persistentDataPath is null or empty. Cannot clear files.");
+            return;
+        }
+
+        try
+        {
+            if (System.IO.Directory.Exists(Application.persistentDataPath))
+            {
+                string[] files = System.IO.Directory.GetFiles(Application.persistentDataPath);
+                int deletedCount = 0;
+                foreach (string filePath in files)
+                {
+                    string fileName = System.IO.Path.GetFileName(filePath);
+                    if (fileName.StartsWith(userProfileKeyPrefix))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(filePath);
+                            Debug.Log($"SessionState (Editor Utility): Deleted local user profile file: {filePath}");
+                            deletedCount++;
+                        }
+                        catch (System.Exception ex)
+                        {
+                            Debug.LogError($"SessionState (Editor Utility): Error deleting file {filePath}: {ex.Message}");
+                        }
+                    }
+                }
+                Debug.Log($"SessionState (Editor Utility): Finished processing files in persistentDataPath. Deleted {deletedCount} user profile(s).");
+            }
+            else
+            {
+                Debug.Log($"SessionState (Editor Utility): persistentDataPath does not exist: {Application.persistentDataPath}");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"SessionState (Editor Utility): Error accessing persistentDataPath {Application.persistentDataPath}: {ex.Message}");
+        }
+
+        // 2. Clear PlayerPrefs
+        PlayerPrefs.DeleteAll();
+        Debug.Log("SessionState (Editor Utility): Cleared all PlayerPrefs.");
+
+        // 3. Reset relevant static fields in SessionState to their initial/default states
+        currentUserProfile = null;
+        PendingDisplayName = null;
+        PendingEmail = null;
+        FirebaseUserId = null;
+        SpacetimeIdentity = null;
+        // Reset any other relevant static fields here...
+
+        Debug.Log("SessionState (Editor Utility): Reset relevant static state fields.");
+        Debug.LogWarning("SessionState (Editor Utility): Local data clearing complete. Changes should be reflected without needing a restart if not in Play Mode. If in Play Mode, a restart or re-entering Play Mode might still be best for full effect.");
+    }
+    #endregion
 }

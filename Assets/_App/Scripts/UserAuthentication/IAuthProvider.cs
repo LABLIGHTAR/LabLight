@@ -68,6 +68,10 @@ public interface IAuthProvider
     /// Returns string.Empty if no user is signed in.
     /// </summary>
     string CurrentUserId { get; } // Firebase User ID
+    /// <summary>
+    /// Gets the current user's email from the authentication provider.
+    /// </summary>
+    string CurrentUserEmail { get; }
 
     /// <summary>
     /// Asynchronously retrieves the current user's OIDC ID token.

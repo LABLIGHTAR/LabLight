@@ -4,6 +4,7 @@ using UnityEngine;
 using UniRx;
 using System.Linq;
 using Newtonsoft.Json;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// Unity-specific implementation of the IUIDriver interface.
@@ -13,6 +14,8 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 {
     #region Serialized Fields (UI Panel References)
     [SerializeField] private UserSelectionPanelViewController userSelectionPanel;
+    [SerializeField] private UIDocument userSelectionToolkitPanel;
+    [SerializeField] private UIDocument userRegistrationToolkitPanel;
     [SerializeField] private ProtocolPanelViewController protocolPanel;
     [SerializeField] private ChecklistPanelViewController checklistPanel;
     [SerializeField] private ProtocolMenuViewController protocolMenuPanel;
@@ -143,9 +146,30 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     #region UI Display Methods (Implementing IUIDriver)
     public void DisplayUserSelection()
     {
-        if (userSelectionPanel == null) { Debug.LogError("UnityUIDriver: UserSelectionPanel is null."); return; }
         HideAllPanels();
-        userSelectionPanel.gameObject.SetActive(true);
+        if (userSelectionToolkitPanel != null)
+        {
+            userSelectionToolkitPanel.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: userSelectionToolkitPanel (UIDocument) is not assigned.");
+        }
+    }
+
+    public void DisplayUserRegistration()
+    {
+        HideAllPanels();
+        if (userRegistrationToolkitPanel != null)
+        {
+            userRegistrationToolkitPanel.gameObject.SetActive(true);
+            var controller = userRegistrationToolkitPanel.GetComponent<UserRegistrationMenuController>();
+            controller?.ClearForm(); 
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: userRegistrationToolkitPanel (UIDocument) is not assigned.");
+        }
     }
 
     public void DisplayProtocolMenu()
@@ -296,12 +320,42 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
             Debug.LogError($"UnityUIDriver: Error creating user {userName} via handler: {ex.Message}");
         }
     }
+
+    public async void AuthRegistrationCallback(string displayName, string email, string password)
+    {
+        if (_uiCallbackHandler == null) 
+        { 
+            Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in AuthRegistrationCallback."); 
+            // Optionally, provide feedback to the registration screen
+            var controller = userRegistrationToolkitPanel?.GetComponent<UserRegistrationMenuController>();
+            controller?.DisplayRegistrationError("Internal error: UI Callback Handler not found.");
+            return; 
+        }
+        try
+        {
+            await _uiCallbackHandler.HandleAuthRegistration(displayName, email, password);
+            // If HandleAuthRegistration is successful, AuthStateChanged in FirebaseAuthProvider
+            // should trigger OnSignInSuccess, which in turn calls HandleSignInSuccess here.
+            // HandleSignInSuccess already calls DisplayProtocolMenu.
+            // So, no explicit navigation here is needed if all goes well.
+            Debug.Log($"UnityUIDriver: AuthRegistrationCallback for {email} handled by UICallbackHandler. Waiting for sign-in confirmation.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"UnityUIDriver: Error during auth registration for {email} via handler: {ex.Message}");
+            // Display the error on the registration screen
+            var controller = userRegistrationToolkitPanel?.GetComponent<UserRegistrationMenuController>();
+            controller?.DisplayRegistrationError(ex.Message); 
+        }
+    }
     #endregion
 
     #region Helper Methods
     private void HideAllPanels()
     {
         if (userSelectionPanel != null) userSelectionPanel.gameObject.SetActive(false);
+        if (userSelectionToolkitPanel != null) userSelectionToolkitPanel.gameObject.SetActive(false);
+        if (userRegistrationToolkitPanel != null) userRegistrationToolkitPanel.gameObject.SetActive(false);
         if (protocolPanel != null) protocolPanel.gameObject.SetActive(false);
         if (checklistPanel != null) checklistPanel.gameObject.SetActive(false);
         if (protocolMenuPanel != null) protocolMenuPanel.gameObject.SetActive(false);
