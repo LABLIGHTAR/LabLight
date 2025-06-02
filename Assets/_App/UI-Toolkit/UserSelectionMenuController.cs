@@ -135,7 +135,7 @@ public class UserSelectionMenuController : MonoBehaviour
         if (clickedItem.userData is string userId)
         {
             _selectedUserId = userId;
-            Debug.Log($"User selected: {userId}");
+            Debug.Log($"User selected: {userId}. Attempting local login.");
 
             // Optionally, provide visual feedback for selection
             foreach (var child in _userScrollView.Children())
@@ -144,9 +144,7 @@ public class UserSelectionMenuController : MonoBehaviour
             }
             clickedItem.AddToClassList("user-item-selected");
 
-            // For now, we select and wait for Login button. 
-            // If clicking a user should directly log them in:
-            // _uiDriver?.UserSelectionCallback(userId);
+            _uiDriver?.UserSelectionCallback(userId); // Log in selected local user
         }
     }
 
@@ -155,23 +153,14 @@ public class UserSelectionMenuController : MonoBehaviour
     {
         _selectedUserId = userId;
         Debug.Log($"User selected by direct call: {userId}");
-        // Potentially update UI to show selection
-        // This might be called if you directly create buttons with actions
+        _uiDriver?.UserSelectionCallback(userId); // Log in selected local user
     }
 
 
     void OnLoginClicked(ClickEvent evt)
     {
-        if (!string.IsNullOrEmpty(_selectedUserId))
-        {
-            Debug.Log($"Login button clicked for user: {_selectedUserId}");
-            _uiDriver?.UserSelectionCallback(_selectedUserId); 
-        }
-        else
-        {
-            Debug.LogWarning("Login button clicked, but no user selected.");
-            // Optionally, show a message to the user to select a profile first
-        }
+        Debug.Log("Login button clicked. Navigating to user login screen.");
+        _uiDriver?.DisplayUserLogin(); 
     }
 
     void OnRegisterClicked(ClickEvent evt)

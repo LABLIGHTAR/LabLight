@@ -46,17 +46,17 @@ public interface IAuthProvider
     /// Initiates the sign-up process with the given email and password.
     /// Results are communicated via events (OnSignInSuccess, OnAuthError, OnAuthStatusChanged).
     /// </summary>
-    void SignUp(string email, string password);
+    System.Threading.Tasks.Task SignUp(string email, string password);
     /// <summary>
     /// Initiates the sign-in process with the given email and password.
     /// Results are communicated via events (OnSignInSuccess, OnAuthError, OnAuthStatusChanged).
     /// </summary>
-    void SignIn(string email, string password);
+    System.Threading.Tasks.Task SignIn(string email, string password);
     /// <summary>
     /// Initiates the sign-out process.
     /// Results are communicated via events (OnSignOutSuccess, OnAuthError, OnAuthStatusChanged).
     /// </summary>
-    void SignOut();
+    System.Threading.Tasks.Task SignOut();
 
     // Optional: Property to check current state easily
     /// <summary>

@@ -89,7 +89,7 @@ public class UICallbackHandler : IUICallbackHandler
         Debug.Log($"UICallbackHandler: Attempting login for user: {username}");
         try
         {
-            await Task.Run(() => _authProvider.SignIn(username, password));
+            await _authProvider.SignIn(username, password);
         }
         catch (Exception ex)
         {

@@ -16,6 +16,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private UserSelectionPanelViewController userSelectionPanel;
     [SerializeField] private UIDocument userSelectionToolkitPanel;
     [SerializeField] private UIDocument userRegistrationToolkitPanel;
+    [SerializeField] private UIDocument userLoginToolkitPanel;
     [SerializeField] private ProtocolPanelViewController protocolPanel;
     [SerializeField] private ChecklistPanelViewController checklistPanel;
     [SerializeField] private ProtocolMenuViewController protocolMenuPanel;
@@ -172,6 +173,21 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         }
     }
 
+    public void DisplayUserLogin()
+    {
+        HideAllPanels();
+        if (userLoginToolkitPanel != null)
+        {
+            userLoginToolkitPanel.gameObject.SetActive(true);
+            var controller = userLoginToolkitPanel.GetComponent<UserLoginMenuController>();
+            controller?.ClearForm();
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: userLoginToolkitPanel (UIDocument) is not assigned.");
+        }
+    }
+
     public void DisplayProtocolMenu()
     {
         if (protocolMenuPanel == null) { Debug.LogError("UnityUIDriver: ProtocolMenuPanel is null."); return; }
@@ -289,14 +305,23 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public async void LoginCallback(string username, string password)
     {
-        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in LoginCallback."); return; }
+        if (_uiCallbackHandler == null) 
+        {
+             Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in LoginCallback."); 
+             var controller = userLoginToolkitPanel?.GetComponent<UserLoginMenuController>();
+             controller?.DisplayLoginError("Internal error: UI Callback Handler not found.");
+             return;
+        }
         try
         {
             await _uiCallbackHandler.HandleLogin(username, password);
+            // Successful login is handled by AuthStateChanged -> HandleSignInSuccess -> DisplayProtocolMenu
         }
         catch (Exception ex)
         {
             Debug.LogError($"UnityUIDriver: Login attempt via handler failed for {username}. Error: {ex.Message}");
+            var controller = userLoginToolkitPanel?.GetComponent<UserLoginMenuController>();
+            controller?.DisplayLoginError(ex.Message);
         }
     }
 
@@ -314,6 +339,10 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
             {
                 Debug.Log("UnityUIDriver: User creation successful, UserSelectionPanel might need refresh.");
             }
+            if (userSelectionToolkitPanel != null) userSelectionToolkitPanel.gameObject.SetActive(false);
+            if (userRegistrationToolkitPanel != null) userRegistrationToolkitPanel.gameObject.SetActive(false);
+            if (userLoginToolkitPanel != null) userLoginToolkitPanel.gameObject.SetActive(false);
+            if (protocolPanel != null) protocolPanel.gameObject.SetActive(false);
         }
         catch (Exception ex)
         {
@@ -356,6 +385,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (userSelectionPanel != null) userSelectionPanel.gameObject.SetActive(false);
         if (userSelectionToolkitPanel != null) userSelectionToolkitPanel.gameObject.SetActive(false);
         if (userRegistrationToolkitPanel != null) userRegistrationToolkitPanel.gameObject.SetActive(false);
+        if (userLoginToolkitPanel != null) userLoginToolkitPanel.gameObject.SetActive(false);
         if (protocolPanel != null) protocolPanel.gameObject.SetActive(false);
         if (checklistPanel != null) checklistPanel.gameObject.SetActive(false);
         if (protocolMenuPanel != null) protocolMenuPanel.gameObject.SetActive(false);

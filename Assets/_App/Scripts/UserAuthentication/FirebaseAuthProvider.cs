@@ -130,83 +130,76 @@ public class FirebaseAuthProvider : MonoBehaviour, IAuthProvider
         SetAuthStatus(AuthStatus.Error, errorMessage);
     }
 
-    public void SignUp(string email, string password)
+    public async Task SignUp(string email, string password)
     {
         Debug.Log($"Attempting Firebase SignUp: {email}");
         SetAuthStatus(AuthStatus.Authenticating, "Signing up...");
-        auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWith(task => {
-            if (task.IsCanceled) {
-                HandleAuthOperationError("SignUp canceled.", "SignUp");
-                return;
-            }
-            if (task.IsFaulted) {
-                string errorMsg = task.Exception?.InnerExceptions?.FirstOrDefault()?.Message ?? task.Exception?.Message ?? "Unknown Sign Up Error";
-                HandleAuthOperationError(errorMsg, "SignUp");
-                return;
-            }
+        try
+        {
+            AuthResult result = await auth.CreateUserWithEmailAndPasswordAsync(email, password);
             // Success: AuthStateChanged will handle the transition to SignedIn
             // and invocation of OnSignInSuccess after token retrieval.
-            Debug.LogFormat("Firebase user creation initiated for: {0}", email);
-        }, TaskScheduler.FromCurrentSynchronizationContext());
+            Debug.LogFormat("Firebase user creation initiated for: {0}, UserID: {1}", result.User.Email, result.User.UserId);
+        }
+        catch (Exception ex)
+        {
+            string errorMsg = ex.InnerException?.Message ?? ex.Message ?? "Unknown Sign Up Error";
+            HandleAuthOperationError(errorMsg, "SignUp");
+        }
     }
 
-    public void SignIn(string email, string password)
+    public async Task SignIn(string email, string password)
     {
         Debug.Log($"Attempting Firebase SignIn: {email}");
         SetAuthStatus(AuthStatus.Authenticating, "Signing in...");
 
-        var signInOperationTask = auth.SignInWithEmailAndPasswordAsync(email, password);
-        var timeoutDelayTask = Task.Delay(TimeSpan.FromSeconds(15)); // 15-second timeout
-
-        Task.WhenAny(signInOperationTask, timeoutDelayTask).ContinueWith(antecedent =>
+        try
         {
-            if (antecedent.Result == timeoutDelayTask && !signInOperationTask.IsCompleted)
-            {
-                // Timeout occurred before the sign-in operation completed
-                HandleAuthOperationError("Sign-in attempt timed out. Please check your internet connection and try again.", "SignIn-Timeout");
-            }
-            else if (signInOperationTask.IsFaulted)
-            {
-                string errorMsg = signInOperationTask.Exception?.InnerExceptions?.FirstOrDefault()?.Message ?? signInOperationTask.Exception?.Message ?? "Unknown Sign In Error";
-                HandleAuthOperationError(errorMsg, "SignIn-Fault");
-            }
-            else if (signInOperationTask.IsCanceled)
-            {
-                HandleAuthOperationError("Sign-in attempt was canceled.", "SignIn-Canceled");
-            }
-            else if (signInOperationTask.IsCompletedSuccessfully) 
-            {
-                // Success: Firebase task completed. AuthStateChanged should handle the rest.
-                // The AuthResult is in signInOperationTask.Result if needed here for user details, 
-                // but AuthStateChanged is the primary handler for state transitions.
-                Debug.LogFormat("Firebase sign-in task for {0} completed successfully. Waiting for AuthStateChanged to confirm.", email);
-                // Note: No direct call to SetAuthStatus(AuthStatus.SignedIn) here. 
-                // AuthStateChanged is responsible for that transition after token validation.
-            }
-            else
-            {
-                // Should not happen if WhenAny completed and signInOperationTask is the result,
-                // but wasn't faulted, canceled, or successful.
-                HandleAuthOperationError("Sign-in attempt ended in an unexpected state.", "SignIn-Unexpected");
-            }
+            // Create a CancellationTokenSource for timeout
+            var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(15)); // 15-second timeout
 
-        }, TaskScheduler.FromCurrentSynchronizationContext());
+            AuthResult result = await auth.SignInWithEmailAndPasswordAsync(email, password).WithCancellation(cts.Token);
+            
+            // Success: Firebase task completed. AuthStateChanged should handle the rest.
+            Debug.LogFormat("Firebase sign-in task for {0} completed successfully. UserID: {1}. Waiting for AuthStateChanged to confirm.", result.User.Email, result.User.UserId);
+            // Note: No direct call to SetAuthStatus(AuthStatus.SignedIn) here. 
+            // AuthStateChanged is responsible for that transition after token validation.
+        }
+        catch (OperationCanceledException)
+        {
+            HandleAuthOperationError("Sign-in attempt timed out. Please check your internet connection and try again.", "SignIn-Timeout");
+        }
+        catch (Exception ex)
+        {
+            string errorMsg = ex.InnerException?.Message ?? ex.Message ?? "Unknown Sign In Error";
+            HandleAuthOperationError(errorMsg, "SignIn-Fault");
+        }
     }
 
-    public void SignOut()
+    public async Task SignOut()
     {
         Debug.Log("Attempting Firebase SignOut...");
-        // Prevent multiple sign-out commands if already idle or in error from a failed sign-out
-        if (CurrentAuthStatus == AuthStatus.Idle || (CurrentAuthStatus == AuthStatus.Error && user == null) )
+        if (CurrentAuthStatus == AuthStatus.Idle || (CurrentAuthStatus == AuthStatus.Error && user == null))
         {
             Debug.LogWarning("SignOut called but user is already signed out or in a state indicating no active user.");
-            SetAuthStatus(AuthStatus.Idle, "Already signed out."); // Ensure state is correct
-            OnSignOutSuccess?.Invoke(); // Still good to invoke for listeners if they missed it
-            return;
+            SetAuthStatus(AuthStatus.Idle, "Already signed out.");
+            OnSignOutSuccess?.Invoke();
+            return; // Return Task.CompletedTask or nothing for async void if not truly async here
         }
         SetAuthStatus(AuthStatus.Authenticating, "Signing out...");
-        auth.SignOut();
-        // AuthStateChanged will handle the transition to Idle and invocation of OnSignOutSuccess.
+        try
+        {
+            auth.SignOut(); // This is synchronous in Firebase Unity SDK
+            // AuthStateChanged will handle the transition to Idle and invocation of OnSignOutSuccess.
+            // Since auth.SignOut() is synchronous, we might not need to await anything here
+            // but changing to async Task for interface consistency.
+            await Task.CompletedTask; // Explicitly return a completed task if SignOut itself isn't async
+        }
+        catch (Exception ex)
+        {
+            // This block might be less likely to be hit if auth.SignOut() itself doesn't throw often
+            HandleAuthOperationError($"SignOut exception: {ex.Message}", "SignOut");
+        }
     }
 
     // Handle Auth State Changes
@@ -287,5 +280,22 @@ public class FirebaseAuthProvider : MonoBehaviour, IAuthProvider
             auth.StateChanged -= AuthStateChanged;
             auth = null;
         }
+    }
+}
+
+// Helper extension for Task with CancellationToken
+public static class TaskExtensions
+{
+    public static async Task<T> WithCancellation<T>(this Task<T> task, System.Threading.CancellationToken cancellationToken)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        using (cancellationToken.Register(s => ((TaskCompletionSource<bool>)s).TrySetResult(true), tcs))
+        {
+            if (task != await Task.WhenAny(task, tcs.Task))
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+        }
+        return await task; // Return the result of the original task
     }
 }

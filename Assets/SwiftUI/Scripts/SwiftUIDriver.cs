@@ -236,6 +236,12 @@ public class SwiftUIDriver : IUIDriver, IDisposable
         OpenSwiftUIWindow("UserRegistration"); // Assuming a SwiftUI view named "UserRegistration"
         Debug.Log("SwiftUIDriver: DisplayUserRegistration called. Instructing SwiftUI to open UserRegistration view.");
     }
+
+    public void DisplayUserLogin() // Added to implement IUIDriver
+    {
+        OpenSwiftUIWindow("UserLogin"); // Assuming a SwiftUI view named "UserLogin"
+        Debug.Log("SwiftUIDriver: DisplayUserLogin called. Instructing SwiftUI to open UserLogin view.");
+    }
     #endregion
 
     #region Callback Methods (Implementing IUIDriver, Delegating to Handler)
