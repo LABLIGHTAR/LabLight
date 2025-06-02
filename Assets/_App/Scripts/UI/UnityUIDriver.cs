@@ -17,6 +17,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private UIDocument userSelectionToolkitPanel;
     [SerializeField] private UIDocument userRegistrationToolkitPanel;
     [SerializeField] private UIDocument userLoginToolkitPanel;
+    [SerializeField] private UIDocument dashboardMenuToolkitPanel;
     [SerializeField] private ProtocolPanelViewController protocolPanel;
     [SerializeField] private ChecklistPanelViewController checklistPanel;
     [SerializeField] private ProtocolMenuViewController protocolMenuPanel;
@@ -89,7 +90,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     #region Auth Event Handlers (Local UI Reactions)
     private void HandleSignInSuccess(string oidcToken)
     {
-        DisplayProtocolMenu();
+        DisplayDashboard();
     }
 
     private void HandleSignOutSuccess()
@@ -185,6 +186,21 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         else
         {
             Debug.LogError("UnityUIDriver: userLoginToolkitPanel (UIDocument) is not assigned.");
+        }
+    }
+
+    public void DisplayDashboard()
+    {
+        HideAllPanels();
+        if (dashboardMenuToolkitPanel != null)
+        {
+            dashboardMenuToolkitPanel.gameObject.SetActive(true);
+            var controller = dashboardMenuToolkitPanel.GetComponent<DashboardMenuController>();
+            controller?.OnDisplay();
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: dashboardMenuToolkitPanel (UIDocument) is not assigned.");
         }
     }
 
@@ -386,6 +402,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (userSelectionToolkitPanel != null) userSelectionToolkitPanel.gameObject.SetActive(false);
         if (userRegistrationToolkitPanel != null) userRegistrationToolkitPanel.gameObject.SetActive(false);
         if (userLoginToolkitPanel != null) userLoginToolkitPanel.gameObject.SetActive(false);
+        if (dashboardMenuToolkitPanel != null) dashboardMenuToolkitPanel.gameObject.SetActive(false);
         if (protocolPanel != null) protocolPanel.gameObject.SetActive(false);
         if (checklistPanel != null) checklistPanel.gameObject.SetActive(false);
         if (protocolMenuPanel != null) protocolMenuPanel.gameObject.SetActive(false);

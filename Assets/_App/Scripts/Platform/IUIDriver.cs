@@ -23,6 +23,7 @@ public interface IUIDriver
     void DisplayProtocolMenu();
     void DisplayUserRegistration();
     void DisplayUserLogin();
+    void DisplayDashboard();
     void DisplayTimer(int seconds);
     void DisplayCalculator();
     void DisplayWebPage(string url);
