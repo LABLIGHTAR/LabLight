@@ -166,7 +166,7 @@ public class SessionManager : MonoBehaviour
                 {
                     Database.Disconnect();
                 }
-                // UIDriver?.DisplayUserSelection(); 
+                UIDriver?.DisplayUserSelection();
                 break;
             case AuthStatus.Authenticating:
                 // UIDriver?.ShowLoading("Authenticating...");

@@ -168,4 +168,19 @@ public class UserSelectionMenuController : MonoBehaviour
         Debug.Log("Register button clicked. Navigating to user registration screen.");
         _uiDriver?.DisplayUserRegistration();
     }
+
+    public void UpdateUserList(List<LocalUserProfileData> updatedProfiles)
+    {
+        Debug.Log("UserSelectionMenuController: UpdateUserList called.");
+        _userProfiles = updatedProfiles;
+        PopulateUserList(_userProfiles);
+    }
+
+    public void DisplayError(string errorMessage)
+    {
+        Debug.LogError($"UserSelectionMenuController Error: {errorMessage}");
+        // Optionally, display this error in the UI, e.g., by adding a Label to your UXML
+        // and setting its text here.
+        // Example: _errorLabel.text = errorMessage; _errorLabel.style.display = DisplayStyle.Flex;
+    }
 } 

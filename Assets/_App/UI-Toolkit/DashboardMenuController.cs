@@ -6,6 +6,7 @@ using System.Globalization;
 public class DashboardMenuController : MonoBehaviour
 {
     private IUIDriver _uiDriver; // For navigation from nav buttons
+    private IDatabase _databaseService; // Added for profile updates
 
     // Header Elements
     private VisualElement _profileImage;
@@ -22,10 +23,12 @@ public class DashboardMenuController : MonoBehaviour
 
     // Navigation Buttons (example)
     private Button _navSettingsButton;
+    private Button _navLogoutButton; // Added for Log Out
 
     void OnEnable()
     {
         _uiDriver = ServiceRegistry.GetService<IUIDriver>();
+        _databaseService = ServiceRegistry.GetService<IDatabase>(); // Resolve IDatabase service
 
         var root = GetComponent<UIDocument>().rootVisualElement;
         if (root == null) 
@@ -46,9 +49,20 @@ public class DashboardMenuController : MonoBehaviour
 
         // Query Nav Buttons (example)
         _navSettingsButton = root.Q<Button>("nav-settings");
+        _navLogoutButton = root.Q<Button>("nav-logout"); // Query the new button
 
         // Register Callbacks
         _navSettingsButton?.RegisterCallback<ClickEvent>(OnNavSettingsClicked); // Example nav
+        _navLogoutButton?.RegisterCallback<ClickEvent>(OnNavLogoutClicked); // Register callback for logout
+
+        if (_databaseService != null)
+        {
+            _databaseService.OnUserProfileUpdated += HandleUserProfileUpdated; // Subscribe to event
+        }
+        else
+        {
+            Debug.LogError("DashboardMenuController: IDatabase service not found. Username updates might not be reactive.");
+        }
 
         if (_noticesPanel != null)
         {
@@ -69,6 +83,12 @@ public class DashboardMenuController : MonoBehaviour
     void OnDisable()
     {
         _navSettingsButton?.UnregisterCallback<ClickEvent>(OnNavSettingsClicked);
+        _navLogoutButton?.UnregisterCallback<ClickEvent>(OnNavLogoutClicked); // Unregister callback for logout
+
+        if (_databaseService != null)
+        {
+            _databaseService.OnUserProfileUpdated -= HandleUserProfileUpdated; // Unsubscribe from event
+        }
     }
 
     void Update()
@@ -114,6 +134,12 @@ public class DashboardMenuController : MonoBehaviour
             _userNameLabel.text = "User"; // Fallback
         }
         // Potentially update _profileImage here too if URL/texture is available
+    }
+
+    private void HandleUserProfileUpdated(UserData userData) // New method to handle profile updates
+    {
+        Debug.Log($"DashboardMenuController: Received UserProfile update for {userData?.Name}. Refreshing username display.");
+        UpdateUserName();
     }
 
     private void SetInitialNoticesState()
@@ -166,6 +192,12 @@ public class DashboardMenuController : MonoBehaviour
     {
         Debug.Log("Settings button clicked - Navigation to settings view not yet implemented.");
         // _uiDriver?.DisplaySettings(); // When DisplaySettings exists
+    }
+
+    private void OnNavLogoutClicked(ClickEvent evt) // New handler for Log Out button
+    {
+        Debug.Log("Log Out button clicked.");
+        _uiDriver?.RequestSignOut(); // Call UIDriver to handle sign out
     }
 
     // Public method to be called by UIDriver when displaying this dashboard

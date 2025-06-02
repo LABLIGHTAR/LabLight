@@ -46,5 +46,6 @@ public interface IUIDriver
     void LoginCallback(string username, string password);
     void CreateUserCallback(string userName);
     void AuthRegistrationCallback(string displayName, string email, string password);
+    void RequestSignOut();
     #endregion
 }

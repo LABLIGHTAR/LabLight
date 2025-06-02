@@ -8,6 +8,7 @@
             <ui:Button name="nav-saved-protocols" text="Saved Protocols" class="action-button" />
             <ui:Button name="nav-browse-protocols" text="Browse Protocols" class="action-button" />
             <ui:Button name="nav-settings" text="Settings" class="action-button" />
+            <ui:Button name="nav-logout" text="Log Out" class="action-button" />
         </ui:VisualElement>
         <ui:VisualElement name="main-content" class="main-content-column">
             <ui:VisualElement name="header-section" class="header-section">

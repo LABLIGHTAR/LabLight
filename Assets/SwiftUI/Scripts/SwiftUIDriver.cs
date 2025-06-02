@@ -604,4 +604,14 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     private static void OpenSwiftPdfWindow(string pdfUrlString) { Debug.Log($"Simulated OpenSwiftPdfWindow: {pdfUrlString}"); }
     #endif
     #endregion
+
+    public void RequestSignOut() // Added to implement IUIDriver
+    {
+        Debug.Log("SwiftUIDriver: RequestSignOut called. Actual sign-out logic for SwiftUI needs implementation if used.");
+        // Typically, this would involve: 
+        // 1. Calling SessionManager.Instance?.AttemptSignOut();
+        // 2. Potentially sending a message to SwiftUI if it needs to react specifically beyond HandleSignOutSuccess.
+        // For now, HandleSignOutSuccess should trigger SendAuthStatus(false) and then SessionManager should trigger DisplayUserSelection.
+        SessionManager.instance?.SignOut(); // Call SessionManager to handle the actual sign-out logic
+    }
 }

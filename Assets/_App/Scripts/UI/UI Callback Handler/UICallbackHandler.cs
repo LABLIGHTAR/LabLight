@@ -86,15 +86,99 @@ public class UICallbackHandler : IUICallbackHandler
             Debug.LogError("UICallbackHandler: IAuthProvider is not available in HandleLogin.");
             throw new InvalidOperationException("IAuthProvider is not available.");
         }
+        if (_fileManager == null)
+        {
+            Debug.LogError("UICallbackHandler: IFileManager is not available in HandleLogin.");
+            throw new InvalidOperationException("IFileManager is not available.");
+        }
+
         Debug.Log($"UICallbackHandler: Attempting login for user: {username}");
         try
         {
             await _authProvider.SignIn(username, password);
+            Debug.Log($"UICallbackHandler: SignIn successful for {username}. Checking/creating local profile.");
+
+            // Use properties from IAuthProvider
+            string userId = _authProvider.CurrentUserId;
+            string userEmail = _authProvider.CurrentUserEmail;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var profilesResult = await _fileManager.GetLocalUserProfilesAsync();
+                LocalUserProfileData userProfile = null;
+
+                if (profilesResult.Success && profilesResult.Data != null)
+                {
+                    userProfile = profilesResult.Data.FirstOrDefault(p => p.Id == userId);
+                }
+                else
+                {
+                    Debug.LogWarning($"UICallbackHandler: Could not retrieve local user profiles (Error: {profilesResult.Error?.Code} - {profilesResult.Error?.Message}) or list was empty. Assuming profile needs creation for {userId}.");
+                    // Proceed to create if list couldn't be fetched.
+                }
+
+                if (userProfile == null)
+                {
+                    Debug.Log($"UICallbackHandler: No local profile found for user ID {userId}. Creating one.");
+                    var newProfile = new LocalUserProfileData
+                    {
+                        Id = userId, 
+                        Name = username, // Using the input username (email) as Name, as DisplayName is not directly on IAuthProvider
+                        Email = userEmail ?? username, // Fallback to username if CurrentUserEmail is null
+                        CreatedAtUtc = DateTime.UtcNow,
+                        LastOnlineUtc = DateTime.UtcNow,
+                        IsOnline = true 
+                    };
+
+                    ResultVoid saveResult = await _fileManager.SaveLocalUserProfileAsync(newProfile);
+                    if (saveResult.Success)
+                    {
+                        Debug.Log($"UICallbackHandler: Successfully created and saved local profile for user ID {newProfile.Id}, Name: {newProfile.Name}.");
+                        userProfile = newProfile;
+                    }
+                    else
+                    {
+                        Debug.LogError($"UICallbackHandler: Failed to save new local profile for user ID {newProfile.Id}. Error: {saveResult.Error?.Code} - {saveResult.Error?.Message}");
+                        throw new Exception($"Failed to create local profile for authenticated user: {saveResult.Error?.Code} - {saveResult.Error?.Message}");
+                    }
+                }
+                else
+                {
+                    Debug.Log($"UICallbackHandler: Local profile found for user ID {userId}, Name: {userProfile.Name}. Updating status (Name will NOT be overwritten with email).");
+                    // IMPORTANT: Do not overwrite userProfile.Name here with 'username' (email)
+                    userProfile.Email = userEmail ?? userProfile.Email; // Update email if provider has it, else keep existing
+                    userProfile.LastOnlineUtc = DateTime.UtcNow;
+                    userProfile.IsOnline = true;
+                    ResultVoid updateResult = await _fileManager.SaveLocalUserProfileAsync(userProfile);
+                    if (!updateResult.Success)
+                    {
+                        Debug.LogWarning($"UICallbackHandler: Failed to update local profile status for user ID {userProfile.Id}. Error: {updateResult.Error?.Code} - {updateResult.Error?.Message}");
+                        // Continue without throwing, as profile exists and user is logged in.
+                    }
+                }
+
+                if (userProfile != null)
+                {
+                    SessionState.currentUserProfile = userProfile;
+                    Debug.Log($"UICallbackHandler: SessionState.currentUserProfile updated for {userProfile.Name} (ID: {userProfile.Id}).");
+                }
+                else
+                {
+                     Debug.LogError($"UICallbackHandler: userProfile is null after check/creation logic for {userId}. This should not happen if auth and file operations are successful.");
+                     // This implies a potential issue if new profile creation failed silently or profile fetch had an unhandled issue.
+                }
+            }
+            else
+            {
+                Debug.LogError($"UICallbackHandler: SignIn for {username} seemed successful, but failed to retrieve valid user ID from IAuthProvider.");
+                throw new Exception("Authentication succeeded, but failed to retrieve user ID to finalize session setup.");
+            }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"UICallbackHandler: Exception during login for {username}: {ex.Message}");
-            throw;
+            Debug.LogError($"UICallbackHandler: Exception during login process for {username}: {ex.Message} - StackTrace: {ex.StackTrace}");
+            SessionState.currentUserProfile = null; // Ensure session state is cleared on any login failure
+            throw; 
         }
     }
 

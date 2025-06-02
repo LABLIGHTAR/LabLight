@@ -343,55 +343,65 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public async void CreateUserCallback(string userName)
     {
-        if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in CreateUserCallback."); return; }
-        if (string.IsNullOrWhiteSpace(userName)) { Debug.LogWarning("UnityUIDriver: CreateUserCallback received null or empty userName."); return; }
-
-        Debug.Log($"UnityUIDriver: Attempting to create user: {userName}");
+        if (_uiCallbackHandler == null)
+        {
+            Debug.LogError("UnityUIDriver: IUICallbackHandler is not available for CreateUserCallback.");
+            return;
+        }
+        Debug.Log($"UnityUIDriver: CreateUserCallback received for {userName}. Attempting to handle.");
         try
         {
             List<LocalUserProfileData> updatedProfiles = await _uiCallbackHandler.HandleCreateUser(userName);
-            Debug.Log($"UnityUIDriver: User {userName} created successfully. {updatedProfiles.Count} total profiles.");
-            if (userSelectionPanel != null && userSelectionPanel.gameObject.activeInHierarchy)
+            // Assuming userSelectionToolkitPanel is the correct panel to update.
+            // It might be better to have a more generic way to signal UI refresh for user lists if multiple panels show them.
+            var userSelectionController = userSelectionToolkitPanel?.GetComponent<UserSelectionMenuController>();
+            if (userSelectionController != null)
             {
-                Debug.Log("UnityUIDriver: User creation successful, UserSelectionPanel might need refresh.");
+                userSelectionController.UpdateUserList(updatedProfiles);
+                DisplayUserSelection(); // Or potentially stay on a screen that shows the new user
             }
-            if (userSelectionToolkitPanel != null) userSelectionToolkitPanel.gameObject.SetActive(false);
-            if (userRegistrationToolkitPanel != null) userRegistrationToolkitPanel.gameObject.SetActive(false);
-            if (userLoginToolkitPanel != null) userLoginToolkitPanel.gameObject.SetActive(false);
-            if (protocolPanel != null) protocolPanel.gameObject.SetActive(false);
+            else
+            {
+                Debug.LogWarning("UnityUIDriver: UserSelectionMenuController not found after creating user. UI might not reflect the new user immediately.");
+            }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"UnityUIDriver: Error creating user {userName} via handler: {ex.Message}");
+            Debug.LogError($"UnityUIDriver: Error during CreateUserCallback for {userName}: {ex.Message}");
+            // Optionally, show an error message on the UI
+            var userSelectionController = userSelectionToolkitPanel?.GetComponent<UserSelectionMenuController>();
+            userSelectionController?.DisplayError($"Failed to create user: {ex.Message}");
         }
     }
 
     public async void AuthRegistrationCallback(string displayName, string email, string password)
     {
-        if (_uiCallbackHandler == null) 
-        { 
-            Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in AuthRegistrationCallback."); 
-            // Optionally, provide feedback to the registration screen
-            var controller = userRegistrationToolkitPanel?.GetComponent<UserRegistrationMenuController>();
-            controller?.DisplayRegistrationError("Internal error: UI Callback Handler not found.");
-            return; 
+        if (_uiCallbackHandler == null)
+        {
+            Debug.LogError("UnityUIDriver: IUICallbackHandler is not available for AuthRegistrationCallback.");
+            return;
         }
+        Debug.Log($"UnityUIDriver: AuthRegistrationCallback received for {email}. Attempting to handle.");
         try
         {
             await _uiCallbackHandler.HandleAuthRegistration(displayName, email, password);
-            // If HandleAuthRegistration is successful, AuthStateChanged in FirebaseAuthProvider
-            // should trigger OnSignInSuccess, which in turn calls HandleSignInSuccess here.
-            // HandleSignInSuccess already calls DisplayProtocolMenu.
-            // So, no explicit navigation here is needed if all goes well.
+            // After HandleAuthRegistration initiates Firebase sign-up, OnSignInSuccess (handled by HandleSignInSuccess in this class)
+            // will eventually be triggered if Firebase sign-up & sign-in are successful. HandleSignInSuccess will then call DisplayDashboard.
+            // If HandleAuthRegistration throws an exception (e.g., Firebase error), it will be caught below.
             Debug.Log($"UnityUIDriver: AuthRegistrationCallback for {email} handled by UICallbackHandler. Waiting for sign-in confirmation.");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"UnityUIDriver: Error during auth registration for {email} via handler: {ex.Message}");
-            // Display the error on the registration screen
-            var controller = userRegistrationToolkitPanel?.GetComponent<UserRegistrationMenuController>();
-            controller?.DisplayRegistrationError(ex.Message); 
+            Debug.LogError($"UnityUIDriver: Error during AuthRegistrationCallback for {email}: {ex.Message}");
+            var registrationController = userRegistrationToolkitPanel?.GetComponent<UserRegistrationMenuController>();
+            registrationController?.DisplayRegistrationError($"Registration failed: {ex.Message}");
         }
+    }
+
+    public void RequestSignOut() // Implementation of RequestSignOut
+    {
+        Debug.Log("UnityUIDriver: RequestSignOut called. Attempting to sign out via SessionManager.");
+        SessionManager.instance?.SignOut(); 
     }
     #endregion
 
