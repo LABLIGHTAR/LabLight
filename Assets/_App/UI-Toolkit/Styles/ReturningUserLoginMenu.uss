@@ -4,15 +4,6 @@
    For now, it will rely heavily on CoreStyles.uss and inline styles in the UXML.
 */
 
-.profile-image-placeholder {
-    background-color: #555;
-    border-width: 2px;
-    border-color: #777;
-    min-width: 80px;
-    min-height: 80px;
-    max-width: 80px;
-    max-height: 80px;
-    border-radius: 40px; /* Ensures it's a circle */
-}
+/* .profile-image-placeholder removed, moved to CoreStyles.uss */
 
 /* Add any other specific styles for ReturningUserLoginMenu elements */ 

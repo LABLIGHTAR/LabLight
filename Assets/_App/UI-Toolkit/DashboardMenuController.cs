@@ -25,6 +25,8 @@ public class DashboardMenuController : MonoBehaviour
     // Navigation Buttons (example)
     private Button _navSettingsButton;
     private Button _navLogoutButton; // Added for Log Out
+    private Button _navBrowseProtocolsButton; // Added for Browse Protocols
+    private Button _navSavedProtocolsButton; // Added for Saved Protocols
 
     void OnEnable()
     {
@@ -51,10 +53,14 @@ public class DashboardMenuController : MonoBehaviour
         // Query Nav Buttons (example)
         _navSettingsButton = root.Q<Button>("nav-settings");
         _navLogoutButton = root.Q<Button>("nav-logout"); // Query the new button
+        _navBrowseProtocolsButton = root.Q<Button>("nav-browse-protocols"); // Query browse protocols
+        _navSavedProtocolsButton = root.Q<Button>("nav-saved-protocols"); // Query saved protocols
 
         // Register Callbacks
         _navSettingsButton?.RegisterCallback<ClickEvent>(OnNavSettingsClicked); // Example nav
         _navLogoutButton?.RegisterCallback<ClickEvent>(OnNavLogoutClicked); // Register callback for logout
+        _navBrowseProtocolsButton?.RegisterCallback<ClickEvent>(OnNavBrowseProtocolsClicked); // Register callback
+        _navSavedProtocolsButton?.RegisterCallback<ClickEvent>(OnNavSavedProtocolsClicked); // Register callback
 
         if (_sessionManager != null)
         {
@@ -96,6 +102,8 @@ public class DashboardMenuController : MonoBehaviour
     {
         _navSettingsButton?.UnregisterCallback<ClickEvent>(OnNavSettingsClicked);
         _navLogoutButton?.UnregisterCallback<ClickEvent>(OnNavLogoutClicked); // Unregister callback for logout
+        _navBrowseProtocolsButton?.UnregisterCallback<ClickEvent>(OnNavBrowseProtocolsClicked); // Unregister callback
+        _navSavedProtocolsButton?.UnregisterCallback<ClickEvent>(OnNavSavedProtocolsClicked); // Unregister callback
 
         if (_sessionManager != null)
         {
@@ -221,6 +229,18 @@ public class DashboardMenuController : MonoBehaviour
     {
         Debug.Log("Log Out button clicked.");
         _uiDriver?.RequestSignOut(); // Call UIDriver to handle sign out
+    }
+
+    private void OnNavBrowseProtocolsClicked(ClickEvent evt)
+    {
+        Debug.Log("Browse Protocols button clicked.");
+        _uiDriver?.DisplayBrowseProtocolsMenu();
+    }
+
+    private void OnNavSavedProtocolsClicked(ClickEvent evt)
+    {
+        Debug.Log("Saved Protocols button clicked.");
+        _uiDriver?.DisplaySavedProtocolsMenu();
     }
 
     // Public method to be called by UIDriver when displaying this dashboard

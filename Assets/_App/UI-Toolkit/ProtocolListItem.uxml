@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="protocol-item-container" class="protocol-list-item">
+        <ui:VisualElement name="info-container" class="protocol-item-info-container">
+            <ui:Label name="protocol-name-label" text="Protocol Name" class="protocol-name" />
+            <ui:Label name="owner-name-label" text="Owner: [OwnerName]" class="owner-name" />
+        </ui:VisualElement>
+        <ui:Button name="save-unsave-button" text="Save" class="protocol-item-button" />
+    </ui:VisualElement>
+</ui:UXML> 

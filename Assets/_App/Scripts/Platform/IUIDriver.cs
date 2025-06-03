@@ -31,6 +31,8 @@ public interface IUIDriver
     void DisplayLLMChat();
     void DisplayVideoPlayer(string url);
     void DisplayPDFReader(string url);
+    void DisplayBrowseProtocolsMenu();
+    void DisplaySavedProtocolsMenu();
     #endregion
 
     #region Unity Callback Methods (Inputs from UI to be Handled)

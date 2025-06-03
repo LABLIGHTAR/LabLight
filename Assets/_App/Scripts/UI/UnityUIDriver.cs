@@ -19,6 +19,8 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private UIDocument userLoginToolkitPanel;
     [SerializeField] private UIDocument returningUserLoginToolkitPanel;
     [SerializeField] private UIDocument dashboardMenuToolkitPanel;
+    [SerializeField] private UIDocument browseProtocolsMenuToolkitPanel;
+    [SerializeField] private UIDocument savedProtocolsMenuToolkitPanel;
     [SerializeField] private ProtocolPanelViewController protocolPanel;
     [SerializeField] private ChecklistPanelViewController checklistPanel;
     [SerializeField] private ProtocolMenuViewController protocolMenuPanel;
@@ -283,7 +285,33 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public void DisplayPDFReader(string url)
     {
-        Debug.LogWarning($"UnityUIDriver: DisplayPDFReader for {url} is not yet implemented.");
+        Debug.LogWarning("DisplayPDFReader not implemented for UnityUIDriver.");
+    }
+
+    public void DisplayBrowseProtocolsMenu()
+    {
+        HideAllPanels();
+        if (browseProtocolsMenuToolkitPanel != null)
+        {
+            browseProtocolsMenuToolkitPanel.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: browseProtocolsMenuToolkitPanel (UIDocument) is not assigned.");
+        }
+    }
+
+    public void DisplaySavedProtocolsMenu()
+    {
+        HideAllPanels();
+        if (savedProtocolsMenuToolkitPanel != null)
+        {
+            savedProtocolsMenuToolkitPanel.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: savedProtocolsMenuToolkitPanel (UIDocument) is not assigned.");
+        }
     }
     #endregion
 
@@ -455,6 +483,8 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (userLoginToolkitPanel != null) userLoginToolkitPanel.gameObject.SetActive(false);
         if (returningUserLoginToolkitPanel != null) returningUserLoginToolkitPanel.gameObject.SetActive(false);
         if (dashboardMenuToolkitPanel != null) dashboardMenuToolkitPanel.gameObject.SetActive(false);
+        if (browseProtocolsMenuToolkitPanel != null) browseProtocolsMenuToolkitPanel.gameObject.SetActive(false);
+        if (savedProtocolsMenuToolkitPanel != null) savedProtocolsMenuToolkitPanel.gameObject.SetActive(false);
         if (protocolPanel != null && protocolPanel.gameObject != null) protocolPanel.gameObject.SetActive(false);
         if (checklistPanel != null && checklistPanel.gameObject != null) checklistPanel.gameObject.SetActive(false);
         if (protocolMenuPanel != null && protocolMenuPanel.gameObject != null) protocolMenuPanel.gameObject.SetActive(false);

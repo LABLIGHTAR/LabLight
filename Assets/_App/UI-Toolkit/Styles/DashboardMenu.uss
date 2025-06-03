@@ -78,28 +78,13 @@
     margin-top: -2px;
 }
 
-.profile-image-placeholder {
-    width: 60px;
-    height: 60px;
-    border-radius: 30px;
-    background-color: grey;
-}
-
 .time-display {
     align-self: flex-start;
-}
-
-.nav-button {
-    margin-bottom: 8px;
 }
 
 .notices-scroll-view {
     flex-grow: 1;
 }
-
-.h1 { font-size: 24px;}
-.h2 { font-size: 18px; color: rgb(220, 220, 220); }
-.h3 { font-size: 16px; color: rgb(200, 200, 200); margin-bottom: 5px; }
 
 .optional-content-section {
     margin-top: 20px;

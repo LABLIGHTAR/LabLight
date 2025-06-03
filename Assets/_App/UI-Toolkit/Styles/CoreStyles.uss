@@ -81,4 +81,91 @@
 .new-user-input > .unity-base-text-field__input:focus {
     border-color: rgba(100, 150, 255, 0.8);
     background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Protocol List Item Styles */
+.protocol-list-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    margin: 5px 0;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.protocol-list-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.protocol-item-info-container {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin-right: 10px;
+}
+
+.protocol-name {
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: white;
+    margin-bottom: 3px;
+}
+
+.owner-name {
+    font-size: 14px;
+    color: #cccccc;
+}
+
+.protocol-item-button {
+    min-width: 80px;
+    max-width: 100px;
+    padding: 5px 10px;
+    font-size: 14px;
+    margin-left: auto;
+    /* Note: .protocol-item-button may also use .action-button class for base styling */
+}
+
+/* Secondary Button Style */
+.secondary-button {
+    background-color: rgba(255, 255, 255, 0.05); /* Less prominent */
+    border-color: rgba(255, 255, 255, 0.2);
+}
+.secondary-button:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.secondary-button:active {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Profile Image Placeholder Style */
+.profile-image-placeholder {
+    background-color: #555;
+    border-width: 2px;
+    border-color: #777;
+    min-width: 80px;
+    min-height: 80px;
+    max-width: 80px;
+    max-height: 80px;
+    border-radius: 40px; /* Ensures it's a circle */
+    /* Default to 80px based on ReturningUserLoginMenu */
+    width: 80px; 
+    height: 80px;
+}
+
+/* Typography Styles */
+.h1 { 
+    font-size: 24px;
+    /* Assuming default color white from * is fine, or specify if needed */
+}
+.h2 { 
+    font-size: 18px; 
+    color: rgb(220, 220, 220); 
+}
+.h3 { 
+    font-size: 16px; 
+    color: rgb(200, 200, 200); 
+    margin-bottom: 5px; 
 } 

@@ -3,9 +3,9 @@
     <Style src="project://database/Assets/_App/UI-Toolkit/Styles/ReturningUserLoginMenu.uss" />
     <ui:VisualElement name="returning-user-login-panel" class="glassmorphic-panel">
         <ui:VisualElement name="profile-picture-container" style="align-items: center; margin-bottom: 15px;">
-            <ui:VisualElement name="profile-image" class="profile-image-placeholder" style="width: 80px; height: 80px; border-radius: 40px;" />
+            <ui:VisualElement name="profile-image" class="profile-image-placeholder" />
         </ui:VisualElement>
-        <ui:Label name="welcome-label" text="Welcome back, [Username]!" class="h2" style="text-align: center; margin-bottom: 20px;" />
+        <ui:Label name="welcome-label" text="Welcome back, [Username]!" class="h2" style="text-align: center; margin-bottom: 20px; align-self: center;" />
         <ui:VisualElement name="form-container" style="width: 80%;">
             <!-- Email might be pre-filled or not shown if username implies it -->
             <ui:TextField name="password-field" label="Password" password="true" class="new-user-input" />

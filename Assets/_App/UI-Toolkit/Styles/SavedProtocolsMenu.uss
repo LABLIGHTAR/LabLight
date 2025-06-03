@@ -1,0 +1,55 @@
+/* SavedProtocolsMenu.uss */
+
+.protocols-scroll-view {
+    width: 100%;
+    min-height: 300px;
+    max-height: 500px;
+    margin-bottom: 15px;
+    /* Add other styling as needed, potentially similar to .user-scroll-view */
+}
+
+.protocol-list-item {
+    flex-direction: row;
+    justify-content: space-between; /* Pushes button to the right */
+    align-items: center;
+    padding: 10px 15px;
+    margin: 5px 0;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.protocol-list-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.protocol-item-info-container {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin-right: 10px; /* Space between info and button */
+}
+
+.protocol-name {
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: white;
+    margin-bottom: 3px;
+}
+
+.owner-name {
+    font-size: 14px;
+    color: #cccccc;
+}
+
+.protocol-item-button {
+    min-width: 80px;
+    max-width: 100px;
+    padding: 5px 10px;
+    font-size: 14px;
+    /* Inherits .action-button styles from CoreStyles if needed, or define here */
+    /* Example: margin-left to ensure it has space if info container is small */
+    margin-left: auto; /* Helps push button to the right if info container doesn't fill space */
+}
+
+/* Add any other specific styles for SavedProtocolsMenu elements */ 
