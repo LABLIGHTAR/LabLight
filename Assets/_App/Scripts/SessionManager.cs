@@ -7,6 +7,7 @@ using UnityEngine.XR.ARFoundation;
 using Lighthouse.MessagePack;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// The SessionManager is the app entry point.
@@ -68,7 +69,7 @@ public class SessionManager : MonoBehaviour
         #endif
         
         if (UIDriver == null) Debug.LogError("SessionManager: UIDriver failed to obtain a reference or initialize!");
-        else UIDriver.DisplayUserSelection();
+        else UIDriver.DisplayUserSelectionMenu();
 
         //Set up default state
         SessionState.deviceId = SystemInfo.deviceName;
@@ -105,6 +106,10 @@ public class SessionManager : MonoBehaviour
     #region Debugging Fields
     //for testing AM
     public List<TrackedObject> TrackedObjectsDebug = new List<TrackedObject>();
+    #endregion
+
+    #region Public Session Events
+    public event Action<LocalUserProfileData> OnSessionUserChanged;
     #endregion
 
     private CompositeDisposable _disposables = new CompositeDisposable();
@@ -166,7 +171,7 @@ public class SessionManager : MonoBehaviour
                 {
                     Database.Disconnect();
                 }
-                UIDriver?.DisplayUserSelection();
+                UIDriver?.DisplayUserSelectionMenu();
                 break;
             case AuthStatus.Authenticating:
                 // UIDriver?.ShowLoading("Authenticating...");
@@ -303,7 +308,13 @@ public class SessionManager : MonoBehaviour
             SessionState.PendingDisplayName = null;
             SessionState.PendingEmail = null;
             
-            // UIDriver?.ShowUserView(); // This would typically show the view now that user is fully set up.
+            // Invoke OnSessionUserChanged if profile is available
+            if (SessionState.currentUserProfile != null) // Should have been set by CreateAndSetLocalProfileAsync
+            {
+                Debug.Log($"SessionManager: New user registration - Invoking OnSessionUserChanged for {SessionState.currentUserProfile.Name}");
+                OnSessionUserChanged?.Invoke(SessionState.currentUserProfile);
+            }
+            UIDriver?.DisplayDashboard(); 
         }
         else if (!string.IsNullOrEmpty(SessionState.FirebaseUserId))
         {
@@ -313,7 +324,9 @@ public class SessionManager : MonoBehaviour
             {
                 SessionState.currentUserProfile = loadResult.Data;
                 Debug.Log($"SessionManager: Successfully loaded local profile for {SessionState.currentUserProfile.Name}");
-                // UIDriver?.ShowUserView();
+                Debug.Log($"SessionManager: Returning user - Invoking OnSessionUserChanged for {SessionState.currentUserProfile.Name}");
+                OnSessionUserChanged?.Invoke(SessionState.currentUserProfile);
+                UIDriver?.DisplayDashboard();
             }
             else
             {
@@ -324,16 +337,18 @@ public class SessionManager : MonoBehaviour
                     Debug.Log($"SessionManager: Found profile in DB cache for {dbProfile.Name}. Creating/Saving local version via helper.");
                     
                     string userEmail = AuthProvider?.CurrentUserEmail ?? string.Empty;
-                    // Note: Fallback to SessionState.PendingEmail is removed here as this path is specifically for existing users (not new registrations)
-                    // If AuthProvider.CurrentUser.Email is empty for an existing user, it might indicate an issue or that the email is not stored in Firebase Auth.
-
                     await CreateAndSetLocalProfileAsync(SessionState.FirebaseUserId, dbProfile.Name, userEmail, dbProfile.CreatedAtUtc, isNewUserRegistration: false);
-                    // UIDriver?.ShowUserView();
+                    // After CreateAndSetLocalProfileAsync, SessionState.currentUserProfile should be set.
+                    if (SessionState.currentUserProfile != null)
+                    {
+                        Debug.Log($"SessionManager: Profile created from DB cache - Invoking OnSessionUserChanged for {SessionState.currentUserProfile.Name}");
+                        OnSessionUserChanged?.Invoke(SessionState.currentUserProfile);
+                    }
+                    UIDriver?.DisplayDashboard();
                 }
                 else
                 {
                      Debug.LogError("SessionManager: No local profile and no DB cached profile found after login.");
-                     // UIDriver?.ShowError("Failed to load user profile.");
                 }
             }
         }
@@ -343,50 +358,123 @@ public class SessionManager : MonoBehaviour
         }
     }
 
-    private void HandleDatabaseUserProfileUpdated(UserData dbProfile)
+    private async void HandleDatabaseUserProfileUpdated(UserData dbProfileFromEvent)
     {
-        Debug.Log($"SessionManager: Database UserProfile Updated for ID: {dbProfile?.Id}, Name: {dbProfile?.Name}. SpacetimeID: {SessionState.SpacetimeIdentity}");
-        if (dbProfile != null && dbProfile.Id == SessionState.SpacetimeIdentity && SessionState.currentUserProfile != null && SessionState.currentUserProfile.Id == SessionState.FirebaseUserId)
+        // Ensure we have the necessary info from the event and session
+        if (dbProfileFromEvent == null || string.IsNullOrEmpty(dbProfileFromEvent.Id) || string.IsNullOrEmpty(SessionState.FirebaseUserId))
         {
-            bool changed = false;
-            if (SessionState.currentUserProfile.Name != dbProfile.Name)
-            {
-                SessionState.currentUserProfile.Name = dbProfile.Name;
-                changed = true;
-            }
+            Debug.LogWarning($"SessionManager: HandleDatabaseUserProfileUpdated called with insufficient data. DB Profile ID: {dbProfileFromEvent?.Id}, FirebaseUID: {SessionState.FirebaseUserId}");
+            return;
+        }
 
-            if (changed)
+        Debug.Log($"SessionManager: Database UserProfile Event for SpacetimeIdentity: {dbProfileFromEvent.Id}, Name: {dbProfileFromEvent.Name}. Current FirebaseUser: {SessionState.FirebaseUserId}");
+
+        // This event's dbProfileFromEvent.Id IS the SpacetimeDB Identity.
+        // We check if this SpacetimeDB Identity corresponds to our currently logged-in Firebase user
+        // by comparing it with SessionState.SpacetimeIdentity, which should have been set on connection.
+        if (dbProfileFromEvent.Id != SessionState.SpacetimeIdentity)
+        {
+            Debug.Log($"SessionManager: Ignoring UserProfile update for SpacetimeIdentity {dbProfileFromEvent.Id} as it doesn't match current session's SpacetimeIdentity {SessionState.SpacetimeIdentity}.");
+            return;
+        }
+
+        // At this point, the dbProfileFromEvent IS for the currently connected SpacetimeDB identity.
+        // Now, let's work with the local profile.
+
+        if (SessionState.currentUserProfile != null)
+        {
+            // Ensure the loaded local profile is for the current Firebase user.
+            if (SessionState.currentUserProfile.Id == SessionState.FirebaseUserId)
             {
-                Debug.Log($"SessionManager: Updating local profile due to DB changes for {SessionState.currentUserProfile.Name}.");
-                FileManager.SaveLocalUserProfileAsync(SessionState.currentUserProfile)
-                    .ToObservable()
-                    .Subscribe(saveResult => {
-                        if (!saveResult.Success)
-                        {
-                            Debug.LogError($"SessionManager: Failed to re-save local profile after DB update. Error: {saveResult.Error?.Message}");
-                        }
-                    })
-                    .AddTo(_disposables);
+                bool changed = false;
+                if (SessionState.currentUserProfile.Name != dbProfileFromEvent.Name)
+                {
+                    SessionState.currentUserProfile.Name = dbProfileFromEvent.Name;
+                    changed = true;
+                }
+                // TODO: Potentially update other fields like IsOnline, LastOnlineUtc from dbProfileFromEvent
+                // Ensure to convert SpacetimeDB.Timestamp to DateTime for CreatedAtUtc/LastOnlineUtc if UserData has them
+                // For example:
+                // if (dbProfileFromEvent.IsOnline != SessionState.currentUserProfile.IsOnline) { SessionState.currentUserProfile.IsOnline = dbProfileFromEvent.IsOnline; changed = true; }
+                // DateTime dbLastOnline = ConvertSpacetimeTimestampToDateTime(dbProfileFromEvent.LastOnline); // Assuming conversion function
+                // if (dbLastOnline != SessionState.currentUserProfile.LastOnlineUtc) { SessionState.currentUserProfile.LastOnlineUtc = dbLastOnline; changed = true; }
+
+
+                if (changed)
+                {
+                    Debug.Log($"SessionManager: Updating existing local profile for {SessionState.currentUserProfile.Name} (FirebaseUID: {SessionState.FirebaseUserId}) due to DB changes.");
+                    ResultVoid saveResult = await FileManager.SaveLocalUserProfileAsync(SessionState.currentUserProfile);
+                    if (!saveResult.Success)
+                    {
+                        Debug.LogError($"SessionManager: Failed to re-save local profile after DB update. Error: {saveResult.Error?.Message}");
+                    }
+                }
+                else
+                {
+                    Debug.Log($"SessionManager: No changes detected in DB profile for local user {SessionState.currentUserProfile.Name}.");
+                }
+            }
+            else
+            {
+                Debug.LogError($"SessionManager: Mismatch! SessionState.currentUserProfile.Id ({SessionState.currentUserProfile.Id}) != SessionState.FirebaseUserId ({SessionState.FirebaseUserId}). This should not happen if profile loaded correctly.");
+                // This state is problematic. Might need to reload or clear SessionState.currentUserProfile.
             }
         }
-        else if (dbProfile != null && dbProfile.Id == SessionState.SpacetimeIdentity && SessionState.currentUserProfile == null && !string.IsNullOrEmpty(SessionState.FirebaseUserId))
+        else // SessionState.currentUserProfile is null, but we know the FirebaseUserId and SpacetimeIdentity.
         {
-            Debug.Log($"SessionManager: DB profile update for {dbProfile.Name}, but no local profile yet. Creating one.");
-            var newLocalProfile = new LocalUserProfileData { Id = SessionState.FirebaseUserId, Name = dbProfile.Name, Email = string.Empty };
-            FileManager.SaveLocalUserProfileAsync(newLocalProfile)
-                .ToObservable()
-                .Subscribe(saveResult => {
-                    if (saveResult.Success)
-                    {
-                        SessionState.currentUserProfile = newLocalProfile;
-                        Debug.Log("SessionManager: Created and saved local profile from DB update.");
-                    }
-                    else
-                    {
-                         Debug.LogError($"SessionManager: Failed to save new local profile from DB update. Error: {saveResult.Error?.Message}");
-                    }
-                })
-                .AddTo(_disposables);
+            Debug.Log($"SessionManager: Local profile (SessionState.currentUserProfile) is null for FirebaseUser {SessionState.FirebaseUserId}. DB Profile Event for {dbProfileFromEvent.Name}. Attempting to create/load local profile.");
+
+            // Try to load it one more time, in case of race condition or if HandleDatabaseConnectedIdentity hasn't fully completed
+            Result<LocalUserProfileData> loadResult = await FileManager.GetLocalUserProfileAsync(SessionState.FirebaseUserId);
+            if (loadResult.Success && loadResult.Data != null)
+            {
+                SessionState.currentUserProfile = loadResult.Data;
+                Debug.Log($"SessionManager: Successfully re-loaded local profile for {SessionState.currentUserProfile.Name}. Will compare and update if needed.");
+                 if (SessionState.currentUserProfile.Name != dbProfileFromEvent.Name) // Or other fields
+                 {
+                    SessionState.currentUserProfile.Name = dbProfileFromEvent.Name;
+                    // Update other fields as needed
+                    await FileManager.SaveLocalUserProfileAsync(SessionState.currentUserProfile); 
+                 }
+            }
+            else
+            {
+                // If still null after re-load attempt, create it using FirebaseUserId and data from this dbProfileFromEvent
+                Debug.Log($"SessionManager: Still no local profile for {SessionState.FirebaseUserId}. Creating from DB event data ({dbProfileFromEvent.Name}).");
+                string userEmail = AuthProvider?.CurrentUserEmail;
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    Debug.LogError($"SessionManager: Cannot create local profile from DB update because AuthProvider.CurrentUserEmail is empty for FirebaseUID {SessionState.FirebaseUserId}. Profile creation aborted.");
+                    return; // Critical data missing
+                }
+
+                var newLocalProfile = new LocalUserProfileData
+                {
+                    Id = SessionState.FirebaseUserId, // Firebase UID
+                    Name = dbProfileFromEvent.Name,
+                    Email = userEmail, // Email from AuthProvider
+                    // Initialize other fields if UserData/LocalUserProfileData supports them and dbProfileFromEvent provides them
+                    // e.g., IsOnline = dbProfileFromEvent.IsOnline (assuming UserData has IsOnline)
+                    // CreatedAtUtc = DateTime.UtcNow, // Or map from dbProfileFromEvent.CreatedAt if available and convertible
+                    // LastOnlineUtc = DateTime.UtcNow // Or map from dbProfileFromEvent.LastOnline
+                };
+                
+                // Set sensible defaults if not mapped
+                if (newLocalProfile.CreatedAtUtc == default(DateTime)) newLocalProfile.CreatedAtUtc = DateTime.UtcNow;
+                if (newLocalProfile.LastOnlineUtc == default(DateTime)) newLocalProfile.LastOnlineUtc = DateTime.UtcNow;
+
+
+                ResultVoid saveResult = await FileManager.SaveLocalUserProfileAsync(newLocalProfile);
+                if (saveResult.Success)
+                {
+                    SessionState.currentUserProfile = newLocalProfile;
+                    Debug.Log($"SessionManager: Successfully created and saved new local profile from DB update for {newLocalProfile.Name}.");
+                }
+                else
+                {
+                    Debug.LogError($"SessionManager: Failed to save new local profile from DB update. Error: {saveResult.Error?.Message}");
+                }
+            }
         }
     }
 

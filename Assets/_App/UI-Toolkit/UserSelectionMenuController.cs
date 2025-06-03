@@ -131,29 +131,62 @@ public class UserSelectionMenuController : MonoBehaviour
     
     // Overload or modified method to handle click event with a stored ID
     void OnUserItemSelected(ClickEvent evt, VisualElement clickedItem)
-    {
+    {   
+        if (_userProfiles == null) 
+        {
+            Debug.LogError("User profiles list is null. Cannot select user.");
+            return;
+        }
+
         if (clickedItem.userData is string userId)
         {
-            _selectedUserId = userId;
-            Debug.Log($"User selected: {userId}. Attempting local login.");
+            LocalUserProfileData selectedProfile = _userProfiles.FirstOrDefault(p => p.Id == userId);
 
-            // Optionally, provide visual feedback for selection
-            foreach (var child in _userScrollView.Children())
+            if (selectedProfile != null)
             {
-                child.RemoveFromClassList("user-item-selected"); // Assuming you have a .user-item-selected style
-            }
-            clickedItem.AddToClassList("user-item-selected");
+                Debug.Log($"User profile found: {selectedProfile.Name} ({selectedProfile.Id}). Navigating to returning user login.");
 
-            _uiDriver?.UserSelectionCallback(userId); // Log in selected local user
+                // Optionally, provide visual feedback for selection
+                foreach (var child in _userScrollView.Children())
+                {
+                    child.RemoveFromClassList("user-item-selected"); // Assuming you have a .user-item-selected style
+                }
+                clickedItem.AddToClassList("user-item-selected");
+
+                _uiDriver?.DisplayReturningUserLogin(selectedProfile); 
+            }
+            else
+            {
+                Debug.LogError($"Could not find LocalUserProfileData for ID: {userId}");
+                // Potentially display an error to the user or fall back to a generic login
+            }
+        }
+        else
+        {
+            Debug.LogError("Clicked item userData is not a string (userId).");
         }
     }
 
     // Keep this if you want explicit user item clicks to do something distinct
+    // Or remove if OnUserItemSelected(ClickEvent, VisualElement) is the sole entry point for profile selection
     void OnUserItemSelected(string userId)
     {
-        _selectedUserId = userId;
-        Debug.Log($"User selected by direct call: {userId}");
-        _uiDriver?.UserSelectionCallback(userId); // Log in selected local user
+        // _selectedUserId = userId;
+        Debug.LogWarning($"Direct call to OnUserItemSelected(string userId) with {userId}. This path might need review.");
+        // This path likely also needs to find the profile and call DisplayReturningUserLogin
+        // For now, let's assume the ClickEvent version is the primary one.
+        // If this is still needed, it should also find the LocalUserProfileData object.
+        LocalUserProfileData selectedProfile = _userProfiles?.FirstOrDefault(p => p.Id == userId);
+        if (selectedProfile != null)
+        {
+            _uiDriver?.DisplayReturningUserLogin(selectedProfile);
+        }
+        else
+        {
+            Debug.LogError($"Could not find LocalUserProfileData for ID: {userId} in direct call.");
+             // Fallback or error: perhaps navigate to generic login or show error.
+            _uiDriver?.DisplayUserLogin(); // Example fallback
+        }
     }
 
 

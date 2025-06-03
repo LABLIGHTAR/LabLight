@@ -4,6 +4,7 @@ using System;
 public class LocalUserProfileData : UserData
 {
     public string Email;
+    public string LocalProfileImagePath { get; set; }
 
     // Optional: Constructor for convenience
     public LocalUserProfileData() : base() { }
@@ -16,6 +17,12 @@ public class LocalUserProfileData : UserData
         CreatedAtUtc = baseData.CreatedAtUtc;
         LastOnlineUtc = baseData.LastOnlineUtc;
         Email = email;
+    }
+
+    // Constructor including LocalProfileImagePath
+    public LocalUserProfileData(UserData baseData, string email, string localProfileImagePath) : this(baseData, email)
+    {
+        LocalProfileImagePath = localProfileImagePath;
     }
 
     public string GetName()

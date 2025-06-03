@@ -223,7 +223,44 @@ public class SwiftUIDriver : IUIDriver, IDisposable
 
     #region UI Display Methods (Implementing IUIDriver & Opening SwiftUI Windows)
     // These methods are called to instruct the SwiftUI frontend to display specific views/windows.
-    public void DisplayUserSelection() { OpenSwiftUIWindow("UserProfiles"); }
+    public void DisplayUserSelection() 
+    {
+        Debug.LogWarning("SwiftUIDriver: DisplayUserSelection() called. Consider using DisplayUserSelectionMenu(). Opening UserProfiles view.");
+        OpenSwiftUIWindow("UserProfiles"); 
+    }
+
+    public void DisplayUserSelectionMenu() 
+    {
+        OpenSwiftUIWindow("UserProfiles"); 
+        Debug.Log("SwiftUIDriver: DisplayUserSelectionMenu called. Instructing SwiftUI to open UserProfiles view.");
+    }
+
+    public void DisplayReturningUserLogin(LocalUserProfileData userProfile)
+    {
+        if (userProfile == null)
+        {
+            Debug.LogError("SwiftUIDriver: DisplayReturningUserLogin called with null userProfile. Cannot proceed.");
+            // Optionally, navigate back to user selection or show an error in SwiftUI
+            // DisplayUserSelectionMenu(); 
+            // SendMessageToSwiftUI("error|Null profile for returning user login");
+            return;
+        }
+
+        // Define a simple DTO for sending to SwiftUI, to avoid sending unnecessary data
+        var userProfileDto = new SwiftUserProfileDTO
+        {
+            Id = userProfile.Id, // Assuming UserData.Id is the Firebase UID or relevant ID for SwiftUI
+            Name = userProfile.Name,
+            Email = userProfile.Email
+            // ProfilePictureUrl = userProfile.ProfilePicturePath // Add this if you implement profile pictures
+        };
+        string profileJson = JsonConvert.SerializeObject(userProfileDto);
+
+        OpenSwiftUIWindow("ReturningUserLoginView"); // Ensure SwiftUI has a view with this name
+        SendMessageToSwiftUI($"returningUserLoginData|{profileJson}");
+        Debug.Log($"SwiftUIDriver: DisplayReturningUserLogin called for {userProfile.Name}. Instructing SwiftUI to open ReturningUserLoginView and sending data.");
+    }
+
     public void DisplayProtocolMenu() { OpenSwiftUIWindow("ProtocolMenu"); }
     public void DisplayTimer(int seconds) { OpenSwiftTimerWindow(seconds); }
     public void DisplayCalculator() { OpenSwiftUIWindow("Calculator"); }
@@ -580,6 +617,15 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     {
         public bool IsChecked { get; set; }
         public int CheckIndex { get; set; }
+    }
+
+    // DTO for sending essential user profile info to SwiftUI for the returning user login screen
+    public class SwiftUserProfileDTO
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        // public string ProfilePictureUrl { get; set; } // Uncomment if you add profile picture URLs
     }
     #endregion
 

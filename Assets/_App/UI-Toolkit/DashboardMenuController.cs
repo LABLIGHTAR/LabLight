@@ -6,7 +6,8 @@ using System.Globalization;
 public class DashboardMenuController : MonoBehaviour
 {
     private IUIDriver _uiDriver; // For navigation from nav buttons
-    private IDatabase _databaseService; // Added for profile updates
+    // private IDatabase _databaseService; // No longer directly needed for profile updates here
+    private SessionManager _sessionManager;
 
     // Header Elements
     private VisualElement _profileImage;
@@ -28,7 +29,7 @@ public class DashboardMenuController : MonoBehaviour
     void OnEnable()
     {
         _uiDriver = ServiceRegistry.GetService<IUIDriver>();
-        _databaseService = ServiceRegistry.GetService<IDatabase>(); // Resolve IDatabase service
+        _sessionManager = SessionManager.instance; // Get SessionManager instance
 
         var root = GetComponent<UIDocument>().rootVisualElement;
         if (root == null) 
@@ -55,13 +56,24 @@ public class DashboardMenuController : MonoBehaviour
         _navSettingsButton?.RegisterCallback<ClickEvent>(OnNavSettingsClicked); // Example nav
         _navLogoutButton?.RegisterCallback<ClickEvent>(OnNavLogoutClicked); // Register callback for logout
 
-        if (_databaseService != null)
+        if (_sessionManager != null)
         {
-            _databaseService.OnUserProfileUpdated += HandleUserProfileUpdated; // Subscribe to event
+            _sessionManager.OnSessionUserChanged += HandleSessionUserChanged; // Subscribe to new event
+            Debug.Log("DashboardMenuController: Subscribed to SessionManager.OnSessionUserChanged.");
+            // Initial update if a user is already in session when dashboard is enabled
+            if (SessionState.currentUserProfile != null)
+            {
+                HandleSessionUserChanged(SessionState.currentUserProfile);
+            }
+            else
+            {
+                UpdateUserNameDisplay(null); // Set to default/empty if no user
+            }
         }
         else
         {
-            Debug.LogError("DashboardMenuController: IDatabase service not found. Username updates might not be reactive.");
+            Debug.LogError("DashboardMenuController: SessionManager instance not found. Username updates will not be reactive.");
+            UpdateUserNameDisplay(null); // Set to default/empty
         }
 
         if (_noticesPanel != null)
@@ -85,9 +97,10 @@ public class DashboardMenuController : MonoBehaviour
         _navSettingsButton?.UnregisterCallback<ClickEvent>(OnNavSettingsClicked);
         _navLogoutButton?.UnregisterCallback<ClickEvent>(OnNavLogoutClicked); // Unregister callback for logout
 
-        if (_databaseService != null)
+        if (_sessionManager != null)
         {
-            _databaseService.OnUserProfileUpdated -= HandleUserProfileUpdated; // Unsubscribe from event
+            _sessionManager.OnSessionUserChanged -= HandleSessionUserChanged; // Unsubscribe from new event
+            Debug.Log("DashboardMenuController: Unsubscribed from SessionManager.OnSessionUserChanged.");
         }
     }
 
@@ -136,10 +149,20 @@ public class DashboardMenuController : MonoBehaviour
         // Potentially update _profileImage here too if URL/texture is available
     }
 
-    private void HandleUserProfileUpdated(UserData userData) // New method to handle profile updates
+    private void UpdateUserNameDisplay(LocalUserProfileData userProfile) // Renamed from UpdateUserName for clarity
     {
-        Debug.Log($"DashboardMenuController: Received UserProfile update for {userData?.Name}. Refreshing username display.");
-        UpdateUserName();
+        if (_userNameLabel != null)
+        {
+            _userNameLabel.text = userProfile?.Name ?? "User"; // Use provided profile or fallback
+        }
+        // Potentially update _profileImage here too if URL/texture is available from userProfile
+    }
+
+    private void HandleSessionUserChanged(LocalUserProfileData userProfile) // New handler for the SessionManager event
+    {
+        Debug.Log($"DashboardMenuController: HandleSessionUserChanged called for {userProfile?.Name ?? "null user"}. Refreshing display.");
+        UpdateUserNameDisplay(userProfile);
+        UpdateGreeting(); // Greeting might depend on having a user vs. not
     }
 
     private void SetInitialNoticesState()
@@ -206,14 +229,18 @@ public class DashboardMenuController : MonoBehaviour
         // Refresh dynamic content when the dashboard becomes visible
         UpdateTime();
         UpdateGreeting();
-        UpdateUserName();
-        // CheckInitialNoticesVisibility(); // Or a method to re-populate notices
-        // Ensure user data is current (e.g. from SessionState)
+        // UpdateUserNameDisplay is now primarily driven by OnSessionUserChanged,
+        // but we can call it here to ensure consistency if the event was missed or for initial display.
+        UpdateUserNameDisplay(SessionState.currentUserProfile);
+        
         if (SessionState.currentUserProfile != null && _userNameLabel != null)
         {
              _userNameLabel.text = SessionState.currentUserProfile.Name;
         }
-        // Potentially load profile image here too
+        else if (_userNameLabel != null)
+        {
+            _userNameLabel.text = "User"; // Ensure fallback if no profile
+        }
 
         // Reset notices panel state if needed
         if (_noticesInnerContent != null && !_areNoticesVisible) // If returning to dash and it was collapsed

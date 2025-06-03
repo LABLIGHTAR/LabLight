@@ -19,7 +19,8 @@ public interface IUIDriver
     #endregion
 
     #region UI Display Methods (Platform-Specific Commands to Show UI)
-    void DisplayUserSelection();
+    void DisplayUserSelectionMenu();
+    void DisplayReturningUserLogin(LocalUserProfileData userProfile);
     void DisplayProtocolMenu();
     void DisplayUserRegistration();
     void DisplayUserLogin();

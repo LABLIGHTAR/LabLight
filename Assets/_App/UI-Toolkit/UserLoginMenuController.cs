@@ -71,7 +71,7 @@ public class UserLoginMenuController : MonoBehaviour
     private void OnBackClicked(ClickEvent evt)
     {
         Debug.Log("Back button clicked. Navigating to user selection.");
-        _uiDriver?.DisplayUserSelection(); // Assumes DisplayUserSelection exists and is the correct back target
+        _uiDriver?.DisplayUserSelectionMenu(); // Corrected call
     }
 
     private void ShowError(string message)

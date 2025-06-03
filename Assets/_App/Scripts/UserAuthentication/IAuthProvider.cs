@@ -72,6 +72,10 @@ public interface IAuthProvider
     /// Gets the current user's email from the authentication provider.
     /// </summary>
     string CurrentUserEmail { get; }
+    /// <summary>
+    /// Gets the current user's photo URL from the authentication provider.
+    /// </summary>
+    System.Uri CurrentUserPhotoUrl { get; }
 
     /// <summary>
     /// Asynchronously retrieves the current user's OIDC ID token.

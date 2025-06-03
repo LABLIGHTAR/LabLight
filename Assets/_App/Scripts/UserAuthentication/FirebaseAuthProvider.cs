@@ -37,6 +37,7 @@ public class FirebaseAuthProvider : MonoBehaviour, IAuthProvider
     public bool IsSignedIn => CurrentAuthStatus == AuthStatus.SignedIn;
     public string CurrentUserId => user?.UserId ?? string.Empty;
     public string CurrentUserEmail => user?.Email ?? string.Empty;
+    public System.Uri CurrentUserPhotoUrl => user?.PhotoUrl;
 
     public async Task<string> GetIdTokenAsync(bool forceRefresh)
     {

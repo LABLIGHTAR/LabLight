@@ -17,6 +17,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private UIDocument userSelectionToolkitPanel;
     [SerializeField] private UIDocument userRegistrationToolkitPanel;
     [SerializeField] private UIDocument userLoginToolkitPanel;
+    [SerializeField] private UIDocument returningUserLoginToolkitPanel;
     [SerializeField] private UIDocument dashboardMenuToolkitPanel;
     [SerializeField] private ProtocolPanelViewController protocolPanel;
     [SerializeField] private ChecklistPanelViewController checklistPanel;
@@ -95,7 +96,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     private void HandleSignOutSuccess()
     {
-        DisplayUserSelection();
+        DisplayUserSelectionMenu();
     }
     #endregion
 
@@ -149,13 +150,53 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void DisplayUserSelection()
     {
         HideAllPanels();
+        if (userSelectionPanel != null && userSelectionPanel.gameObject != null) 
+        {
+            userSelectionPanel.gameObject.SetActive(true);
+        } 
+        else if (userSelectionToolkitPanel != null)
+        {
+             Debug.LogWarning("DisplayUserSelection called, but legacy userSelectionPanel not found or active. Defaulting to userSelectionToolkitPanel. Consider using DisplayUserSelectionMenu directly.");
+            userSelectionToolkitPanel.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: Neither userSelectionPanel nor userSelectionToolkitPanel is assigned for DisplayUserSelection.");
+        }
+    }
+
+    public void DisplayUserSelectionMenu()
+    {
+        HideAllPanels();
         if (userSelectionToolkitPanel != null)
         {
             userSelectionToolkitPanel.gameObject.SetActive(true);
         }
         else
         {
-            Debug.LogError("UnityUIDriver: userSelectionToolkitPanel (UIDocument) is not assigned.");
+            Debug.LogError("UnityUIDriver: userSelectionToolkitPanel (UIDocument) is not assigned for DisplayUserSelectionMenu.");
+        }
+    }
+
+    public void DisplayReturningUserLogin(LocalUserProfileData userProfile)
+    {
+        HideAllPanels();
+        if (returningUserLoginToolkitPanel != null)
+        {
+            returningUserLoginToolkitPanel.gameObject.SetActive(true);
+            var controller = returningUserLoginToolkitPanel.GetComponent<ReturningUserLoginMenuController>();
+            if (controller != null)
+            {
+                controller.SetUserProfile(userProfile);
+            }
+            else
+            {
+                Debug.LogError("UnityUIDriver: ReturningUserLoginMenuController not found on returningUserLoginToolkitPanel.");
+            }
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: returningUserLoginToolkitPanel (UIDocument) is not assigned.");
         }
     }
 
@@ -408,14 +449,17 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     #region Helper Methods
     private void HideAllPanels()
     {
-        if (userSelectionPanel != null) userSelectionPanel.gameObject.SetActive(false);
+        if (userSelectionPanel != null && userSelectionPanel.gameObject != null) userSelectionPanel.gameObject.SetActive(false);
         if (userSelectionToolkitPanel != null) userSelectionToolkitPanel.gameObject.SetActive(false);
         if (userRegistrationToolkitPanel != null) userRegistrationToolkitPanel.gameObject.SetActive(false);
         if (userLoginToolkitPanel != null) userLoginToolkitPanel.gameObject.SetActive(false);
+        if (returningUserLoginToolkitPanel != null) returningUserLoginToolkitPanel.gameObject.SetActive(false);
         if (dashboardMenuToolkitPanel != null) dashboardMenuToolkitPanel.gameObject.SetActive(false);
-        if (protocolPanel != null) protocolPanel.gameObject.SetActive(false);
-        if (checklistPanel != null) checklistPanel.gameObject.SetActive(false);
-        if (protocolMenuPanel != null) protocolMenuPanel.gameObject.SetActive(false);
+        if (protocolPanel != null && protocolPanel.gameObject != null) protocolPanel.gameObject.SetActive(false);
+        if (checklistPanel != null && checklistPanel.gameObject != null) checklistPanel.gameObject.SetActive(false);
+        if (protocolMenuPanel != null && protocolMenuPanel.gameObject != null) protocolMenuPanel.gameObject.SetActive(false);
+        if (timerPanel != null && timerPanel.gameObject != null) timerPanel.gameObject.SetActive(false);
+        if (chatPanel != null && chatPanel.gameObject != null) chatPanel.gameObject.SetActive(false);
     }
     #endregion
 }

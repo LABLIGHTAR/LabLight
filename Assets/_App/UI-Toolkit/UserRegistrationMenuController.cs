@@ -95,7 +95,7 @@ public class UserRegistrationMenuController : MonoBehaviour
     private void OnBackClicked(ClickEvent evt)
     {
         Debug.Log("Back button clicked. Navigating to user selection.");
-        _uiDriver?.DisplayUserSelection(); // Directly call UIDriver
+        _uiDriver?.DisplayUserSelectionMenu();
     }
 
     private void ShowError(string message)
