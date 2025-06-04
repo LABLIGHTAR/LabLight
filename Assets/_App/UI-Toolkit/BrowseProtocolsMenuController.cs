@@ -103,7 +103,14 @@ public partial class BrowseProtocolsMenuController : MonoBehaviour
     {
         if (_fileManager == null || _protocolsScrollView == null || protocolListItemTemplate == null)
         {
-            Debug.LogError("Cannot load protocols: File Manager, ScrollView, or Item Template is missing.");
+            Debug.LogError("BrowseProtocolsMenuController: Cannot load protocols: File Manager, ScrollView, or Item Template is missing.");
+            return;
+        }
+
+        // Ensure database service is available
+        if (_database == null)
+        {
+            Debug.LogError("BrowseProtocolsMenuController: Database service is not available.");
             return;
         }
 
@@ -122,29 +129,33 @@ public partial class BrowseProtocolsMenuController : MonoBehaviour
                 return;
             }
 
+            IUICallbackHandler uiCallbackHandler = ServiceRegistry.GetService<IUICallbackHandler>();
+            if (uiCallbackHandler == null)
+            {
+                Debug.LogError("BrowseProtocolsMenuController: IUICallbackHandler service not found. Protocol items cannot be fully initialized.");
+                // Optionally, display an error in the UI
+                var errorLabel = new Label("Error initializing protocol items: Missing UI handler.");
+                errorLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+                errorLabel.style.color = Color.red;
+                _protocolsScrollView.Add(errorLabel);
+                return;
+            }
+
             foreach (var protocolDataEntry in result.Data)
             {
                 TemplateContainer listItemInstance = protocolListItemTemplate.Instantiate();
-                ProtocolListItemController itemController = listItemInstance.Q<ProtocolListItemController>("protocol-item-container");
+                // Query for the ProtocolListItemController by type, as it's the root of its own UXML.
+                ProtocolListItemController itemController = listItemInstance.Q<ProtocolListItemController>();
 
                 if (itemController != null)
                 {
-                    itemController.SetProtocolData(protocolDataEntry, _uiDriver as IUICallbackHandler, _database);
-                    IUICallbackHandler uiCallbackHandler = ServiceRegistry.GetService<IUICallbackHandler>();
-                    if (uiCallbackHandler != null)
-                    {
-                         itemController.SetProtocolData(protocolDataEntry, uiCallbackHandler, _database);
-                    }
-                    else
-                    {
-                        Debug.LogError("BrowseProtocolsMenuController: IUICallbackHandler service not found for list item.");
-                        itemController.SetEnabled(false); 
-                    }
+                    // Single, safe call to SetProtocolData
+                    itemController.SetProtocolData(protocolDataEntry, uiCallbackHandler, _database);
                 }
                 else
                 {
-                    Debug.LogError("Could not find ProtocolListItemController component in instantiated UXML item.");
-                    continue;
+                    Debug.LogError("Could not find ProtocolListItemController component in instantiated UXML item. Ensure ProtocolListItem.uxml's root is <ProtocolListItemController> and it has been correctly registered if needed.");
+                    continue; // Skip this item
                 }
                 
                 _protocolsScrollView.Add(listItemInstance);
@@ -174,7 +185,8 @@ public partial class BrowseProtocolsMenuController : MonoBehaviour
     {
         if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItemVisualElement))
         {
-            ProtocolListItemController itemController = listItemVisualElement.Q<ProtocolListItemController>("protocol-item-container");
+            // Query for the controller by type within the stored visual element
+            ProtocolListItemController itemController = listItemVisualElement.Q<ProtocolListItemController>();
             itemController?.RefreshSaveButtonState();
         }
     }
@@ -183,7 +195,8 @@ public partial class BrowseProtocolsMenuController : MonoBehaviour
     {
         if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItemVisualElement))
         {
-            ProtocolListItemController itemController = listItemVisualElement.Q<ProtocolListItemController>("protocol-item-container");
+            // Query for the controller by type within the stored visual element
+            ProtocolListItemController itemController = listItemVisualElement.Q<ProtocolListItemController>();
             itemController?.RefreshSaveButtonState();
         }
     }

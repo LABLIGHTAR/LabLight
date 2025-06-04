@@ -16,16 +16,21 @@ using Newtonsoft.Json; // For serializing protocol data
         private const string SelectProtocolAreaButtonName = "select-protocol-area-button";
         private const string ProtocolNameLabelName = "protocol-name-label";
         private const string OwnerNameLabelName = "owner-name-label";
+        private const string ProtocolDescriptionLabelName = "protocol-description-label";
         private const string SaveUnsaveButtonName = "save-unsave-button";
+        private const string DeleteProtocolButtonName = "delete-protocol-button";
 
         // Queried child elements
         private Button _selectProtocolButton;
         private Label _protocolNameLabel;
         private Label _ownerNameLabel;
+        private Label _protocolDescriptionLabel;
         private Button _saveUnsaveButton;
+        private Button _deleteProtocolButton;
 
         // Data and dependencies
-        private ProtocolData _protocolData; // Changed from ProtocolDefinition to ProtocolData for broader compatibility with list sources
+        private ProtocolData _protocolData; 
+        private ProtocolDefinition _protocolDefinition; // Stores the deserialized full protocol definition
         private IUICallbackHandler _uiCallbackHandler;
         private IDatabase _database;
 
@@ -62,7 +67,9 @@ using Newtonsoft.Json; // For serializing protocol data
             // Query labels within the select button's hierarchy
             _protocolNameLabel = _selectProtocolButton?.Q<Label>(ProtocolNameLabelName);
             _ownerNameLabel = _selectProtocolButton?.Q<Label>(OwnerNameLabelName);
+            _protocolDescriptionLabel = _selectProtocolButton?.Q<Label>(ProtocolDescriptionLabelName);
             _saveUnsaveButton = this.Q<Button>(SaveUnsaveButtonName);
+            _deleteProtocolButton = this.Q<Button>(DeleteProtocolButtonName);
             
             // If data was set before attach, ensure events are bound and state is refreshed
             if (_protocolData != null && _uiCallbackHandler != null && _database != null)
@@ -76,6 +83,7 @@ using Newtonsoft.Json; // For serializing protocol data
             _protocolData = protocol;
             _uiCallbackHandler = uiCallbackHandler;
             _database = database;
+            _protocolDefinition = null; // Reset in case of reuse
 
             if (_protocolData == null || _uiCallbackHandler == null || _database == null)
             {
@@ -83,14 +91,39 @@ using Newtonsoft.Json; // For serializing protocol data
                 this.SetEnabled(false);
                 if(_protocolNameLabel != null) _protocolNameLabel.text = "Error";
                 if(_ownerNameLabel != null) _ownerNameLabel.text = "Error loading data";
+                if(_protocolDescriptionLabel != null) _protocolDescriptionLabel.text = "Error loading data";
                 return;
+            }
+            
+            // Attempt to parse the full ProtocolDefinition from ProtocolData.Content
+            if (!string.IsNullOrEmpty(_protocolData.Content))
+            {
+                try
+                {
+                    _protocolDefinition = JsonConvert.DeserializeObject<ProtocolDefinition>(_protocolData.Content);
+                    if (_protocolDefinition == null)
+                    {
+                        Debug.LogWarning($"ProtocolListItemController: Deserialized ProtocolDefinition is null for protocol '{_protocolData.Name}'. Content might be invalid.");
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    Debug.LogError($"ProtocolListItemController: Failed to deserialize ProtocolData.Content for protocol '{_protocolData.Name}'. Error: {ex.Message}");
+                    _protocolDefinition = null; // Ensure it's null if parsing fails
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"ProtocolListItemController: ProtocolData.Content is null or empty for protocol '{_protocolData.Name}'. Full definition not available.");
             }
             
             // Fallback querying if elements weren't ready during OnAttachToPanel or SetProtocolData called first
             if (_selectProtocolButton == null) _selectProtocolButton = this.Q<Button>(SelectProtocolAreaButtonName);
             if (_protocolNameLabel == null) _protocolNameLabel = _selectProtocolButton?.Q<Label>(ProtocolNameLabelName);
             if (_ownerNameLabel == null) _ownerNameLabel = _selectProtocolButton?.Q<Label>(OwnerNameLabelName);
+            if (_protocolDescriptionLabel == null) _protocolDescriptionLabel = _selectProtocolButton?.Q<Label>(ProtocolDescriptionLabelName);
             if (_saveUnsaveButton == null) _saveUnsaveButton = this.Q<Button>(SaveUnsaveButtonName);
+            if (_deleteProtocolButton == null) _deleteProtocolButton = this.Q<Button>(DeleteProtocolButtonName);
 
             BindDataAndEvents();
         }
@@ -111,6 +144,11 @@ using Newtonsoft.Json; // For serializing protocol data
             }
             else { Debug.LogWarning($"'{OwnerNameLabelName}' not found in ProtocolListItem for protocol '{_protocolData?.Name}'."); }
 
+            if (_protocolDescriptionLabel != null)
+            {
+                _protocolDescriptionLabel.text = _protocolDefinition?.description ?? "Description not available.";
+            }
+
             if (_selectProtocolButton != null)
             {
                 _selectProtocolButton.UnregisterCallback<ClickEvent>(OnSelectProtocolClicked);
@@ -125,6 +163,27 @@ using Newtonsoft.Json; // For serializing protocol data
                 RefreshSaveButtonState(); // Set initial state
             }
             else { Debug.LogWarning($"'{SaveUnsaveButtonName}' not found for protocol '{_protocolData?.Name}'."); }
+
+            // Handle Delete Button Visibility and Event
+            if (_deleteProtocolButton != null)
+            {
+                ProtocolOwnershipData ownership = _database.GetCachedProtocolOwnership(_protocolData.Id);
+                // Assuming ProtocolOwnershipData has an OwnerID field (string type, SpacetimeDB Identity)
+                // And IDatabase.CurrentUserId provides the current SpacetimeDB Identity of the logged-in user.
+                if (ownership != null && !string.IsNullOrEmpty(ownership.OwnerId) && ownership.OwnerId == _database.CurrentUserId)
+                {
+                    _deleteProtocolButton.style.display = DisplayStyle.Flex; // Make visible
+                    _deleteProtocolButton.SetEnabled(true);
+                    _deleteProtocolButton.UnregisterCallback<ClickEvent>(OnDeleteProtocolClicked);
+                    _deleteProtocolButton.RegisterCallback<ClickEvent>(OnDeleteProtocolClicked);
+                }
+                else
+                {
+                    _deleteProtocolButton.style.display = DisplayStyle.None; // Keep hidden
+                    _deleteProtocolButton.SetEnabled(false);
+                }
+            }
+            else { Debug.LogWarning($"'{DeleteProtocolButtonName}' not found for protocol '{_protocolData?.Name}'."); }
         }
 
         public void RefreshSaveButtonState()
@@ -147,18 +206,16 @@ using Newtonsoft.Json; // For serializing protocol data
         private void OnSelectProtocolClicked(ClickEvent evt)
         {
             if (_protocolData == null || _uiCallbackHandler == null) return;
-            
-            // IMPORTANT: HandleProtocolSelection typically expects a JSON of the full ProtocolDefinition (with steps).
-            // ProtocolData is often a summary. If _protocolData is just ProtocolData (summary from list),
-            // you might need to fetch the full ProtocolDefinition using its ID before serializing,
-            // or ensure HandleProtocolSelection can work with just an ID or summary to load the full definition itself.
-            // For this example, we'll assume HandleProtocolSelection needs the full definition and _protocolData IS that,
-            // OR that serializing ProtocolData and having the handler manage it is acceptable.
-            // If ProtocolData needs to be converted/fetched to full ProtocolDefinition, that logic goes here or in handler.
 
-            Debug.Log($"ProtocolListItemController: Protocol selected - {_protocolData.Name} (ID: {_protocolData.Id})");
-            // Serializing _protocolData (which is ProtocolData type). Ensure downstream handler expects this or can derive full def.
-            string protocolJson = JsonConvert.SerializeObject(_protocolData); 
+            if (_protocolDefinition == null)
+            {
+                Debug.LogError($"ProtocolListItemController: ProtocolDefinition not available for protocol '{_protocolData.Name}' (ID: {_protocolData.Id}). Cannot proceed with selection as full definition is required.");
+                return;
+            }
+            
+            Debug.Log($"ProtocolListItemController: Protocol selected - {_protocolDefinition.title} (ID: {_protocolData.Id})");
+            // Serializing _protocolDefinition. Ensure downstream handler expects this.
+            string protocolJson = JsonConvert.SerializeObject(_protocolDefinition); 
             _uiCallbackHandler.HandleProtocolSelection(protocolJson);
         }
 
@@ -181,6 +238,16 @@ using Newtonsoft.Json; // For serializing protocol data
             }
             // The button state (text, enabled) will be refreshed when the parent controller's 
             // DB event handler calls RefreshSaveButtonState() on this instance.
+        }
+
+        private void OnDeleteProtocolClicked(ClickEvent evt)
+        {
+            if (_protocolData == null || _uiCallbackHandler == null || _database == null) return;
+            
+            // Optional: Add a confirmation dialog here before deleting.
+            // For now, directly call the handler.
+            Debug.Log($"ProtocolListItemController: Delete requested for protocol - {_protocolData.Name} (ID: {_protocolData.Id})");
+            _uiCallbackHandler.HandleDeleteProtocol(_protocolData.Id);
         }
     }
 // } 

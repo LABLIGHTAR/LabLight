@@ -12,6 +12,7 @@ public interface IUICallbackHandler
     Task HandleLogin(string username, string password);
     Task<List<LocalUserProfileData>> HandleCreateUser(string userName);
     Task HandleAuthRegistration(string displayName, string email, string password);
+    void RequestSignOut();
     #endregion
 
     #region Protocol Navigation & Interaction Callbacks
@@ -21,6 +22,7 @@ public interface IUICallbackHandler
     void HandleSignOffChecklist();
     void HandleProtocolSelection(string protocolJson);
     void HandleCloseProtocol();
+    void HandleDeleteProtocol(uint protocolId);
     #endregion
 
     #region Communication Callbacks

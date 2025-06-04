@@ -16,6 +16,7 @@ public class UICallbackHandler : IUICallbackHandler
     private IAuthProvider _authProvider;
     private IFileManager _fileManager;
     private ILLMChatProvider _llmChatProvider;
+    private IDatabase _database;
     #endregion
 
     #region Constructor
@@ -25,10 +26,12 @@ public class UICallbackHandler : IUICallbackHandler
         _authProvider = ServiceRegistry.GetService<IAuthProvider>();
         _fileManager = ServiceRegistry.GetService<IFileManager>();
         _llmChatProvider = ServiceRegistry.GetService<ILLMChatProvider>();
+        _database = ServiceRegistry.GetService<IDatabase>();
 
         if (_authProvider == null) Debug.LogError("UICallbackHandler: IAuthProvider is not available from ServiceRegistry.");
         if (_fileManager == null) Debug.LogError("UICallbackHandler: IFileManager is not available from ServiceRegistry.");
         if (_llmChatProvider == null) Debug.LogError("UICallbackHandler: ILLMChatProvider is not available from ServiceRegistry.");
+        if (_database == null) Debug.LogError("UICallbackHandler: IDatabase is not available from ServiceRegistry.");
     }
     #endregion
 
@@ -404,6 +407,19 @@ public class UICallbackHandler : IUICallbackHandler
         }
         ProtocolState.Instance.ActiveProtocol.Value = null;
     }
+
+    public void HandleDeleteProtocol(uint protocolId)
+    {
+        if (_database == null)
+        {
+            Debug.LogError("UICallbackHandler: IDatabase service is not available. Cannot delete protocol.");
+            return;
+        }
+        Debug.Log($"UICallbackHandler: Requesting deletion of protocol ID: {protocolId}");
+        _database.DeleteProtocol(protocolId);
+        // After deletion, the UI list should refresh. This might happen via database events
+        // or the calling UI controller might need to explicitly refresh its list.
+    }
     #endregion
 
     #region Communication Callbacks
@@ -417,4 +433,14 @@ public class UICallbackHandler : IUICallbackHandler
         _llmChatProvider.QueryAsync(message);
     }
     #endregion
+
+    // Placeholder for RequestSignOut if it's not handled elsewhere
+    public void RequestSignOut()
+    {
+        Debug.Log("UICallbackHandler: RequestSignOut called. Actual sign-out logic should be handled by SessionManager or AuthProvider.");
+        // Example: SessionManager.Instance?.SignOut(); 
+        // Or: _authProvider?.SignOut();
+        // If IUICallbackHandler is meant to trigger it, then:
+        // _authProvider?.SignOut(); // Or equivalent method on IAuthProvider
+    }
 } 
