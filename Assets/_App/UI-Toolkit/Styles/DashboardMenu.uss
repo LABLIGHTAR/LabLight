@@ -14,38 +14,24 @@
 }
 
 .nav-bar-column {
+    /* Inherits background, border, radius, base padding from .content-column-panel */
     width: 20%;
     min-width: 150px;
-    height: 100%;
-    padding: 15px;
-    background-color: rgba(0, 0, 0, 0.25);
-    flex-direction: column;
-    border-radius: 15px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.3);
+    /* flex-direction: column; /* Default from .content-column-panel */
 }
 
 .main-content-column {
+    /* Inherits background, border, radius, base padding from .content-column-panel */
     width: 60%;
-    height: 100%;
-    padding: 20px;
-    flex-direction: column;
-    background-color: rgba(0, 0, 0, 0.25);
-    border-radius: 15px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.3);
+    padding: 20px; /* Overrides base padding */
+    /* flex-direction: column; /* Default from .content-column-panel */
 }
 
 .notices-column {
+    /* Inherits background, border, radius, base padding from .content-column-panel */
     width: 20%;
     min-width: 150px;
-    height: 100%;
-    padding: 15px;
-    background-color: rgba(0, 0, 0, 0.25);
-    position: relative;
-    border-radius: 15px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.3);
+    position: relative; /* Specific to this column */
 }
 
 .notices-inner-content {

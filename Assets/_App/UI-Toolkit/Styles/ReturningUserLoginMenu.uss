@@ -1,9 +1,0 @@
-/* ReturningUserLoginMenu.uss */
-
-/* Styles specific to the ReturningUserLoginMenu can be added here if needed.
-   For now, it will rely heavily on CoreStyles.uss and inline styles in the UXML.
-*/
-
-/* .profile-image-placeholder removed, moved to CoreStyles.uss */
-
-/* Add any other specific styles for ReturningUserLoginMenu elements */ 

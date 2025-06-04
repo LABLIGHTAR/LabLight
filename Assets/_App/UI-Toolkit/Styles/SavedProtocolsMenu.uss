@@ -1,12 +1,6 @@
 /* SavedProtocolsMenu.uss */
-
-.protocols-scroll-view {
-    width: 100%;
-    min-height: 300px;
-    max-height: 500px;
-    margin-bottom: 15px;
-    /* Add other styling as needed, potentially similar to .user-scroll-view */
-}
+/* All styles originally here (e.g., .protocols-scroll-view, .protocol-list-item and its sub-classes) have been moved to CoreStyles.uss */
+/* This file can be deleted if no menu-specific styles are added in the future. */
 
 .protocol-list-item {
     flex-direction: row;

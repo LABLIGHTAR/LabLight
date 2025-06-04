@@ -1,5 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/_App/UI-Toolkit/Styles/UserItemStyles.uss?fileID=7433441132597879392&amp;guid=e8e43aa89d35ca94099db7d5445467f4&amp;type=3#UserItemStyles" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />
     <ui:VisualElement name="user-item" class="user-item">
         <ui:VisualElement name="user-image" class="user-item-image" />
         <ui:Label name="user-name-label" text="User Name" class="user-item-name-label" />

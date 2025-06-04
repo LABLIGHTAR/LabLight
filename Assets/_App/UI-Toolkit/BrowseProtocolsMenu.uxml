@@ -1,6 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />
-    <Style src="project://database/Assets/_App/UI-Toolkit/Styles/BrowseProtocolsMenu.uss" />
     <ui:VisualElement name="browse-protocols-panel" class="glassmorphic-panel">
         <ui:Label text="Browse Protocols" class="title-label" />
         <ui:ScrollView name="protocols-scroll-view" class="protocols-scroll-view">

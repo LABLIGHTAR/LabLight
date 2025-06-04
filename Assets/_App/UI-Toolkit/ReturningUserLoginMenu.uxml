@@ -1,6 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />
-    <Style src="project://database/Assets/_App/UI-Toolkit/Styles/ReturningUserLoginMenu.uss" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />    
     <ui:VisualElement name="returning-user-login-panel" class="glassmorphic-panel">
         <ui:VisualElement name="profile-picture-container" style="align-items: center; margin-bottom: 15px;">
             <ui:VisualElement name="profile-image" class="profile-image-placeholder" />

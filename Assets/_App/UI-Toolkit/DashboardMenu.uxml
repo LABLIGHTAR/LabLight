@@ -2,7 +2,7 @@
     <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />
     <Style src="project://database/Assets/_App/UI-Toolkit/Styles/DashboardMenu.uss?fileID=7433441132597879392&amp;guid=6ef6997447395ff4fb325ab0ec29bb43&amp;type=3#DashboardMenu" />
     <ui:VisualElement name="dashboard-container" class="glassmorphic-panel">
-        <ui:VisualElement name="nav-bar" class="nav-bar-column">
+        <ui:VisualElement name="nav-bar" class="nav-bar-column content-column-panel">
             <ui:Button name="nav-messages" text="Messages" class="action-button" />
             <ui:Button name="nav-notifications" text="Notifications" class="action-button" />
             <ui:Button name="nav-saved-protocols" text="Saved Protocols" class="action-button" />
@@ -10,7 +10,7 @@
             <ui:Button name="nav-settings" text="Settings" class="action-button" />
             <ui:Button name="nav-logout" text="Log Out" class="action-button" />
         </ui:VisualElement>
-        <ui:VisualElement name="main-content" class="main-content-column">
+        <ui:VisualElement name="main-content" class="main-content-column content-column-panel">
             <ui:VisualElement name="header-section" class="header-section">
                 <ui:VisualElement name="user-greeting-container" style="flex-direction: row; align-items: center;">
                     <ui:VisualElement name="profile-image" class="profile-image-placeholder" />
@@ -28,7 +28,7 @@
                 <ui:VisualElement name="protocols-placeholder" style="height: 100px; background-color: rgba(128, 128, 128, 0.3);" />
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="notices-panel" class="notices-column">
+        <ui:VisualElement name="notices-panel" class="notices-column content-column-panel">
             <ui:VisualElement name="notices-inner-content" style="flex-grow: 1; flex-direction: column;">
                 <ui:Label text="Notices:" class="h2 notice-title" />
                 <ui:ScrollView name="notices-scroll-view">
