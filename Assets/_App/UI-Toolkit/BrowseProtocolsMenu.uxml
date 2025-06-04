@@ -5,7 +5,7 @@
         <ui:ScrollView name="protocols-scroll-view" class="protocols-scroll-view">
             <!-- Protocol items will be added here by C# -->
         </ui:ScrollView>
-        <ui:VisualElement name="button-container" class="button-container" style="margin-top: 20px; flex-direction: row; justify-content: space-around;">
+        <ui:VisualElement name="button-container" class="margin-top-medium button-group-row-spaced">
             <ui:Button text="Back" name="back-button" class="action-button secondary-button" />
             <ui:Button text="Refresh" name="refresh-button" class="action-button" />
         </ui:VisualElement>

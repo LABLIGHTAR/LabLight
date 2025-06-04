@@ -1,18 +1,18 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />    
     <ui:VisualElement name="returning-user-login-panel" class="glassmorphic-panel">
-        <ui:VisualElement name="profile-picture-container" style="align-items: center; margin-bottom: 15px;">
+        <ui:VisualElement name="profile-picture-container" class="profile-image-area">
             <ui:VisualElement name="profile-image" class="profile-image-placeholder" />
         </ui:VisualElement>
-        <ui:Label name="welcome-label" text="Welcome back, [Username]!" class="h2" style="text-align: center; margin-bottom: 20px; align-self: center;" />
-        <ui:VisualElement name="form-container" style="width: 80%;">
+        <ui:Label name="welcome-label" text="Welcome back, [Username]!" class="h2 text-block-centered-spacious" />
+        <ui:VisualElement name="form-container" class="form-layout-centered-narrow">
             <!-- Email might be pre-filled or not shown if username implies it -->
             <ui:TextField name="password-field" label="Password" password="true" class="new-user-input" />
         </ui:VisualElement>
-        <ui:VisualElement name="error-label-container" style="height: 20px; margin-top: 10px; margin-bottom: 5px;">
-            <ui:Label name="error-label" class="error-message-label" style="display: none;" />
+        <ui:VisualElement name="error-label-container" class="error-message-area">
+            <ui:Label name="error-label" class="error-message-label hidden" />
         </ui:VisualElement>
-        <ui:VisualElement name="button-container" class="button-container" style="margin-top: 20px;">
+        <ui:VisualElement name="button-container" class="margin-top-medium">
             <ui:Button text="Login" name="login-button" class="action-button" />
             <ui:Button text="Switch User" name="back-button" class="action-button secondary-button" />
         </ui:VisualElement>

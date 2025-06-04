@@ -1,5 +1,4 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />
     <ui:VisualElement name="protocol-item-container" class="protocol-list-item">
         <ui:VisualElement name="info-container" class="protocol-item-info-container">
             <ui:Label name="protocol-name-label" text="Protocol Name" class="protocol-name" />

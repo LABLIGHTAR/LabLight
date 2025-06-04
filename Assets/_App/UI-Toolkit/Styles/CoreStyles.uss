@@ -1,8 +1,11 @@
-/* Core styles for common UI elements */
+/* CoreStyles.uss - Reorganized */
+
+/* === Global Styles === */
 * {
     color: white;
 }
 
+/* === Layout - Panels & Containers === */
 .glassmorphic-panel {
     margin-left: auto;
     margin-right: auto;
@@ -10,10 +13,8 @@
     margin-bottom: auto;
     min-width: 400px;
     padding: 25px;
-
     background-color: rgba(0, 0, 0, 0.25);
     border-radius: 25px;
-    
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -22,6 +23,64 @@
     border-color: rgba(255, 255, 255, 0.3);
 }
 
+.content-column-panel {
+    height: 100%;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 15px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.form-layout-centered-narrow {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.profile-image-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.error-message-area {
+    min-height: 20px; 
+    margin-top: 10px;
+    margin-bottom: 5px;
+    display: flex; 
+    align-items: center;
+}
+
+/* === Layout - Flex Utilities === */
+.flex-row-center-items {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.flex-grow-column {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+/* === Layout - Button Groups === */
+.button-group-row-spaced {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%; /* Ensure it takes available width to space items */
+}
+
+/* === Typography === */
 .title-label {
     font-size: 12px;
     -unity-font-style: bold;
@@ -29,6 +88,36 @@
     -unity-text-align: upper-center;
 }
 
+.h1 { 
+    font-size: 24px;
+}
+
+.h2 { 
+    font-size: 18px; 
+    color: rgb(220, 220, 220); 
+}
+
+.h3 { 
+    font-size: 16px; 
+    color: rgb(200, 200, 200); 
+    margin-bottom: 5px; 
+}
+
+.text-block-centered-spacious {
+    -unity-text-align: middle-center;
+    align-self: center;
+    margin-bottom: 20px;
+}
+
+.text-wrap-normal {
+    white-space: normal;
+}
+
+.font-size-large {
+    font-size: 18px;
+} 
+
+/* === Buttons === */
 .action-button {
     background-color: rgba(255, 255, 255, 0.15);
     border-radius: 15px;
@@ -52,7 +141,35 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Input Field Styles */
+.secondary-button { /* This should inherit from .action-button if possible, or define all properties */
+    /* Assuming .secondary-button might share some base styles with .action-button.
+       If not, it should have all its base properties defined here too.
+       For now, just listing its overrides/specifics as per original. */
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    /* Ensure it also has padding, margin, font-size, border-radius etc. if it's a standalone button style */
+    /* Copying from .action-button for completeness if it's NOT meant to be applied alongside .action-button */
+    border-radius: 15px;
+    padding: 12px 25px;
+    margin-top: 8px;
+    margin-right: 0px;
+    margin-bottom: 10px;
+    margin-left: 0px;
+    font-size: 16px;
+    border-width: 1px;
+    -unity-font-style: bold;
+}
+
+.secondary-button:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.secondary-button:active {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* === Input Fields === */
 .new-user-input {
     width: 100%; 
     margin-bottom: 15px;
@@ -83,7 +200,7 @@
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* Protocol List Item Styles */
+/* === Component-Specific: Protocol List Item === */
 .protocol-list-item {
     flex-direction: row;
     justify-content: space-between;
@@ -106,40 +223,31 @@
     margin-right: 10px;
 }
 
-.protocol-name {
+.protocol-name { /* This is inside a protocol-list-item */
     font-size: 18px;
     -unity-font-style: bold;
-    color: white;
+    color: white; /* Already global, but can be specific */
     margin-bottom: 3px;
 }
 
-.owner-name {
+.owner-name { /* This is inside a protocol-list-item */
     font-size: 14px;
     color: #cccccc;
 }
 
-.protocol-item-button {
+.protocol-item-button { /* This is inside a protocol-list-item, might be an action-button or secondary-button */
+    /* If it's a variant of .action-button, consider applying .action-button and then this class for modifications */
     min-width: 80px;
     max-width: 100px;
-    padding: 5px 10px;
-    font-size: 14px;
+    padding: 5px 10px; /* Overrides .action-button padding if used together */
+    font-size: 14px;   /* Overrides .action-button font-size if used together */
     margin-left: auto;
+    /* Add other button properties if it's a standalone style */
+    /* background-color, border-radius, border-width, border-color, -unity-font-style */
+    /* For now, assuming it might be used on an element that is already a button or has base button styles */
 }
 
-/* Secondary Button Style */
-.secondary-button {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-.secondary-button:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
-}
-.secondary-button:active {
-    background-color: rgba(255, 255, 255, 0.02);
-}
-
-/* Profile Image Placeholder Style */
+/* === Component-Specific: Profile Image === */
 .profile-image-placeholder {
     background-color: #555;
     border-width: 2px;
@@ -153,36 +261,41 @@
     height: 80px;
 }
 
-/* Typography Styles */
-.h1 { 
-    font-size: 24px;
-    }
-.h2 { 
-    font-size: 18px; 
-    color: rgb(220, 220, 220); 
-}
-.h3 { 
-    font-size: 16px; 
-    color: rgb(200, 200, 200); 
-    margin-bottom: 5px; 
-}
-
-/* Content Column Panel Style (for multi-column layouts) */
-.content-column-panel {
-    height: 100%;
-    padding: 15px;
-    background-color: rgba(0, 0, 0, 0.25);
-    border-radius: 15px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.3);
-    display: flex;
-    flex-direction: column;
-}
-
-/* Generic ScrollView for Protocol Lists */
-.protocols-scroll-view {
+/* === Component-Specific: Scroll Views === */
+.protocols-scroll-view { /* Generic for protocol lists, but specific to scroll views */
     width: 100%;
     min-height: 300px;
     max-height: 500px;
     margin-bottom: 15px;
+}
+
+/* === Utility - Spacing === */
+.margin-top-medium {
+    margin-top: 20px;
+}
+
+.margin-left-small {
+    margin-left: 10px;
+}
+
+.margin-bottom-small {
+    margin-bottom: 10px;
+}
+
+/* === Utility - Visibility === */
+.hidden {
+    display: none;
+}
+
+/* === Utility - Placeholders & Sizing === */
+.placeholder-box-base {
+    background-color: rgba(128, 128, 128, 0.3); /* Common placeholder background */
+}
+
+.height-50px {
+    height: 50px;
+}
+
+.height-100px {
+    height: 100px;
 } 
