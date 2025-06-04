@@ -1,6 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />
-    
     <ui:VisualElement name="registration-panel" class="glassmorphic-panel">
         <ui:Label text="Register" class="title-label" />
         <ui:VisualElement name="form-container" style="width: 80%;">

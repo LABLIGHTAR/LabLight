@@ -4,7 +4,7 @@
 
 .protocol-list-item {
     flex-direction: row;
-    justify-content: space-between; /* Pushes button to the right */
+    justify-content: space-between;
     align-items: center;
     padding: 10px 15px;
     margin: 5px 0;
@@ -21,7 +21,7 @@
 .protocol-item-info-container {
     flex-grow: 1;
     flex-shrink: 1;
-    margin-right: 10px; /* Space between info and button */
+    margin-right: 10px;
 }
 
 .protocol-name {
@@ -41,9 +41,5 @@
     max-width: 100px;
     padding: 5px 10px;
     font-size: 14px;
-    /* Inherits .action-button styles from CoreStyles if needed, or define here */
-    /* Example: margin-left to ensure it has space if info container is small */
-    margin-left: auto; /* Helps push button to the right if info container doesn't fill space */
+    margin-left: auto;
 }
-
-/* Add any other specific styles for SavedProtocolsMenu elements */ 

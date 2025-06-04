@@ -124,12 +124,11 @@
     padding: 5px 10px;
     font-size: 14px;
     margin-left: auto;
-    /* Note: .protocol-item-button may also use .action-button class for base styling */
 }
 
 /* Secondary Button Style */
 .secondary-button {
-    background-color: rgba(255, 255, 255, 0.05); /* Less prominent */
+    background-color: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.2);
 }
 .secondary-button:hover {
@@ -149,8 +148,7 @@
     min-height: 80px;
     max-width: 80px;
     max-height: 80px;
-    border-radius: 40px; /* Ensures it's a circle */
-    /* Default to 80px based on ReturningUserLoginMenu */
+    border-radius: 40px;
     width: 80px; 
     height: 80px;
 }
@@ -158,8 +156,7 @@
 /* Typography Styles */
 .h1 { 
     font-size: 24px;
-    /* Assuming default color white from * is fine, or specify if needed */
-}
+    }
 .h2 { 
     font-size: 18px; 
     color: rgb(220, 220, 220); 
@@ -173,13 +170,13 @@
 /* Content Column Panel Style (for multi-column layouts) */
 .content-column-panel {
     height: 100%;
-    padding: 15px; /* Base padding, can be overridden */
+    padding: 15px;
     background-color: rgba(0, 0, 0, 0.25);
     border-radius: 15px;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.3);
-    display: flex; /* Enable flex for content within */
-    flex-direction: column; /* Default to column */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Generic ScrollView for Protocol Lists */

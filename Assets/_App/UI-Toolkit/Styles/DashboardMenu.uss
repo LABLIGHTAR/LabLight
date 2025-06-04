@@ -17,21 +17,18 @@
     /* Inherits background, border, radius, base padding from .content-column-panel */
     width: 20%;
     min-width: 150px;
-    /* flex-direction: column; /* Default from .content-column-panel */
 }
 
 .main-content-column {
-    /* Inherits background, border, radius, base padding from .content-column-panel */
     width: 60%;
-    padding: 20px; /* Overrides base padding */
-    /* flex-direction: column; /* Default from .content-column-panel */
+    padding: 20px;
 }
 
 .notices-column {
     /* Inherits background, border, radius, base padding from .content-column-panel */
     width: 20%;
     min-width: 150px;
-    position: relative; /* Specific to this column */
+    position: relative;
 }
 
 .notices-inner-content {

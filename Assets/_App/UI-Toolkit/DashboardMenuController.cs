@@ -6,7 +6,6 @@ using System.Globalization;
 public class DashboardMenuController : MonoBehaviour
 {
     private IUIDriver _uiDriver; // For navigation from nav buttons
-    // private IDatabase _databaseService; // No longer directly needed for profile updates here
     private SessionManager _sessionManager;
 
     // Header Elements
@@ -17,21 +16,21 @@ public class DashboardMenuController : MonoBehaviour
 
     // Notices Panel Elements
     private VisualElement _noticesPanel;
-    private VisualElement _noticesInnerContent; // Changed from ScrollView to VisualElement for parent container
+    private VisualElement _noticesInnerContent;
     private Button _toggleNoticesButton;
     private bool _areNoticesVisible = true;
     private StyleLength _originalNoticesPanelWidth;
 
     // Navigation Buttons (example)
     private Button _navSettingsButton;
-    private Button _navLogoutButton; // Added for Log Out
-    private Button _navBrowseProtocolsButton; // Added for Browse Protocols
-    private Button _navSavedProtocolsButton; // Added for Saved Protocols
+    private Button _navLogoutButton;
+    private Button _navBrowseProtocolsButton;
+    private Button _navSavedProtocolsButton;
 
     void OnEnable()
     {
         _uiDriver = ServiceRegistry.GetService<IUIDriver>();
-        _sessionManager = SessionManager.instance; // Get SessionManager instance
+        _sessionManager = SessionManager.instance;
 
         var root = GetComponent<UIDocument>().rootVisualElement;
         if (root == null) 
@@ -48,38 +47,37 @@ public class DashboardMenuController : MonoBehaviour
 
         // Query Notices Panel Elements
         _noticesPanel = root.Q<VisualElement>("notices-panel");
-        _noticesInnerContent = root.Q<VisualElement>("notices-inner-content"); // Query the new parent VE
+        _noticesInnerContent = root.Q<VisualElement>("notices-inner-content");
 
-        // Query Nav Buttons (example)
+        // Query Nav Buttons
         _navSettingsButton = root.Q<Button>("nav-settings");
-        _navLogoutButton = root.Q<Button>("nav-logout"); // Query the new button
-        _navBrowseProtocolsButton = root.Q<Button>("nav-browse-protocols"); // Query browse protocols
-        _navSavedProtocolsButton = root.Q<Button>("nav-saved-protocols"); // Query saved protocols
+        _navLogoutButton = root.Q<Button>("nav-logout");
+        _navBrowseProtocolsButton = root.Q<Button>("nav-browse-protocols");
+        _navSavedProtocolsButton = root.Q<Button>("nav-saved-protocols");
 
         // Register Callbacks
-        _navSettingsButton?.RegisterCallback<ClickEvent>(OnNavSettingsClicked); // Example nav
-        _navLogoutButton?.RegisterCallback<ClickEvent>(OnNavLogoutClicked); // Register callback for logout
-        _navBrowseProtocolsButton?.RegisterCallback<ClickEvent>(OnNavBrowseProtocolsClicked); // Register callback
-        _navSavedProtocolsButton?.RegisterCallback<ClickEvent>(OnNavSavedProtocolsClicked); // Register callback
+        _navSettingsButton?.RegisterCallback<ClickEvent>(OnNavSettingsClicked);
+        _navLogoutButton?.RegisterCallback<ClickEvent>(OnNavLogoutClicked);
+        _navBrowseProtocolsButton?.RegisterCallback<ClickEvent>(OnNavBrowseProtocolsClicked);
+        _navSavedProtocolsButton?.RegisterCallback<ClickEvent>(OnNavSavedProtocolsClicked);
 
         if (_sessionManager != null)
         {
-            _sessionManager.OnSessionUserChanged += HandleSessionUserChanged; // Subscribe to new event
+            _sessionManager.OnSessionUserChanged += HandleSessionUserChanged;
             Debug.Log("DashboardMenuController: Subscribed to SessionManager.OnSessionUserChanged.");
-            // Initial update if a user is already in session when dashboard is enabled
             if (SessionState.currentUserProfile != null)
             {
                 HandleSessionUserChanged(SessionState.currentUserProfile);
             }
             else
             {
-                UpdateUserNameDisplay(null); // Set to default/empty if no user
+                UpdateUserNameDisplay(null);
             }
         }
         else
         {
             Debug.LogError("DashboardMenuController: SessionManager instance not found. Username updates will not be reactive.");
-            UpdateUserNameDisplay(null); // Set to default/empty
+            UpdateUserNameDisplay(null);
         }
 
         if (_noticesPanel != null)
@@ -94,28 +92,26 @@ public class DashboardMenuController : MonoBehaviour
         // Initial Setup
         UpdateTime();
         UpdateGreeting();
-        UpdateUserName(); // Assuming SessionState.currentUserProfile is set
-        SetInitialNoticesState(); // Set initial button text
+        UpdateUserName();
+        SetInitialNoticesState();
     }
 
     void OnDisable()
     {
         _navSettingsButton?.UnregisterCallback<ClickEvent>(OnNavSettingsClicked);
-        _navLogoutButton?.UnregisterCallback<ClickEvent>(OnNavLogoutClicked); // Unregister callback for logout
-        _navBrowseProtocolsButton?.UnregisterCallback<ClickEvent>(OnNavBrowseProtocolsClicked); // Unregister callback
-        _navSavedProtocolsButton?.UnregisterCallback<ClickEvent>(OnNavSavedProtocolsClicked); // Unregister callback
+        _navLogoutButton?.UnregisterCallback<ClickEvent>(OnNavLogoutClicked);
+        _navBrowseProtocolsButton?.UnregisterCallback<ClickEvent>(OnNavBrowseProtocolsClicked);
+        _navSavedProtocolsButton?.UnregisterCallback<ClickEvent>(OnNavSavedProtocolsClicked);
 
         if (_sessionManager != null)
         {
-            _sessionManager.OnSessionUserChanged -= HandleSessionUserChanged; // Unsubscribe from new event
+            _sessionManager.OnSessionUserChanged -= HandleSessionUserChanged;
             Debug.Log("DashboardMenuController: Unsubscribed from SessionManager.OnSessionUserChanged.");
         }
     }
 
     void Update()
     {
-        // Update time periodically (e.g., every second or minute)
-        // For simplicity, updating every frame here, but can be optimized.
         if (_timeLabel != null && _timeLabel.enabledSelf)
         {
             UpdateTime(); 
@@ -170,7 +166,7 @@ public class DashboardMenuController : MonoBehaviour
     {
         Debug.Log($"DashboardMenuController: HandleSessionUserChanged called for {userProfile?.Name ?? "null user"}. Refreshing display.");
         UpdateUserNameDisplay(userProfile);
-        UpdateGreeting(); // Greeting might depend on having a user vs. not
+        UpdateGreeting();
     }
 
     private void SetInitialNoticesState()
@@ -246,11 +242,8 @@ public class DashboardMenuController : MonoBehaviour
     // Public method to be called by UIDriver when displaying this dashboard
     public void OnDisplay()
     {
-        // Refresh dynamic content when the dashboard becomes visible
         UpdateTime();
         UpdateGreeting();
-        // UpdateUserNameDisplay is now primarily driven by OnSessionUserChanged,
-        // but we can call it here to ensure consistency if the event was missed or for initial display.
         UpdateUserNameDisplay(SessionState.currentUserProfile);
         
         if (SessionState.currentUserProfile != null && _userNameLabel != null)

@@ -1,11 +1,11 @@
 .user-scroll-view {
     width: 100%;
-    min-height: 150px; /* Ensure it has some space even if empty initially */
+    min-height: 150px;
     max-height: 300px;
     margin-bottom: 20px;
-    background-color: rgba(255, 255, 255, 0.05); /* Slight background for the scroll area */
+    background-color: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
-    flex-grow: 1; /* Allow scroll view to take up available space */
+    flex-grow: 1;
     flex-shrink: 1;
 }
 
@@ -13,13 +13,13 @@
     flex-direction: row;
     align-items: center;
     padding: 10px;
-    margin: 5px 0; /* Removed horizontal margin, keep vertical */
+    margin: 5px 0;
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px; /* More rounded */
+    border-radius: 15px;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.2);
     color: white;
-    width: 100%; /* Make item take full available width */
+    width: 100%;
 }
 
 .user-item:hover {
@@ -35,10 +35,9 @@
 .user-item-image {
     width: 50px;
     height: 50px;
-    border-radius: 25px; /* Circular */
+    border-radius: 25px;
     margin-right: 15px;
-    background-color: rgba(255, 255, 255, 0.1); /* Placeholder color */
-    /* For actual image, use background-image in C# or USS if path is static */
+    background-color: rgba(255, 255, 255, 0.1);
     color: white;
 }
 
@@ -51,27 +50,6 @@
     flex-direction: column;
     align-items: center;
     width: 100%; 
-    flex-shrink: 0; /* Prevent button container from shrinking */
+    flex-shrink: 0;
     border-radius: 5px;
 }
-
-/* Styles for the new user input fields if you add them */
-.new-user-input {
-    width: 80%;
-    margin-bottom: 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    padding: 8px 12px;
-}
-
-.new-user-input .unity-label {
-    color: white;
-    margin-right: 10px;
-    font-size: 16px;
-}
-
-.new-user-input TextInput {
-    background-color: rgba(0,0,0,0.2);
-    color: white;
-    border-radius: 5px;
-} 
