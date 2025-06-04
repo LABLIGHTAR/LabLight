@@ -1,8 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />
     <Style src="project://database/Assets/_App/UI-Toolkit/Views/ProtocolView/ProtocolView.uss?fileID=7433441132597879392&amp;guid=c1390d8943f604b4e8f9a554c56565fd&amp;type=3#ProtocolView" />
-    <ui:VisualElement name="protocol-view-root" class="protocol-view-root">
+    <ProtocolView name="protocol-view-root" class="protocol-view-root">
         <ui:VisualElement name="checklist-panel" class="content-column-panel protocol-view-left-panel">
+            <ui:Label name="checklist-step-title-label" text="Step Title Placeholder" class="checklist-step-title" />
             <ui:VisualElement name="checklist-header" class="protocol-view-header">
                 <ui:Button name="previous-step-button" text="&lt;" />
                 <ui:Label name="step-indicator-label" text="Step 1 / X" class="step-indicator" />
@@ -51,5 +52,5 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-    </ui:VisualElement>
+    </ProtocolView>
 </ui:UXML>

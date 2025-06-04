@@ -78,6 +78,21 @@
     max-width: 70%; /* Prevent it from taking full width if title is short */
 }
 
+/* New style for the checklist step title */
+.checklist-step-title {
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center; /* Text centered within its own bounds */
+    margin-top: 5px; /* Added top margin */
+    margin-bottom: 10px; /* Space below the title, before the scroll view */
+    padding: 5px 15px; /* Adjusted padding */
+    background-color: rgba(80, 80, 80, 0.7); /* Added background */
+    border-radius: 15px; /* Added border radius */
+    align-self: center; /* Center the block itself */
+    min-width: 150px; /* Ensure a minimum width for the lozenge look */
+    max-width: 95%; /* Ensure it doesn't overflow if title is very long */
+}
+
 /* ScrollView styling - can leverage existing .protocols-scroll-view if suitable or override */
 .protocol-scroll-view {
     flex-grow: 1;
@@ -91,6 +106,8 @@
     padding: 8px 5px;
     margin-bottom: 5px;
     border-radius: 5px;
+    width: 100%; /* Ensure the item itself doesn't overflow its container */
+    box-sizing: border-box; /* Ensure padding/border are included in the 100% width */
 }
 
 .check-item-selected {
@@ -105,6 +122,7 @@
     margin-right: 10px;
     border-width: 1px;
     border-color: rgba(0,0,0,0.3);
+    flex-shrink: 0; /* Prevent this element from shrinking */
 }
 
 .check-item-status-indicator-completed {
@@ -114,8 +132,32 @@
 
 .check-item-text {
     flex-grow: 1;
+    flex-shrink: 1;
     white-space: normal; /* Allow text wrapping */
     font-size: 14px;
+    min-width: 0; /* Helps flexbox calculate wrapping correctly */
+}
+
+/* Style for the currently active/next checklist item */
+.check-item.check-item-next {
+    background-color: rgba(80, 120, 200, 0.25); /* A distinct highlight */
+    border-left-width: 3px;
+    border-left-color: rgba(120, 180, 255, 0.8);
+    /* Adjust padding if .check-item already has padding, to avoid double padding issues */
+    /* Example: If .check-item has padding: 8px 5px;, and you want to add to left: */
+    padding-left: 7px; /* This will be relative to the element's default padding start */
+    border-top-right-radius: 5px; /* Keep consistency if .check-item has border-radius */
+    border-bottom-right-radius: 5px;
+}
+
+/* Optional: Style for items that are not currently interactable */
+.check-item.check-item-locked {
+    opacity: 0.6; /* Visually indicate it's not the current focus */
+}
+
+.check-item.check-item-locked:hover {
+    /* Optional: override hover effects if .check-item has them */
+    /* background-color: initial; */ /* Consider specific non-hover state if needed */
 }
 
 /* Footer styles */

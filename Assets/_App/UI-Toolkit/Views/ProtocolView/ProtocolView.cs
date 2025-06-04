@@ -21,11 +21,10 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
         private const string PreviousStepButtonName = "previous-step-button";
         private const string NextStepButtonName = "next-step-button";
         private const string StepIndicatorLabelName = "step-indicator-label";
+        private const string ChecklistStepTitleLabelName = "checklist-step-title-label";
         private const string ChecklistContainerName = "checklist-container";
         private const string ProtocolTitleLabelName = "protocol-title-label";
         private const string ProtocolContentContainerName = "protocol-content-container";
-        private const string UserAvatarIconName = "user-avatar-icon";
-        private const string UserNameLabelName = "user-name-label";
         private const string ProtocolImageName = "protocol-image";
         private const string ProtocolDescriptionTopName = "protocol-description-top";
         private const string ProtocolDescriptionBottomName = "protocol-description-bottom";
@@ -42,9 +41,8 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
         private Button _previousStepButton;
         private Button _nextStepButton;
         private Label _stepIndicatorLabel;
+        private Label _checklistStepTitleLabel;
         private VisualElement _checklistContainer;
-        private Image _userAvatarIcon;
-        private Label _userNameLabel;
 
         // Queried Elements - Right Panel
         private Label _protocolTitleLabel;
@@ -114,15 +112,40 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
 
             // Subscribe to ProtocolState changes if this view should react automatically
             // This is a more robust way than relying on external calls to UpdateProtocolData/LoadStepData
+            Debug.Log("[ProtocolView] Subscribing to ProtocolState changes.");
             ProtocolState.Instance.ActiveProtocol.Subscribe(OnProtocolChanged).AddTo(_disposables);
             ProtocolState.Instance.CurrentStep.Subscribe(OnStepChanged).AddTo(_disposables);
             
-            // If we need to react to fine-grained checklist item state changes immediately:
-            ProtocolState.Instance.CurrentStepState
-                .Select(stepState => stepState?.Checklist?.ToList())
-                .Where(checklist => checklist != null)
-                .Subscribe(checklistItemList => OnChecklistChanged(checklistItemList))
-                .AddTo(_disposables);
+            // Revised subscription for checklist item changes
+            _disposables.Add(ProtocolState.Instance.CurrentStepState
+                .Where(stepState => stepState != null) // Ensure stepState itself is not null
+                .SelectMany(stepState =>
+                {
+                    if (stepState.Checklist == null)
+                    {
+                        // If checklist is null, return an observable that emits an empty list.
+                        return Observable.Return(new List<ProtocolState.CheckItemState>());
+                    }
+
+                    // Create an observable that fires when any IsChecked property changes.
+                    var itemCheckedStreams = stepState.Checklist
+                        .Select(checkItem => checkItem.IsChecked.AsUnitObservable()); // Stream for each item
+
+                    // Merge all individual IsChecked streams.
+                    // Also merge with an observable that detects changes to the collection's count (add/remove).
+                    return Observable.Merge(itemCheckedStreams)
+                        .Merge(stepState.Checklist.ObserveCountChanged(true).AsUnitObservable())
+                        .StartWith(Unit.Default) // Fire once initially for the current state.
+                        .Select(_ => stepState.Checklist.ToList()); // Get the full list for the UI update.
+                })
+                .Subscribe(
+                    checklistItemList =>
+                    {
+                        OnChecklistChanged(checklistItemList ?? new List<ProtocolState.CheckItemState>());
+                    },
+                    ex => Debug.LogError($"[ProtocolView] Error in CurrentStepState Checklist subscription: {ex}")
+                )
+            );
         }
 
         private void OnDetachFromPanel(DetachFromPanelEvent evt)
@@ -133,16 +156,13 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
         // Call this method after the UXML is loaded into this element.
         public void InitializeView()
         {
+            Debug.Log("[ProtocolView] InitializeView called.");
             // Query elements
             _previousStepButton = this.Q<Button>(PreviousStepButtonName);
             _nextStepButton = this.Q<Button>(NextStepButtonName);
             _stepIndicatorLabel = this.Q<Label>(StepIndicatorLabelName);
+            _checklistStepTitleLabel = this.Q<Label>(ChecklistStepTitleLabelName);
             _checklistContainer = this.Q<VisualElement>(ChecklistContainerName);
-            _userAvatarIcon = this.Q<Image>(UserAvatarIconName);
-            _userNameLabel = this.Q<Label>(UserNameLabelName);
-
-            _protocolTitleLabel = this.Q<Label>(ProtocolTitleLabelName);
-            _protocolContentContainer = this.Q<VisualElement>(ProtocolContentContainerName);
             _protocolImage = this.Q<Image>(ProtocolImageName);
             _protocolDescriptionTopLabel = this.Q<Label>(ProtocolDescriptionTopName);
             _protocolDescriptionBottomLabel = this.Q<Label>(ProtocolDescriptionBottomName);
@@ -154,13 +174,15 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
             _cameraButton = this.Q<Button>(CameraButtonName);
             _arViewButton = this.Q<Button>(ArViewButtonName);
 
+            _protocolTitleLabel = this.Q<Label>(ProtocolTitleLabelName);
+            _protocolContentContainer = this.Q<VisualElement>(ProtocolContentContainerName);
+
             // Register event handlers
             RegisterEventHandlers();
 
             // Initial population based on current ProtocolState
+            Debug.Log("[ProtocolView] Performing initial population from ProtocolState.");
             OnProtocolChanged(ProtocolState.Instance.ActiveProtocol.Value);
-            // User name from SessionState
-            _userNameLabel.text = SessionState.currentUserProfile?.GetName() ?? "User Name";
             UpdateSignOffButtonState();
         }
 
@@ -185,15 +207,6 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
                 _protocolTitleLabel.text = _currentProtocol.title;
                 // Potentially load global AR objects or other protocol-wide settings
             }
-            if (!string.IsNullOrEmpty(userName))
-            {
-                _userNameLabel.text = userName;
-            }
-            else
-            {
-                _userNameLabel.text = "-"; // Default if no user name
-            }
-            // LoadStepData(0); // Load the first step of the new protocol
         }
 
         public void LoadStepData(int stepIndex)
@@ -219,20 +232,34 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
 
         private void PopulateChecklist(List<ProtocolState.CheckItemState> checklistItemStatesList)
         {
+            Debug.Log($"[ProtocolView] PopulateChecklist called. Item count: {checklistItemStatesList?.Count ?? -1}");
+            if (_checklistContainer == null) { Debug.LogError("[ProtocolView] _checklistContainer is null in PopulateChecklist."); return; }
             _checklistContainer.Clear();
+
             if (checklistItemStatesList == null || !checklistItemStatesList.Any() || _currentStepDefinition == null || _currentStepDefinition.checklist == null)
             {
-                // Optionally show a "No checklist items" label
+                Debug.Log("[ProtocolView] No checklist items to display or prerequisites missing.");
                 var noItemsLabel = new Label("No checklist items for this step.");
                 noItemsLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
                 _checklistContainer.Add(noItemsLabel);
                 UpdateSignOffButtonState();
                 return;
             }
+            Debug.Log($"[ProtocolView] Populating checklist with {checklistItemStatesList.Count} items based on StepDefinition: '{_currentStepDefinition.title}'");
 
-            for(int i = 0; i < checklistItemStatesList.Count; i++)
+            int firstUncheckedIndex = -1;
+            for (int i = 0; i < checklistItemStatesList.Count; i++)
             {
-                // Ensure index is valid for definition list
+                if (!checklistItemStatesList[i].IsChecked.Value)
+                {
+                    firstUncheckedIndex = i;
+                    break;
+                }
+            }
+            Debug.Log($"[ProtocolView] PopulateChecklist: firstUncheckedIndex = {firstUncheckedIndex}");
+
+            for (int i = 0; i < checklistItemStatesList.Count; i++)
+            {
                 if (i >= _currentStepDefinition.checklist.Count)
                 {
                     Debug.LogWarning($"[ProtocolView] Checklist state/definition mismatch at index {i}.");
@@ -243,8 +270,6 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
 
                 var checkItemVisual = new VisualElement();
                 checkItemVisual.AddToClassList("check-item");
-                // TODO: Add selection visual state if needed, separate from completion
-                // if (i == some_selected_index) checkItemVisual.AddToClassList("check-item-selected");
 
                 var statusIndicator = new VisualElement();
                 statusIndicator.AddToClassList("check-item-status-indicator");
@@ -259,27 +284,93 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
                 checkItemVisual.Add(statusIndicator);
                 checkItemVisual.Add(checkItemText);
 
-                // Store index for callback
-                int itemIndex = i; 
-                checkItemVisual.RegisterCallback<ClickEvent>(evt => {
-                    if (_isSignedOff) return;
+                // Clear dynamic classes before applying
+                checkItemVisual.RemoveFromClassList("check-item-next");
+                checkItemVisual.RemoveFromClassList("check-item-locked");
 
-                    if (itemState.IsChecked.Value)
-                    {
-                        _uiDriver.UncheckItemCallback(itemIndex);
-                    }
-                    else
-                    {
-                        _uiDriver.CheckItemCallback(itemIndex);
-                    }
-                    // ProtocolState change should trigger reactive UI update.
-                    // If direct refresh is needed and events are not granular enough:
-                    // OnChecklistChanged(ProtocolState.Instance.CurrentStepState.Value.Checklist);
-                });
+                bool isTheNextItemToBeChecked = (i == firstUncheckedIndex);
+                bool canThisItemBeUnchecked = itemState.IsChecked.Value && 
+                                            ((firstUncheckedIndex == -1 && i == checklistItemStatesList.Count - 1) || 
+                                             (firstUncheckedIndex > 0 && i == firstUncheckedIndex - 1));
+
+                if (isTheNextItemToBeChecked)
+                {
+                    checkItemVisual.AddToClassList("check-item-next");
+                }
+                else if (!canThisItemBeUnchecked && !itemState.IsChecked.Value && i > firstUncheckedIndex && firstUncheckedIndex != -1)
+                { // Future items that are not the absolute next one
+                    checkItemVisual.AddToClassList("check-item-locked");
+                }
+                else if (itemState.IsChecked.Value && !canThisItemBeUnchecked)
+                { // Checked items that are not the one allowed to be unchecked
+                    checkItemVisual.AddToClassList("check-item-locked");
+                }
+                
+                int itemIndexForCallback = i; 
+                // Unregister previous to be safe, though with Clear() it might not be strictly needed for new elements
+                checkItemVisual.UnregisterCallback<ClickEvent, int>(HandleChecklistItemClicked); 
+                checkItemVisual.RegisterCallback<ClickEvent, int>(HandleChecklistItemClicked, itemIndexForCallback);
 
                 _checklistContainer.Add(checkItemVisual);
             }
             UpdateSignOffButtonState();
+        }
+
+        // New handler method for checklist item clicks
+        private void HandleChecklistItemClicked(ClickEvent evt, int itemIndex)
+        {
+            if (_isSignedOff) return;
+
+            var checklistItemStatesList = ProtocolState.Instance.CurrentStepState?.Value?.Checklist;
+            if (checklistItemStatesList == null || itemIndex < 0 || itemIndex >= checklistItemStatesList.Count) 
+            {
+                Debug.LogWarning($"[ProtocolView] HandleChecklistItemClicked: Invalid itemIndex {itemIndex} or checklist not found.");
+                return;
+            }
+
+            var itemState = checklistItemStatesList[itemIndex];
+
+            int firstUncheckedIdx = -1;
+            for (int i = 0; i < checklistItemStatesList.Count; i++)
+            {
+                if (!checklistItemStatesList[i].IsChecked.Value)
+                {
+                    firstUncheckedIdx = i;
+                    break;
+                }
+            }
+
+            // Attempt to CHECK the item
+            if (!itemState.IsChecked.Value)
+            {
+                if (itemIndex == firstUncheckedIdx) // This is the first unchecked item
+                {
+                    Debug.Log($"[ProtocolView] User clicked to CHECK item {itemIndex}");
+                    _uiDriver.CheckItemCallback(itemIndex);
+                }
+                else
+                {
+                    Debug.Log($"[ProtocolView] Item {itemIndex} cannot be checked (not the next one). Next is {firstUncheckedIdx}.");
+                    // Optionally: _uiDriver.DisplayNotification("Please complete items in order.");
+                }
+            }
+            // Attempt to UNCHECK the item
+            else // itemState.IsChecked.Value is true
+            {
+                bool canUncheckThis = (firstUncheckedIdx == -1 && itemIndex == checklistItemStatesList.Count - 1) || // All checked, unchecking last
+                                      (firstUncheckedIdx > 0 && itemIndex == firstUncheckedIdx - 1);     // Unchecking item before first unchecked
+
+                if (canUncheckThis)
+                {
+                    Debug.Log($"[ProtocolView] User clicked to UNCHECK item {itemIndex}");
+                    _uiDriver.UncheckItemCallback(itemIndex);
+                }
+                else
+                {
+                    Debug.Log($"[ProtocolView] Item {itemIndex} cannot be unchecked (not the allowed one). First unchecked is {firstUncheckedIdx}.");
+                    // Optionally: _uiDriver.DisplayNotification("Please uncheck items in reverse order.");
+                }
+            }
         }
 
         private void PopulateContentPanel(List<ContentItem> contentItems)
@@ -378,6 +469,7 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
                 // Clear view or show "No Protocol Loaded" state
                 _protocolTitleLabel.text = "No Protocol Loaded";
                 _stepIndicatorLabel.text = "Step - / -";
+                if (_checklistStepTitleLabel != null) _checklistStepTitleLabel.text = "";
                 _checklistContainer.Clear();
                 _protocolContentContainer.Clear();
                 _isSignedOff = false;
@@ -387,28 +479,73 @@ using UniRx; // Added for CompositeDisposable and Subscribe extensions
 
         private void OnStepChanged(int stepIndex)
         {
+            Debug.Log($"[ProtocolView] OnStepChanged called. Requested stepIndex: {stepIndex}. Current protocol: '{_currentProtocol?.title ?? "NULL"}'");
             _currentStepIndex = stepIndex;
-            _isSignedOff = ProtocolState.Instance.CurrentStepState?.Value?.SignedOff?.Value ?? false;
+
+            // Ensure _isSignedOff is correctly fetched for the new step
+            if (ProtocolState.Instance != null && ProtocolState.Instance.Steps != null && 
+                stepIndex >= 0 && stepIndex < ProtocolState.Instance.Steps.Count)
+            {
+                var newStepState = ProtocolState.Instance.Steps[stepIndex];
+                _isSignedOff = newStepState?.SignedOff?.Value ?? false;
+                Debug.Log($"[ProtocolView] OnStepChanged: Fetched StepState for index {stepIndex}. IsSignedOff from newStepState: {_isSignedOff}");
+
+                // If already signed off, display the signature and apply font
+                if (_isSignedOff)
+                {
+                    if (_signatureLineLabel != null)
+                    {
+                        // This assumes the current user is the one who signed it, or a generic "Signed" if no user.
+                        // If StepState stored who signed it, that should be used here.
+                        string userName = SessionState.currentUserProfile?.GetName() ?? "Signed"; 
+                        _signatureLineLabel.text = userName;
+                        _signatureLineLabel.AddToClassList("signature-font");
+                        Debug.Log($"[ProtocolView] OnStepChanged: Step already signed off. Signature line set for: {userName}");
+                    }
+                }
+                else
+                {
+                    ResetSignatureLine(); // Only reset if not signed off
+                }
+            }
+            else
+            {
+                _isSignedOff = false; // Default to not signed off if step data is inaccessible
+                Debug.LogWarning($"[ProtocolView] OnStepChanged: Could not get StepState for index {stepIndex} from ProtocolState.Instance.Steps. Defaulting _isSignedOff to false.");
+                ResetSignatureLine(); // Ensure reset in this error/default case too
+            }
 
             if (_currentProtocol == null || _currentStepIndex < 0 || _currentStepIndex >= _currentProtocol.steps.Count)
             {
-                Debug.LogWarning($"[ProtocolView] Invalid step index: {_currentStepIndex} for protocol '{_currentProtocol?.title}'. Steps available: {_currentProtocol?.steps?.Count}");
-                // Clear step-specific parts of the view
-                _stepIndicatorLabel.text = "Step - / -";
-                _checklistContainer.Clear();
-                _protocolContentContainer.Clear();
+                Debug.LogWarning($"[ProtocolView] Invalid step index: {_currentStepIndex} for protocol '{_currentProtocol?.title}'. Steps available: {_currentProtocol?.steps?.Count ?? 0}. Clearing step view.");
+                if (_stepIndicatorLabel != null) _stepIndicatorLabel.text = "Step - / -";
+                else Debug.LogWarning("[ProtocolView] _stepIndicatorLabel is null in invalid step path.");
+                if (_checklistStepTitleLabel != null) _checklistStepTitleLabel.text = "";
+                if (_checklistContainer != null) _checklistContainer.Clear();
+                else Debug.LogWarning("[ProtocolView] _checklistContainer is null in invalid step path.");
+                if (_protocolContentContainer != null) _protocolContentContainer.Clear();
+                else Debug.LogWarning("[ProtocolView] _protocolContentContainer is null in invalid step path.");
                 _currentStepDefinition = null;
             }
             else
             {
                 _currentStepDefinition = _currentProtocol.steps[_currentStepIndex];
-                _stepIndicatorLabel.text = $"Step {_currentStepIndex + 1} / {_currentProtocol.steps.Count}";
+                Debug.Log($"[ProtocolView] Current step definition set to: '{_currentStepDefinition?.title}' at index {_currentStepIndex}");
+                if (_stepIndicatorLabel != null) _stepIndicatorLabel.text = $"Step {_currentStepIndex + 1} / {_currentProtocol.steps.Count}";
+                else Debug.LogWarning("[ProtocolView] _stepIndicatorLabel is null, cannot update step text.");
+                
+                // Update checklist step title
+                if (_checklistStepTitleLabel != null)
+                {
+                    _checklistStepTitleLabel.text = _currentStepDefinition?.title ?? "Unnamed Step";
+                }
 
-                var currentStepState = ProtocolState.Instance.CurrentStepState?.Value;
+                var currentStepState = ProtocolState.Instance.CurrentStepState?.Value; // Still useful for PopulateChecklist if it has the latest state
+                Debug.Log($"[ProtocolView] CurrentStepState for step '{_currentStepDefinition?.title}' has checklist count: {currentStepState?.Checklist?.Count ?? -1}");
                 PopulateChecklist(currentStepState?.Checklist?.ToList());
                 PopulateContentPanel(_currentStepDefinition.contentItems);
             }
-            ResetSignatureLine();
+            // ResetSignatureLine(); // This is now handled conditionally above
             UpdateSignOffButtonState();
         }
         
