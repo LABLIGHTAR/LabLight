@@ -5458,6 +5458,7 @@ MonoBehaviour:
   dashboardMenuToolkitPanel: {fileID: 201392467}
   browseProtocolsMenuToolkitPanel: {fileID: 16268599}
   savedProtocolsMenuToolkitPanel: {fileID: 784628986}
+  protocolViewToolkitPanel: {fileID: 0}
   protocolPanel: {fileID: 1725938590}
   checklistPanel: {fileID: 1725938589}
   protocolMenuPanel: {fileID: 197844286}
@@ -6359,6 +6360,57 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: db5f1b32461ca4d02a26b40f60baf68f, type: 3}
+--- !u!1 &1064815008
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1064815010}
+  - component: {fileID: 1064815009}
+  m_Layer: 0
+  m_Name: Protocol View
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &1064815009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1064815008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PanelSettings: {fileID: 11400000, guid: 60e029b7170c5e442a855dcabb5cfe2c, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: beb1f9e0a34cb9343be14b422be5193e, type: 3}
+  m_SortingOrder: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+--- !u!4 &1064815010
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1064815008}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1122898692
 GameObject:
   m_ObjectHideFlags: 0
@@ -18235,6 +18287,7 @@ SceneRoots:
   - {fileID: 201392468}
   - {fileID: 16268600}
   - {fileID: 784628987}
+  - {fileID: 1064815010}
   - {fileID: 1062131496}
   - {fileID: 1725938588}
   - {fileID: 289094603}

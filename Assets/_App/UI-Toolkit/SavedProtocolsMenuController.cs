@@ -131,24 +131,41 @@ public class SavedProtocolsMenuController : MonoBehaviour
                 return;
             }
 
-            foreach (var protocol in result.Data)
+            IUICallbackHandler uiCallbackHandler = ServiceRegistry.GetService<IUICallbackHandler>();
+            if (uiCallbackHandler == null)
             {
-                VisualElement listItem = protocolListItemTemplate.Instantiate();
-                
-                var protocolNameLabel = listItem.Q<Label>("protocol-name-label");
-                var ownerNameLabel = listItem.Q<Label>("owner-name-label");
-                var saveButton = listItem.Q<Button>("save-unsave-button");
+                Debug.LogError("SavedProtocolsMenuController: IUICallbackHandler service not found. List items may not function correctly.");
+                // Decide if we should stop populating or continue with items potentially non-interactive for protocol selection.
+            }
 
-                if (protocolNameLabel != null) protocolNameLabel.text = protocol.Name;
-                if (ownerNameLabel != null) ownerNameLabel.text = $"Owner: {protocol.OwnerDisplayName ?? "N/A"}";
-                
-                if (saveButton != null)
+            foreach (var protocolDataEntry in result.Data)
+            {
+                TemplateContainer listItemInstance = protocolListItemTemplate.Instantiate();
+                ProtocolListItemController itemController = listItemInstance.Q<ProtocolListItemController>("protocol-item-container");
+
+                if (itemController != null)
                 {
-                    UpdateSaveButtonState(saveButton, protocol.Id);
-                    saveButton.RegisterCallback<ClickEvent, uint>(HandleSaveUnsaveClicked, protocol.Id);
+                    if (uiCallbackHandler != null) 
+                    {
+                        itemController.SetProtocolData(protocolDataEntry, uiCallbackHandler, _database);
+                    }
+                    else
+                    {
+                         // If uiCallbackHandler is null, SetProtocolData might still be called 
+                         // but the item controller will log an error and disable itself or parts of its functionality.
+                         // Or, we can prevent calling it if critical dependencies are missing.
+                         Debug.LogWarning($"SavedProtocolsMenuController: Skipping SetProtocolData for {protocolDataEntry.Name} due to missing IUICallbackHandler.");
+                         itemController.SetEnabled(false); // Example: disable the item
+                    }
                 }
-                _protocolsScrollView.Add(listItem);
-                _protocolIdToListItemMap[protocol.Id] = listItem;
+                else
+                {
+                    Debug.LogError("Could not find ProtocolListItemController component in instantiated UXML item.");
+                    continue; 
+                }
+                
+                _protocolsScrollView.Add(listItemInstance);
+                _protocolIdToListItemMap[protocolDataEntry.Id] = listItemInstance;
             }
         }
         else
@@ -170,73 +187,29 @@ public class SavedProtocolsMenuController : MonoBehaviour
         _protocolIdToListItemMap.Clear();
     }
 
-    private void UpdateSaveButtonState(Button button, uint protocolId)
-    {
-        if (_database == null || string.IsNullOrEmpty(_database.CurrentUserId))
-        {
-            button.text = "N/A";
-            button.SetEnabled(false);
-            return;
-        }
-        bool isSaved = _database.IsProtocolSavedByUser(protocolId, _database.CurrentUserId);
-        button.text = isSaved ? "Unsave" : "Save";
-        button.userData = isSaved; 
-        button.SetEnabled(true);
-    }
-
-    private void HandleSaveUnsaveClicked(ClickEvent evt, uint protocolId)
-    {
-        if (_database == null) return;
-
-        var button = evt.currentTarget as Button;
-        if (button == null) return;
-
-        bool isCurrentlySaved = (bool)button.userData;
-
-        button.SetEnabled(false); 
-
-        if (isCurrentlySaved)
-        {
-            _database.UnsaveProtocol(protocolId);
-        }
-        else
-        {
-            _database.SaveProtocol(protocolId);
-        }
-    }
-
     private void HandleSavedProtocolAdded(uint protocolId)
     {
-        // If this view is active, we might want to refresh or specifically add the item
-        // For now, a full refresh on add/remove is simpler than trying to merge.
-        // Or, ensure the button state is updated if the item is already visible.
-        if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItem))
+        if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItemVisualElement))
         {
-            var button = listItem.Q<Button>("save-unsave-button");
-            if (button != null)
-            {
-                UpdateSaveButtonState(button, protocolId);
-            }
+            ProtocolListItemController itemController = listItemVisualElement.Q<ProtocolListItemController>("protocol-item-container");
+            itemController?.RefreshSaveButtonState();
         }
         else
         {
-            // If the item wasn't in the list (e.g., saved from browse view), and this view becomes active,
-            // it will be picked up by LoadAndDisplayProtocols.
-            // If this view IS active, a refresh might be desired. For now, a manual refresh is needed
-            // or LoadAndDisplayProtocols could be called here.
-            // Consider if this view should auto-refresh if a protocol is saved elsewhere.
-            // For now, we only update the button if it's already listed.
+            // If the item wasn't in the list (e.g. saved from browse view and this view is active)
+            // a full refresh might be needed, or dynamically add the item.
+            // For now, if this view is active and an item is saved elsewhere, it will only appear on next refresh.
+            // This handler primarily ensures that if an item *is* present, its save button is updated.
+            // To dynamically add, we would need the ProtocolData for the added protocolId.
+            // LoadAndDisplayProtocols(); // Could force a full refresh, but might be heavy.
         }
     }
 
     private void HandleSavedProtocolRemoved(uint protocolId)
     {
-        // If this view is active, the item should be removed from the list.
-        // The current logic relies on the DB event to update the button, but if an item is unsaved,
-        // it should disappear from THIS list.
-        if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItem))
+        if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItemVisualElement))
         {
-            _protocolsScrollView?.Remove(listItem);
+            _protocolsScrollView?.Remove(listItemVisualElement);
             _protocolIdToListItemMap.Remove(protocolId);
 
             if (!_protocolIdToListItemMap.Any() && _protocolsScrollView != null)

@@ -1,0 +1,55 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Views/ProtocolView/ProtocolView.uss?fileID=7433441132597879392&amp;guid=c1390d8943f604b4e8f9a554c56565fd&amp;type=3#ProtocolView" />
+    <ui:VisualElement name="protocol-view-root" class="protocol-view-root">
+        <ui:VisualElement name="checklist-panel" class="content-column-panel protocol-view-left-panel">
+            <ui:VisualElement name="checklist-header" class="protocol-view-header">
+                <ui:Button name="previous-step-button" text="&lt;" />
+                <ui:Label name="step-indicator-label" text="Step 1 / X" class="step-indicator" />
+                <ui:Button name="next-step-button" text="&gt;" />
+            </ui:VisualElement>
+            <ui:ScrollView name="checklist-scroll-view" class="protocol-scroll-view">
+                <ui:VisualElement name="checklist-container" />
+            </ui:ScrollView>
+            <ui:VisualElement name="checklist-footer" class="protocol-view-footer checklist-signoff-footer">
+                <ui:VisualElement class="horizontal-separator" />
+                <ui:VisualElement name="sign-off-area" class="sign-off-area-container">
+                    <ui:Button name="sign-off-action-button" class="icon-button sign-off-icon-button">
+                        <ui:Image name="sign-off-icon" class="icon-button-icon" />
+                    </ui:Button>
+                    <ui:Label name="signature-line-label" text="" class="signature-line" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="content-panel" class="content-column-panel protocol-view-right-panel">
+            <ui:Label name="protocol-title-label" text="Protocol Title" class="h1 protocol-content-title" />
+            <ui:ScrollView name="protocol-content-scroll-view" class="protocol-scroll-view">
+                <ui:VisualElement name="protocol-content-container">
+                    <ui:Label name="protocol-description-top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." class="text-block" />
+                    <ui:Image name="protocol-image" class="protocol-main-image" />
+                    <ui:Label name="protocol-description-bottom" text="Sagittis hendrerit nunc tristique porta in sed faucibus. Ut nec fermentum velit id sit cras nulla eu. Sed id ac sed ornare elit nisi. Consequat in posuere mollis purus. Nunc sagittis ultrices mauris nisl in." class="text-block" />
+                </ui:VisualElement>
+            </ui:ScrollView>
+            <ui:VisualElement name="content-footer" class="protocol-view-footer">
+                <ui:VisualElement class="horizontal-separator" />
+                <ui:VisualElement name="action-buttons-container" class="button-group-row-spaced">
+                    <ui:Button name="camera-button" class="icon-button">
+                        <ui:Image name="camera-icon" class="icon-button-icon" />
+                    </ui:Button>
+                    <ui:Button name="pdf-button" class="icon-button">
+                        <ui:Image name="pdf-icon" class="icon-button-icon" />
+                    </ui:Button>
+                    <ui:Button name="calculator-button" class="icon-button">
+                        <ui:Image name="calculator-icon" class="icon-button-icon" />
+                    </ui:Button>
+                    <ui:Button name="comments-button" class="icon-button">
+                        <ui:Image name="comments-icon" class="icon-button-icon" />
+                    </ui:Button>
+                    <ui:Button name="ar-view-button" class="icon-button">
+                        <ui:Image name="ar-view-icon" class="icon-button-icon" />
+                    </ui:Button>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

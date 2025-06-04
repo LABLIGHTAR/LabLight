@@ -21,6 +21,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private UIDocument dashboardMenuToolkitPanel;
     [SerializeField] private UIDocument browseProtocolsMenuToolkitPanel;
     [SerializeField] private UIDocument savedProtocolsMenuToolkitPanel;
+    [SerializeField] private UIDocument protocolViewToolkitPanel;
     [SerializeField] private ProtocolPanelViewController protocolPanel;
     [SerializeField] private ChecklistPanelViewController checklistPanel;
     [SerializeField] private ProtocolMenuViewController protocolMenuPanel;
@@ -105,28 +106,29 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     #region UI Update Methods (Implementing IUIDriver)
     public void OnProtocolChange(ProtocolDefinition protocol)
     {
-        if (checklistPanel == null || protocolMenuPanel == null) 
+        if (protocolMenuPanel == null)
         {
-            Debug.LogError("UnityUIDriver: ChecklistPanel or ProtocolMenuPanel is not assigned.");
+            Debug.LogError("UnityUIDriver: ProtocolMenuPanel is not assigned.");
             return;
         }
 
         if (protocol == null)
         {
-            checklistPanel.gameObject.SetActive(false);
-            protocolMenuPanel.gameObject.SetActive(true);
+            DisplayProtocolMenu();
         }
         else
         {
-            protocolMenuPanel.gameObject.SetActive(false);
-            checklistPanel.gameObject.SetActive(true);
+            DisplayProtocolView();
         }
     }
 
     public void OnStepChange(ProtocolState.StepState stepState)
     {
-        if (protocolPanel != null) protocolPanel.UpdateContentItems();
-        if (checklistPanel != null) StartCoroutine(checklistPanel.LoadChecklist());
+        if (protocolViewToolkitPanel != null && protocolViewToolkitPanel.gameObject.activeSelf)
+        {
+            // ProtocolView should be reacting to ProtocolState changes internally.
+            // No direct call needed here unless a specific refresh is required.
+        }
     }
 
     public void OnCheckItemChange(List<ProtocolState.CheckItemState> checkItemStates)
@@ -313,6 +315,20 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
             Debug.LogError("UnityUIDriver: savedProtocolsMenuToolkitPanel (UIDocument) is not assigned.");
         }
     }
+
+    public void DisplayProtocolView()
+    {
+        HideAllPanels();
+        if (protocolViewToolkitPanel != null)
+        {
+            protocolViewToolkitPanel.gameObject.SetActive(true);
+            // ProtocolView's OnAttachToPanel and internal subscriptions will handle its content.
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: protocolViewToolkitPanel (UIDocument) is not assigned for DisplayProtocolView.");
+        }
+    }
     #endregion
 
     #region Callback Methods (Implementing IUIDriver, Delegating to Handler)
@@ -485,6 +501,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (dashboardMenuToolkitPanel != null) dashboardMenuToolkitPanel.gameObject.SetActive(false);
         if (browseProtocolsMenuToolkitPanel != null) browseProtocolsMenuToolkitPanel.gameObject.SetActive(false);
         if (savedProtocolsMenuToolkitPanel != null) savedProtocolsMenuToolkitPanel.gameObject.SetActive(false);
+        if (protocolViewToolkitPanel != null) protocolViewToolkitPanel.gameObject.SetActive(false);
         if (protocolPanel != null && protocolPanel.gameObject != null) protocolPanel.gameObject.SetActive(false);
         if (checklistPanel != null && checklistPanel.gameObject != null) checklistPanel.gameObject.SetActive(false);
         if (protocolMenuPanel != null && protocolMenuPanel.gameObject != null) protocolMenuPanel.gameObject.SetActive(false);

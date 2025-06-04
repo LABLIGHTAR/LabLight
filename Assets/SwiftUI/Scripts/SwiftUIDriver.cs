@@ -297,6 +297,12 @@ public class SwiftUIDriver : IUIDriver, IDisposable
         OpenSwiftUIWindow("SavedProtocolsView"); // Replace "SavedProtocolsView" with the actual SwiftUI view name
         Debug.Log("SwiftUIDriver: DisplaySavedProtocolsMenu called. Instructing SwiftUI to open SavedProtocolsView.");
     }
+
+    public void DisplayProtocolView()
+    {
+        OpenSwiftUIWindow("ProtocolView"); // Assuming "ProtocolView" is the SwiftUI view name
+        Debug.Log("SwiftUIDriver: DisplayProtocolView called. Instructing SwiftUI to open ProtocolView.");
+    }
     #endregion
 
     #region Callback Methods (Implementing IUIDriver, Delegating to Handler)

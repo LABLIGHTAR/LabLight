@@ -298,4 +298,54 @@
 
 .height-100px {
     height: 100px;
+}
+
+/* === Utility - Separators === */
+.horizontal-separator {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin-top: 5px; /* Optional: provide some default spacing */
+    margin-bottom: 5px; /* Optional: provide some default spacing */
+}
+
+/* === Utility - Text === */
+.text-block {
+    white-space: normal;
+    color: rgb(220, 220, 220); /* Default color, can be overridden */
+    font-size: 14px; /* Default size, can be overridden */
+    margin-bottom: 10px; /* Default spacing */
+}
+
+/* === Utility - Icon Buttons === */
+.icon-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.2);
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    margin: 0 5px;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 20px;
+}
+
+.icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.icon-button:active {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.icon-button-icon {
+    width: 24px;
+    height: 24px;
+    background-color: rgba(0, 0, 0, 0.3); /* Temporary placeholder background for visibility */
+    /* For SVG or PNG icons that need their color to be set via tint */
+    /* -unity-background-image-tint-color: white; */ 
+    /* Or, if using font icons, the color property of .icon-button will apply */
 } 

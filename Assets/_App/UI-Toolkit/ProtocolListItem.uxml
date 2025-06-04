@@ -1,9 +1,12 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
-    <ui:VisualElement name="protocol-item-container" class="protocol-list-item">
-        <ui:VisualElement name="info-container" class="protocol-item-info-container">
-            <ui:Label name="protocol-name-label" text="Protocol Name" class="protocol-name" />
-            <ui:Label name="owner-name-label" text="Owner: [OwnerName]" class="owner-name" />
-        </ui:VisualElement>
+    <Style src="project://database/Assets/_App/UI-Toolkit/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=601ac9f2882699e48a1f731a9e1241ea&amp;type=3#CoreStyles" />
+    <ProtocolListItemController name="protocol-item-container" class="protocol-list-item">
+        <ui:Button name="select-protocol-area-button" class="protocol-select-area">
+            <ui:VisualElement name="info-container" class="protocol-item-info-container">
+                <ui:Label name="protocol-name-label" text="Protocol Name" class="protocol-name" />
+                <ui:Label name="owner-name-label" text="Owner: [OwnerName]" class="owner-name" />
+            </ui:VisualElement>
+        </ui:Button>
         <ui:Button name="save-unsave-button" text="Save" class="protocol-item-button" />
-    </ui:VisualElement>
+    </ProtocolListItemController>
 </ui:UXML>

@@ -33,6 +33,7 @@ public interface IUIDriver
     void DisplayPDFReader(string url);
     void DisplayBrowseProtocolsMenu();
     void DisplaySavedProtocolsMenu();
+    void DisplayProtocolView();
     #endregion
 
     #region Unity Callback Methods (Inputs from UI to be Handled)

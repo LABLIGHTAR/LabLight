@@ -115,7 +115,6 @@ public partial class BrowseProtocolsMenuController : MonoBehaviour
         {
             if (!result.Data.Any())
             {
-                // Optionally, display a message in the ScrollView if no protocols are available
                 var noProtocolsLabel = new Label("No protocols available to browse.");
                 noProtocolsLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
                 noProtocolsLabel.style.marginTop = 20;
@@ -123,24 +122,33 @@ public partial class BrowseProtocolsMenuController : MonoBehaviour
                 return;
             }
 
-            foreach (var protocol in result.Data)
+            foreach (var protocolDataEntry in result.Data)
             {
-                VisualElement listItem = protocolListItemTemplate.Instantiate();
-                
-                var protocolNameLabel = listItem.Q<Label>("protocol-name-label");
-                var ownerNameLabel = listItem.Q<Label>("owner-name-label");
-                var saveButton = listItem.Q<Button>("save-unsave-button");
+                TemplateContainer listItemInstance = protocolListItemTemplate.Instantiate();
+                ProtocolListItemController itemController = listItemInstance.Q<ProtocolListItemController>("protocol-item-container");
 
-                if (protocolNameLabel != null) protocolNameLabel.text = protocol.Name;
-                if (ownerNameLabel != null) ownerNameLabel.text = $"Owner: {protocol.OwnerDisplayName ?? "N/A"}";
-                
-                if (saveButton != null)
+                if (itemController != null)
                 {
-                    UpdateSaveButtonState(saveButton, protocol.Id);
-                    saveButton.RegisterCallback<ClickEvent, uint>(HandleSaveUnsaveClicked, protocol.Id);
+                    itemController.SetProtocolData(protocolDataEntry, _uiDriver as IUICallbackHandler, _database);
+                    IUICallbackHandler uiCallbackHandler = ServiceRegistry.GetService<IUICallbackHandler>();
+                    if (uiCallbackHandler != null)
+                    {
+                         itemController.SetProtocolData(protocolDataEntry, uiCallbackHandler, _database);
+                    }
+                    else
+                    {
+                        Debug.LogError("BrowseProtocolsMenuController: IUICallbackHandler service not found for list item.");
+                        itemController.SetEnabled(false); 
+                    }
                 }
-                _protocolsScrollView.Add(listItem);
-                _protocolIdToListItemMap[protocol.Id] = listItem;
+                else
+                {
+                    Debug.LogError("Could not find ProtocolListItemController component in instantiated UXML item.");
+                    continue;
+                }
+                
+                _protocolsScrollView.Add(listItemInstance);
+                _protocolIdToListItemMap[protocolDataEntry.Id] = listItemInstance;
             }
         }
         else
@@ -157,82 +165,26 @@ public partial class BrowseProtocolsMenuController : MonoBehaviour
     {
         if (_protocolsScrollView != null)
         {
-            // Unregister callbacks from buttons within each item before clearing
-            foreach (var listItem in _protocolsScrollView.Children().ToList()) // ToList() to avoid modification during iteration issues
-            {
-                var button = listItem.Q<Button>("save-unsave-button");
-                if (button != null)
-                {
-                    // This requires storing the specific protocolId with the button or item 
-                    // to unregister correctly if the lambda captures it. 
-                    // For simplicity here, direct unregistration might be tricky if specific context is needed.
-                    // The clean way is to manage event unsubscription if lambda captures item specific data.
-                    // However, clearing children typically removes UIElements and their built-in event handlers.
-                }
-            }
             _protocolsScrollView.Clear();
         }
         _protocolIdToListItemMap.Clear();
     }
 
-    private void UpdateSaveButtonState(Button button, uint protocolId)
-    {
-        if (_database == null || string.IsNullOrEmpty(_database.CurrentUserId))
-        {
-            button.text = "N/A";
-            button.SetEnabled(false);
-            return;
-        }
-        bool isSaved = _database.IsProtocolSavedByUser(protocolId, _database.CurrentUserId);
-        button.text = isSaved ? "Unsave" : "Save";
-        button.userData = isSaved; // Store current state for click handler
-        button.SetEnabled(true);
-    }
-
-    private void HandleSaveUnsaveClicked(ClickEvent evt, uint protocolId)
-    {
-        if (_database == null) return;
-
-        var button = evt.currentTarget as Button;
-        if (button == null) return;
-
-        bool isCurrentlySaved = (bool)button.userData;
-
-        button.SetEnabled(false); // Disable button during operation
-
-        if (isCurrentlySaved)
-        {
-            _database.UnsaveProtocol(protocolId);
-        }
-        else
-        {
-            _database.SaveProtocol(protocolId);
-        }
-        // The button state will be updated by the DB event handlers (HandleSavedProtocolAdded/Removed)
-        // which will re-enable the button.
-    }
-
     private void HandleSavedProtocolAdded(uint protocolId)
     {
-        if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItem))
+        if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItemVisualElement))
         {
-            var button = listItem.Q<Button>("save-unsave-button");
-            if (button != null)
-            {
-                UpdateSaveButtonState(button, protocolId);
-            }
+            ProtocolListItemController itemController = listItemVisualElement.Q<ProtocolListItemController>("protocol-item-container");
+            itemController?.RefreshSaveButtonState();
         }
     }
 
     private void HandleSavedProtocolRemoved(uint protocolId)
     {
-        if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItem))
+        if (_protocolIdToListItemMap.TryGetValue(protocolId, out VisualElement listItemVisualElement))
         {
-            var button = listItem.Q<Button>("save-unsave-button");
-            if (button != null)
-            {
-                UpdateSaveButtonState(button, protocolId);
-            }
+            ProtocolListItemController itemController = listItemVisualElement.Q<ProtocolListItemController>("protocol-item-container");
+            itemController?.RefreshSaveButtonState();
         }
     }
 }
