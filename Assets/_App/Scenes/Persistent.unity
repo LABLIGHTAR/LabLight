@@ -5458,7 +5458,7 @@ MonoBehaviour:
   dashboardMenuToolkitPanel: {fileID: 201392467}
   browseProtocolsMenuToolkitPanel: {fileID: 16268599}
   savedProtocolsMenuToolkitPanel: {fileID: 784628986}
-  protocolViewToolkitPanel: {fileID: 0}
+  protocolViewToolkitPanel: {fileID: 1064815009}
   protocolPanel: {fileID: 1725938590}
   checklistPanel: {fileID: 1725938589}
   protocolMenuPanel: {fileID: 197844286}

@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="../../Common/Styles/CoreStyles.uss" />
+    <ProtocolListItemController name="protocol-item-container" class="protocol-list-item">
+        <ui:Button name="select-protocol-area-button" class="protocol-select-area protocol-item-button">
+            <ui:VisualElement name="info-container" class="protocol-item-info-container">
+                <ui:Label name="protocol-name-label" text="Protocol Title" class="protocol-name" />
+                <ui:Label name="owner-name-label" text="Owner Name" class="owner-name" />
+                <ui:Label name="protocol-description-label" text="Porttitor nulla proin cursus non in. Velit laoreet ornare suspendisse turpis montes ac id consectetur. Amet consectetur donec porttitor feugiat congue eleifend..." class="protocol-description" />
+            </ui:VisualElement>
+        </ui:Button>
+        <ui:VisualElement class="protocol-item-actions-group">
+            <ui:Button name="save-unsave-button" text="Save" class="action-button" />
+            <ui:Button name="delete-protocol-button" text="Delete" class="action-button protocol-delete-button" style="display: none;" />
+        </ui:VisualElement>
+    </ProtocolListItemController>
+</ui:UXML>

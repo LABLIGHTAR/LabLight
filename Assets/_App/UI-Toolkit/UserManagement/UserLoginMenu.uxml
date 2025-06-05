@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../Common/Styles/CoreStyles.uss" />
+    
+    <ui:VisualElement name="login-panel" class="glassmorphic-panel">
+        <ui:Label text="Login" class="title-label" />
+        <ui:VisualElement name="form-container" class="form-layout-centered-narrow">
+            <ui:TextField name="email-field" label="Email" class="new-user-input" />
+            <ui:TextField name="password-field" label="Password" password="true" class="new-user-input" />
+        </ui:VisualElement>
+        <ui:VisualElement name="error-label-container" class="error-message-area">
+            <ui:Label name="error-label" class="error-message-label hidden" />
+        </ui:VisualElement>
+        <ui:VisualElement name="button-container" class="margin-top-medium">
+            <ui:Button text="Login" name="login-button" class="action-button" />
+            <ui:Button text="Back" name="back-button" class="action-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 

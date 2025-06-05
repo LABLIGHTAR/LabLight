@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../Common/Styles/CoreStyles.uss" />    
+    <ui:VisualElement name="returning-user-login-panel" class="glassmorphic-panel">
+        <ui:VisualElement name="profile-picture-container" class="profile-image-area">
+            <ui:VisualElement name="profile-image" class="profile-image-placeholder" />
+        </ui:VisualElement>
+        <ui:Label name="welcome-label" text="Welcome back, [Username]!" class="h2 text-block-centered-spacious" />
+        <ui:VisualElement name="form-container" class="form-layout-centered-narrow">
+            <!-- Email might be pre-filled or not shown if username implies it -->
+            <ui:TextField name="password-field" label="Password" password="true" class="new-user-input" />
+        </ui:VisualElement>
+        <ui:VisualElement name="error-label-container" class="error-message-area">
+            <ui:Label name="error-label" class="error-message-label hidden" />
+        </ui:VisualElement>
+        <ui:VisualElement name="button-container" class="margin-top-medium">
+            <ui:Button text="Login" name="login-button" class="action-button" />
+            <ui:Button text="Switch User" name="back-button" class="action-button secondary-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 
