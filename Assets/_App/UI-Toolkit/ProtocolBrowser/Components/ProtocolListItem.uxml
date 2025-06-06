@@ -1,5 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
-    <Style src="../../Common/Styles/CoreStyles.uss" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <Style src="ProtocolListItem.uss" />
     <ProtocolListItemController name="protocol-item-container" class="protocol-list-item">
         <ui:Button name="select-protocol-area-button" class="protocol-select-area protocol-item-button">
             <ui:VisualElement name="info-container" class="protocol-item-info-container">
@@ -8,9 +9,9 @@
                 <ui:Label name="protocol-description-label" text="Porttitor nulla proin cursus non in. Velit laoreet ornare suspendisse turpis montes ac id consectetur. Amet consectetur donec porttitor feugiat congue eleifend..." class="protocol-description" />
             </ui:VisualElement>
         </ui:Button>
-        <ui:VisualElement class="protocol-item-actions-group">
-            <ui:Button name="save-unsave-button" text="Save" class="action-button" />
-            <ui:Button name="delete-protocol-button" text="Delete" class="action-button protocol-delete-button" style="display: none;" />
+        <ui:VisualElement name="protocol-item-actions-group" class="protocol-item-actions-group">
+            <ui:Button name="save-unsave-button" text="Save" class="button button-primary" />
+            <ui:Button name="delete-protocol-button" text="Delete" class="button button-secondary" style="display: none;" />
         </ui:VisualElement>
     </ProtocolListItemController>
 </ui:UXML>

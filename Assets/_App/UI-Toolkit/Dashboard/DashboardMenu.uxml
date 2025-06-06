@@ -1,31 +1,40 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/_App/UI-Toolkit/Dashboard/DashboardMenu.uss?fileID=7433441132597879392&amp;guid=bc9efd206c529ef40a7ccd123f239dbb&amp;type=3#DashboardMenu" />
     <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <Style src="DashboardMenu.uss" />
     <ui:VisualElement name="dashboard-container" class="glassmorphic-panel">
         <ui:VisualElement name="nav-bar" class="nav-bar-column content-column-panel">
-            <ui:Button name="nav-messages" text="Messages" class="action-button" />
-            <ui:Button name="nav-notifications" text="Notifications" class="action-button" />
-            <ui:Button name="nav-saved-protocols" text="Saved Protocols" class="action-button" />
-            <ui:Button name="nav-browse-protocols" text="Browse Protocols" class="action-button" />
-            <ui:Button name="nav-settings" text="Settings" class="action-button" />
-            <ui:Button name="nav-logout" text="Log Out" class="action-button" />
+            <ui:Button name="nav-messages" text="Messages" class="button button-primary" />
+            <ui:Button name="nav-notifications" text="Notifications" class="button button-primary" />
+            <ui:Button name="nav-saved-protocols" text="Saved Protocols" class="button button-primary" />
+            <ui:Button name="nav-browse-protocols" text="Browse Protocols" class="button button-primary" />
+            <ui:Button name="nav-settings" text="Settings" class="button button-primary" />
+            <ui:Button name="nav-logout" text="Log Out" class="button button-secondary" />
         </ui:VisualElement>
         <ui:VisualElement name="main-content" class="main-content-column content-column-panel">
             <ui:VisualElement name="header-section" class="header-section">
                 <ui:VisualElement name="user-greeting-container" class="flex-row-center-items">
                     <ui:VisualElement name="profile-image" class="profile-image-placeholder" />
-                    <ui:VisualElement name="greeting-text-container" class="margin-left-small">
+                    <ui:VisualElement name="greeting-container" class="margin-left-small">
                         <ui:Label name="greeting-label" text="Good morning," class="h2" />
                         <ui:Label name="user-name-label" text="Nik Stires" class="h1" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:Label name="time-label" text="8:57 AM" class="h2 time-display" />
+                <ui:VisualElement name="time-container" class="time-container">
+                    <ui:Label name="time-label" text="8:57 AM" class="h2 time-display" />
+                </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="optional-content-section" class="optional-content-section">
                 <ui:Label text="Continue where you left off: " class="h3" />
                 <ui:VisualElement name="continue-placeholder" class="placeholder-box-base height-50px margin-bottom-small" />
                 <ui:Label text="Your protocols: " class="h3" />
                 <ui:VisualElement name="protocols-placeholder" class="placeholder-box-base height-100px" />
+            </ui:VisualElement>
+            <ui:VisualElement name="notices-container" class="notices-container">
+                <ui:Label text="Notices:" class="h2 notice-title" />
+                <ui:VisualElement name="notice-item" class="notice-item">
+                    <ui:Label text="Reagent level is low for PCR Master Mix. Would you like to reorder, or have the lab manager re-agent, order more? (Placeholder)" class="text-wrap-normal" />
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="notices-panel" class="notices-column content-column-panel">

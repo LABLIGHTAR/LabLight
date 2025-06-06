@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <ui:Label text="Register" class="title-label font-size-large" />
+    <ui:VisualElement name="form-container" class="form-layout-stretched">
+        <ui:Label text="Create New Account" class="h2 text-block-centered-spacious" />
+        <ui:TextField name="name-field" label="Name" class="form-field" />
+        <ui:TextField name="email-field" label="Email" class="form-field" />
+        <ui:TextField name="password-field" label="Password" password="true" class="form-field" />
+        <ui:TextField name="confirm-password-field" label="Confirm Password" password="true" class="form-field" />
+    </ui:VisualElement>
+    <ui:VisualElement name="button-container" class="button-container-column">
+        <ui:Button text="Register" name="register-button" class="button button-primary" />
+        <ui:Button text="Back" name="back-button" class="button button-secondary" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -21,6 +21,7 @@
     justify-content: space-between;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.3);
+    width: 100%; /* Ensure it takes available width to space items */
 }
 
 .content-column-panel {
@@ -34,13 +35,12 @@
     flex-direction: column;
 }
 
-.form-layout-centered-narrow {
-    width: 80%;
-    margin-left: auto;
-    margin-right: auto;
+.form-layout-stretched {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    flex-grow: 1;
 }
 
 .profile-image-area {
@@ -80,6 +80,13 @@
     width: 100%; /* Ensure it takes available width to space items */
 }
 
+.button-container-column {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+}
+
 /* === Typography === */
 .title-label {
     font-size: 12px;
@@ -115,74 +122,61 @@
 
 .font-size-large {
     font-size: 18px;
-} 
+}
 
 /* === Buttons === */
-.action-button {
-    background-color: rgba(255, 255, 255, 0.15);
+.button {
     border-radius: 15px;
     padding: 12px 25px;
     margin-top: 8px;
-    margin-right: 0px;
     margin-bottom: 10px;
-    margin-left: 0px;
     font-size: 16px;
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.3);
     -unity-font-style: bold;
 }
 
-.action-button:hover {
+.button-primary {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.button-primary:hover {
     background-color: rgba(255, 255, 255, 0.25);
     border-color: rgba(255, 255, 255, 0.5);
 }
 
-.action-button:active {
+.button-primary:active {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.secondary-button { /* This should inherit from .action-button if possible, or define all properties */
-    /* Assuming .secondary-button might share some base styles with .action-button.
-       If not, it should have all its base properties defined here too.
-       For now, just listing its overrides/specifics as per original. */
+.button-secondary {
     background-color: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.2);
-    /* Ensure it also has padding, margin, font-size, border-radius etc. if it's a standalone button style */
-    /* Copying from .action-button for completeness if it's NOT meant to be applied alongside .action-button */
-    border-radius: 15px;
-    padding: 12px 25px;
-    margin-top: 8px;
-    margin-right: 0px;
-    margin-bottom: 10px;
-    margin-left: 0px;
-    font-size: 16px;
-    border-width: 1px;
-    -unity-font-style: bold;
 }
 
-.secondary-button:hover {
+.button-secondary:hover {
     background-color: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.4);
 }
 
-.secondary-button:active {
+.button-secondary:active {
     background-color: rgba(255, 255, 255, 0.02);
 }
 
 /* === Input Fields === */
-.new-user-input {
+.form-field {
     width: 100%; 
     margin-bottom: 15px;
 }
 
-.new-user-input > .unity-label {
+.form-field > .unity-label {
     font-size: 16px;
     margin-bottom: 5px;
     -unity-font-style: bold;
 }
 
-.new-user-input > .unity-text-input,
-.new-user-input > .unity-base-text-field__input {
+.form-field > .unity-text-input,
+.form-field > .unity-base-text-field__input {
     background-color: rgba(0, 0, 0, 0.25);
     border-color: rgba(255, 255, 255, 0.2);
     border-width: 1px;
@@ -194,89 +188,25 @@
     min-width: 0;
 }
 
-.new-user-input > .unity-text-input:focus,
-.new-user-input > .unity-base-text-field__input:focus {
+.form-field > .unity-text-input:focus,
+.form-field > .unity-base-text-field__input:focus {
     border-color: rgba(100, 150, 255, 0.8);
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* === Component-Specific: Protocol List Item === */
-.protocol-list-item {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    margin: 5px 0;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.protocol-list-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.protocol-item-info-container {
-    flex-grow: 1;
-    flex-shrink: 1;
-    margin-right: 10px;
-    -unity-text-align: middle-left;
-}
-
-.protocol-name { /* This is inside a protocol-list-item */
-    font-size: 18px;
-    -unity-font-style: bold;
-    color: white; /* Already global, but can be specific */
-    margin-bottom: 3px;
-}
-
-.owner-name { /* This is inside a protocol-list-item */
-    font-size: 14px;
-    color: #cccccc;
-    margin-bottom: 5px;
-}
-
-/* New style for the protocol description label */
-.protocol-description {
-    font-size: 13px; /* Slightly smaller than owner name */
-    color: #bbbbbb; /* Lighter than owner name or standard text */
-    white-space: normal; /* Allow text to wrap */
-    margin-top: 5px; /* Space below owner name */
-}
-
-.protocol-item-button { /* This is inside a protocol-list-item, might be an action-button or secondary-button */
-    /* If it's a variant of .action-button, consider applying .action-button and then this class for modifications */
-    min-width: 80px;
-    max-width: 100px;
-    padding: 5px 10px; /* Overrides .action-button padding if used together */
-    font-size: 14px;   /* Overrides .action-button font-size if used together */
-    margin-left: auto;
-    /* Add other button properties if it's a standalone style */
-    /* background-color, border-radius, border-width, border-color, -unity-font-style */
-    /* For now, assuming it might be used on an element that is already a button or has base button styles */
-}
-
-/* === Component-Specific: Profile Image === */
-.profile-image-placeholder {
-    background-color: #555;
-    border-width: 2px;
-    border-color: #777;
-    min-width: 80px;
-    min-height: 80px;
-    max-width: 80px;
-    max-height: 80px;
-    border-radius: 40px;
-    width: 80px; 
-    height: 80px;
-}
-
 /* === Component-Specific: Scroll Views === */
-.protocols-scroll-view { /* Generic for protocol lists, but specific to scroll views */
+.content-scroll-view {
     width: 100%;
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    flex-grow: 1;
+}
+
+.scroll-view-fixed-height {
     min-height: 300px;
     max-height: 500px;
-    margin-bottom: 15px;
+    flex-grow: 0;
 }
 
 /* === Utility - Spacing === */

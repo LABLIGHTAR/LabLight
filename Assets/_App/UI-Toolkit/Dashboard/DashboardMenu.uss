@@ -72,3 +72,16 @@
 .optional-content-section {
     margin-top: 20px;
 }
+
+.profile-image-placeholder {
+    background-color: #555;
+    border-width: 2px;
+    border-color: #777;
+    min-width: 80px;
+    min-height: 80px;
+    max-width: 80px;
+    max-height: 80px;
+    border-radius: 40px;
+    width: 80px; 
+    height: 80px;
+}

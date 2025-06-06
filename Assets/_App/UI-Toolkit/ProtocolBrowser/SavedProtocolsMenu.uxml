@@ -2,10 +2,10 @@
     <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
     <ui:VisualElement name="saved-protocols-panel" class="glassmorphic-panel">
         <ui:Label text="Saved Protocols" class="title-label" />
-        <ui:ScrollView name="protocols-scroll-view" class="protocols-scroll-view" />
+        <ui:ScrollView name="protocols-scroll-view" class="content-scroll-view scroll-view-fixed-height" />
         <ui:VisualElement name="button-container" class="margin-top-medium button-group-row-spaced">
-            <ui:Button text="Back" name="back-button" class="action-button secondary-button" />
-            <ui:Button text="Refresh" name="refresh-button" class="action-button" />
+            <ui:Button text="Back" name="back-button" class="button button-secondary" />
+            <ui:Button text="Refresh" name="refresh-button" class="button button-primary" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -14,10 +14,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 {
     #region Serialized Fields (UI Panel References)
     [SerializeField] private UserSelectionPanelViewController userSelectionPanel;
-    [SerializeField] private UIDocument userSelectionToolkitPanel;
-    [SerializeField] private UIDocument userRegistrationToolkitPanel;
     [SerializeField] private UIDocument userLoginToolkitPanel;
-    [SerializeField] private UIDocument returningUserLoginToolkitPanel;
     [SerializeField] private UIDocument dashboardMenuToolkitPanel;
     [SerializeField] private UIDocument browseProtocolsMenuToolkitPanel;
     [SerializeField] private UIDocument savedProtocolsMenuToolkitPanel;
@@ -33,6 +30,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     private IAuthProvider _authProvider;
     private ILLMChatProvider _llmChatProvider;
     private IUICallbackHandler _uiCallbackHandler;
+    private UserLoginWindowController _userLoginController;
     #endregion
 
     #region Unity Lifecycle Methods (Initialization & Cleanup)
@@ -74,6 +72,11 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         else
         {
             Debug.LogError("UnityUIDriver: ProtocolState.Instance is null. Cannot subscribe to streams.");
+        }
+
+        if (userLoginToolkitPanel != null)
+        {
+            _userLoginController = userLoginToolkitPanel.GetComponent<UserLoginWindowController>();
         }
     }
 
@@ -158,64 +161,56 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         {
             userSelectionPanel.gameObject.SetActive(true);
         } 
-        else if (userSelectionToolkitPanel != null)
+        else if (userLoginToolkitPanel != null)
         {
-             Debug.LogWarning("DisplayUserSelection called, but legacy userSelectionPanel not found or active. Defaulting to userSelectionToolkitPanel. Consider using DisplayUserSelectionMenu directly.");
-            userSelectionToolkitPanel.gameObject.SetActive(true);
+             Debug.LogWarning("DisplayUserSelection called, but legacy userLoginToolkitPanel not found or active. Defaulting to userLoginToolkitPanel. Consider using DisplayUserSelectionMenu directly.");
+            userLoginToolkitPanel.gameObject.SetActive(true);
         }
         else
         {
-            Debug.LogError("UnityUIDriver: Neither userSelectionPanel nor userSelectionToolkitPanel is assigned for DisplayUserSelection.");
+            Debug.LogError("UnityUIDriver: Neither userSelectionPanel nor userLoginToolkitPanel is assigned for DisplayUserSelection.");
         }
     }
 
     public void DisplayUserSelectionMenu()
     {
         HideAllPanels();
-        if (userSelectionToolkitPanel != null)
+        if (userLoginToolkitPanel != null)
         {
-            userSelectionToolkitPanel.gameObject.SetActive(true);
+            userLoginToolkitPanel.gameObject.SetActive(true);
         }
         else
         {
-            Debug.LogError("UnityUIDriver: userSelectionToolkitPanel (UIDocument) is not assigned for DisplayUserSelectionMenu.");
+            Debug.LogError("UnityUIDriver: userLoginToolkitPanel (UIDocument) is not assigned for DisplayUserSelectionMenu.");
         }
     }
 
     public void DisplayReturningUserLogin(LocalUserProfileData userProfile)
     {
         HideAllPanels();
-        if (returningUserLoginToolkitPanel != null)
+        if (userLoginToolkitPanel != null)
         {
-            returningUserLoginToolkitPanel.gameObject.SetActive(true);
-            var controller = returningUserLoginToolkitPanel.GetComponent<ReturningUserLoginMenuController>();
-            if (controller != null)
-            {
-                controller.SetUserProfile(userProfile);
-            }
-            else
-            {
-                Debug.LogError("UnityUIDriver: ReturningUserLoginMenuController not found on returningUserLoginToolkitPanel.");
-            }
+            userLoginToolkitPanel.gameObject.SetActive(true);
+            // The UserLoginController will handle showing the correct view internally.
+            // We just need to ensure the main panel is active.
         }
         else
         {
-            Debug.LogError("UnityUIDriver: returningUserLoginToolkitPanel (UIDocument) is not assigned.");
+            Debug.LogError("UnityUIDriver: userLoginToolkitPanel (UIDocument) is not assigned.");
         }
     }
 
     public void DisplayUserRegistration()
     {
         HideAllPanels();
-        if (userRegistrationToolkitPanel != null)
+        if (userLoginToolkitPanel != null)
         {
-            userRegistrationToolkitPanel.gameObject.SetActive(true);
-            var controller = userRegistrationToolkitPanel.GetComponent<UserRegistrationMenuController>();
-            controller?.ClearForm(); 
+            userLoginToolkitPanel.gameObject.SetActive(true);
+            // The UserLoginController will handle showing the correct view internally.
         }
         else
         {
-            Debug.LogError("UnityUIDriver: userRegistrationToolkitPanel (UIDocument) is not assigned.");
+            Debug.LogError("UnityUIDriver: userLoginToolkitPanel (UIDocument) is not assigned.");
         }
     }
 
@@ -225,8 +220,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (userLoginToolkitPanel != null)
         {
             userLoginToolkitPanel.gameObject.SetActive(true);
-            var controller = userLoginToolkitPanel.GetComponent<UserLoginMenuController>();
-            controller?.ClearForm();
+            // The UserLoginController will handle showing the correct view internally.
         }
         else
         {
@@ -406,80 +400,60 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public async void LoginCallback(string username, string password)
     {
-        if (_uiCallbackHandler == null) 
-        {
-             Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in LoginCallback."); 
-             var controller = userLoginToolkitPanel?.GetComponent<UserLoginMenuController>();
-             controller?.DisplayLoginError("Internal error: UI Callback Handler not found.");
-             return;
-        }
         try
         {
             await _uiCallbackHandler.HandleLogin(username, password);
-            // Successful login is handled by AuthStateChanged -> HandleSignInSuccess -> DisplayProtocolMenu
         }
         catch (Exception ex)
         {
-            Debug.LogError($"UnityUIDriver: Login attempt via handler failed for {username}. Error: {ex.Message}");
-            var controller = userLoginToolkitPanel?.GetComponent<UserLoginMenuController>();
-            controller?.DisplayLoginError(ex.Message);
+            Debug.LogError($"Login failed: {ex.Message}");
+            if (_userLoginController != null)
+            {
+                _userLoginController.DisplayLoginError(ex.Message);
+            }
         }
     }
 
     public async void CreateUserCallback(string userName)
     {
-        if (_uiCallbackHandler == null)
-        {
-            Debug.LogError("UnityUIDriver: IUICallbackHandler is not available for CreateUserCallback.");
-            return;
-        }
-        Debug.Log($"UnityUIDriver: CreateUserCallback received for {userName}. Attempting to handle.");
+        // This method seems to be related to the legacy user selection panel.
+        // It might need to be adapted or removed depending on the new flow.
+        Debug.LogWarning("CreateUserCallback is not fully integrated with the new UI flow yet.");
         try
         {
-            List<LocalUserProfileData> updatedProfiles = await _uiCallbackHandler.HandleCreateUser(userName);
-            // Assuming userSelectionToolkitPanel is the correct panel to update.
-            // It might be better to have a more generic way to signal UI refresh for user lists if multiple panels show them.
-            var userSelectionController = userSelectionToolkitPanel?.GetComponent<UserSelectionMenuController>();
-            if (userSelectionController != null)
+            var updatedProfiles = await _uiCallbackHandler.HandleCreateUser(userName);
+            if (_userLoginController != null)
             {
-                userSelectionController.UpdateUserList(updatedProfiles);
-                DisplayUserSelection(); // Or potentially stay on a screen that shows the new user
-            }
-            else
-            {
-                Debug.LogWarning("UnityUIDriver: UserSelectionMenuController not found after creating user. UI might not reflect the new user immediately.");
+                // This part needs a method on UserLoginController to update its UserSelectionView
+                // For now, we assume such a method exists or will be added.
+                // _userLoginController.UpdateUserProfiles(updatedProfiles);
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"UnityUIDriver: Error during CreateUserCallback for {userName}: {ex.Message}");
-            // Optionally, show an error message on the UI
-            var userSelectionController = userSelectionToolkitPanel?.GetComponent<UserSelectionMenuController>();
-            userSelectionController?.DisplayError($"Failed to create user: {ex.Message}");
+            Debug.LogError($"Create user failed: {ex.Message}");
+            if (_userLoginController != null)
+            {
+                // A method like `_userLoginController.DisplayError(ex.Message)` would be ideal here,
+                // routed to the currently active view.
+                 _userLoginController.DisplayLoginError(ex.Message); // Re-using login error display for now
+            }
         }
     }
 
     public async void AuthRegistrationCallback(string displayName, string email, string password)
     {
-        if (_uiCallbackHandler == null)
-        {
-            Debug.LogError("UnityUIDriver: IUICallbackHandler is not available for AuthRegistrationCallback.");
-            return;
-        }
-        Debug.Log($"UnityUIDriver: AuthRegistrationCallback received for {email}. Attempting to handle.");
         try
         {
             await _uiCallbackHandler.HandleAuthRegistration(displayName, email, password);
-            // After HandleAuthRegistration initiates Firebase sign-up, OnSignInSuccess (handled by HandleSignInSuccess in this class)
-            // will eventually be triggered if Firebase sign-up & sign-in are successful. HandleSignInSuccess will then call DisplayDashboard.
-            // If HandleAuthRegistration throws an exception (e.g., Firebase error), it will be caught below.
-            Debug.Log($"UnityUIDriver: AuthRegistrationCallback for {email} handled by UICallbackHandler. Waiting for sign-in confirmation.");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"UnityUIDriver: Error during AuthRegistrationCallback for {email}: {ex.Message}");
-            var registrationController = userRegistrationToolkitPanel?.GetComponent<UserRegistrationMenuController>();
-            registrationController?.DisplayRegistrationError($"Registration failed: {ex.Message}");
+            Debug.LogError($"Registration failed: {ex.Message}");
+            if (_userLoginController != null)
+            {
+                _userLoginController.DisplayRegistrationError(ex.Message);
+            }
         }
     }
 
@@ -494,10 +468,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     private void HideAllPanels()
     {
         if (userSelectionPanel != null && userSelectionPanel.gameObject != null) userSelectionPanel.gameObject.SetActive(false);
-        if (userSelectionToolkitPanel != null) userSelectionToolkitPanel.gameObject.SetActive(false);
-        if (userRegistrationToolkitPanel != null) userRegistrationToolkitPanel.gameObject.SetActive(false);
         if (userLoginToolkitPanel != null) userLoginToolkitPanel.gameObject.SetActive(false);
-        if (returningUserLoginToolkitPanel != null) returningUserLoginToolkitPanel.gameObject.SetActive(false);
         if (dashboardMenuToolkitPanel != null) dashboardMenuToolkitPanel.gameObject.SetActive(false);
         if (browseProtocolsMenuToolkitPanel != null) browseProtocolsMenuToolkitPanel.gameObject.SetActive(false);
         if (savedProtocolsMenuToolkitPanel != null) savedProtocolsMenuToolkitPanel.gameObject.SetActive(false);

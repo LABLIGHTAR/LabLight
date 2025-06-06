@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <ui:VisualElement name="form-container" class="form-layout-stretched">
+        <ui:Label text="Select Your Profile" class="h2 text-block-centered-spacious" />
+        <ui:ScrollView name="user-scroll-view" class="content-scroll-view" />
+        <ui:VisualElement name="button-container" class="button-group-row-spaced">
+            <ui:Button name="login-button" text="New User?" class="button button-secondary" />
+            <ui:Button name="register-button" text="Register" class="button button-primary" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 
