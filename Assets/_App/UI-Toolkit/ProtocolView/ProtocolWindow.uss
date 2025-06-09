@@ -219,6 +219,11 @@
     font-size: 18px; 
 }
 
+.signed-text {
+    -unity-font-style: italic;
+    font-size: 16px;
+}
+
 .protocol-main-image {
     width: 100%;
     min-height: 150px; /* Placeholder height */

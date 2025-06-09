@@ -430,7 +430,7 @@ public class ProtocolWindowController : BaseWindowController
                 {
                     string userName = SessionState.currentUserProfile?.GetName() ?? "Signed";
                     _signatureLineLabel.text = userName;
-                    _signatureLineLabel.AddToClassList("signature-font");
+                    _signatureLineLabel.AddToClassList("signed-text");
                     Debug.Log($"[ProtocolViewWindowController] OnStepChanged: Step already signed off. Signature line set for: {userName}");
                 }
             }
@@ -523,7 +523,7 @@ public class ProtocolWindowController : BaseWindowController
 
         string userName = SessionState.currentUserProfile?.GetName() ?? "User";
         _signatureLineLabel.text = userName;
-        _signatureLineLabel.AddToClassList("signature-font");
+        _signatureLineLabel.AddToClassList("signed-text");
 
         _isSignedOff = true;
         _uiDriver.SignOffChecklistCallback();
@@ -535,7 +535,7 @@ public class ProtocolWindowController : BaseWindowController
         if (_signatureLineLabel != null)
         {
             _signatureLineLabel.text = "";
-            _signatureLineLabel.RemoveFromClassList("signature-font");
+            _signatureLineLabel.RemoveFromClassList("signed-text");
         }
     }
     
