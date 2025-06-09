@@ -1,0 +1,480 @@
+{
+  "version": "1.0",
+  "title": "Lovo Cell Processing System Training Protocol",
+  "description": "This protocol outlines the Lovo Cell Processing System training, covering instrument power-on, login, scale and sensor calibration, protocol selection (MACSprepD0-v2.0), run settings configuration, LOVO kit installation including spinner and tubing, pressure pod and valve setup, performing disposable kit dry checks, and finally, run termination and instrument shutdown for training purposes.",
+  "estimatedDuration": "0",
+  "protocolPDFNames": [],
+  "globalArObjects": [],
+  "steps": [
+    {
+      "isCritical": true,
+      "title": "LOVO Power On and Login",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Power on the LOVO by flipping the switch on the rear left of the instrument to the on position. (boot up takes 2-3 minutes)",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Once on the main screen press the i icon on the top left of the screen.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Select the instrument settings tab (marked by some sliders).",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Select the calibrate scales/ sensors button (marked by scales).",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Enter your initials before proceeding to the scale and sensor calibration screen.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Scale and Sensor Calibration - Initial Setup",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Remove all weights from the black hooks on the left and right of the LOVO labeled 1-4.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Press the remove weights and tare scales button.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure1.png",
+                "text": "Figure 1 Scales and Sensor Calibration Screen"
+              }
+            }
+          ],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Scale Calibration",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Select the source scale 1 box.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Gently hang the calibrated 1000g weight on scale hook 1 and wait for it to settle on a value.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure2.png",
+                "text": "Figure 2 Scale 1 Calibration and Weight Placement"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Select the hang 1 Kg weight on scale 1 button.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure2.png",
+                "text": "Figure 2 Scale 1 Calibration and Weight Placement (screen view)"
+              }
+            },
+            {
+              "contentType": "text",
+              "properties":{
+                "text": "Should read 1000g."
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Repeat steps for scale hooks 2, 3, and 4: Select the respective scale box, gently hang the calibrated 1000g weight on the scale hook, wait for it to settle, and select the corresponding 'hang 1 Kg weight' button. Ensure each reads 1000g.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Pressure Sensor Calibration and Exit",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Once the weight calibrations are complete, ensure nothing is connected to the pressure sensor and select play on the “Store Atmospheric Pressure” button.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure2.png",
+                "text": "Figure 2 Relevant for accessing calibration screen buttons"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Select the check button at the top right to exit scales and calibration.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "When prompted to check the weigh scale tolerance in the instrument operation profile select the yes check mark.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Hang the 1kg weight on each hook (1-4) and ensure each one reads 1000g±2g. If it is out of range repeat the calibration.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Protocol Selection",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Navigate back to the main menu and select the drop-down menu.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Select the MACSprepD0-v2.0 protocol.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Press start then press continue to navigate to the run settings screen. Any boxes that have check marks can be ignored.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure3.png",
+                "text": "Figure 3 LOVO Protocol"
+              }
+            }
+          ],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Procedure Information Entry",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Select the procedure information button (the unchecked 4th box in the image).",
+          "contentItems": [
+            {
+                "contentType": "image",
+                "properties": {
+                  "url": "lovo_figure3.png",
+                  "text": "Figure 3 LOVO Protocol"
+                }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Refer to the trainer or process development record for any volume entries that need to be made. Enter the following sample values: WBC concentration: 38.00, RBC HCT%: 1.3, PLT Cell Conc.: 960, Leukopak volume: 210 mL, Solution 1 volume: 2000mL.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Press the next arrow to scroll through the pages and fill entries that the trainer/ PDR wants filled; many parameters are locked and can be ignored.",
+          "contentItems": [            
+            {
+              "contentType": "text",
+              "properties": {
+                "text" : "Many parameters are locked and can be ignored"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Once everything is filled out press the estimate button on the top right of the screen. This will show estimates for process times and volumes.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure4.png",
+                "text": "Protocol Estimation Page"
+              }
+            }
+          ],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Kit Installation - Initial Steps",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Press next, and a screen will pop up that states “all clamps are about to be opened”. Press the yes check mark.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Open the LOVO kit and follow the kit installation instructions on the screen.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Let bag 3 sit on the bench (do not place on hook) and place bag 4 on hook 4.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Spinner Device Installation",
+      "estimatedDuration": "0",
+      "contentItems": [
+        {
+          "contentType": "image",
+          "properties": {
+            "url": "lovo_figure5.png",
+            "text": "Figure 5 Spinner holder installed (left), Initial placement of spinner (right)"
+          }
+        }
+      ],
+      "checklist": [
+        {
+          "text": "Install the spinner device as shown in Figure 5.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Insert the top of the spinner into the device until it clicks in.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Orient the bottom of the spinner so that the horizontal port tubing is facing left.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Lock the spinner in place by moving the control arm under it.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Bag Hanging and Pump Head Tubing Installation",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Bag 2 goes on hook 2, doing your best to untangle the tubing.",
+          "contentItems": [
+            {"contentType": "image",
+              "properties": {
+                "url": "lovo_figure6.png",
+                "text": "Figure 6 LOVO Tubing set up pump heads (left), Tubing pinch clamps (right)"
+              }}],
+          "arActions": []
+        },
+        {
+          "text": "Load the pumps so that the color on the tubing is threaded into the matching-colored pump. Installing blue, then purple, and finally red is often most convenient.",
+          "contentItems": [
+            {
+              "contentType" : "text",
+              "properties" :{
+                "text" : "Order doesn't matter here"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Locate the portion of the tubing that is between the color coding of the tubing and thread it into their match-colored pump.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Floss the tubing into the pump, placing the tubing to the back of the pump.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Once threaded insert the tubing into the tube holders located to the left and right of each pump. The color portion of the tubing should be on the outside of the pump holder (Reference Figure 6).",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Lock the pump by rotating the pump locking mechanism 180 degrees counterclockwise.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Pressure Pod and Valve Installation",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Insert the pressure pod onto the pressure sensor. To ensure proper installation, use the metal tool: if it can fit between the pressure pod and sensor, it is incorrectly installed.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure7.png",
+                "text": "Figure 7 Pressure Pod Installation"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Load the valves according to the color coding in Figure 8.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure8.png",
+                "text": "Figure 8 Lovo Tubing Guide"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Use the “two-finger rule” to ensure tubing going around a corner is not too tight. If more than two fingers can fit between the corner and the tubing it is too loose.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Disposable Kit Dry Checks",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "Press next once the LOVO kit is installed.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "When prompted by “next step: Retentate container Information” confirm that F remains loaded correctly and press the yes check mark.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "At prompt for the retentate bag press next.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "When screen states to do a disposable dry kit check, review everything is installed correctly. Once confirmed, press yes.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure9.png",
+                "text": "Figure 9 Disposable Kit Dry Checks Prompt"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "The LOVO will perform a pressure test. If it detects any liquid, it causes an error.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure10.png",
+                "text": "Figure 10 Pressure Check on LOVO Kit"
+              }
+            }
+          ],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Training Conclusion and Kit Teardown",
+      "estimatedDuration": "0",
+      "contentItems": [],
+      "checklist": [
+        {
+          "text": "After a dry kit check the instrument will ask for solutions information. At this point the training should stop, once liquids enter the line the kit can no longer be used for training purposes.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Terminate the run by pressing the red button located under the screen and once prompted press the terminate run button and confirm.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Tear down the kit.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Place the training kit back in its container.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Turn off the LOVO by pressing the red button and selecting shut down.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "lovo_figure11.png",
+                "text": "Figure 11 Shut off/ Terminate Run Button and Shut Down Prompt."
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "The LOVO will then prompt you to flip the power switch in the rear once it is ready to power off.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    }
+  ]
+}
