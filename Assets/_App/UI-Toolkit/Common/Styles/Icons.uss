@@ -126,6 +126,11 @@
     background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/change_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
 }
 
+.icon-signature {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/signature_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+}
+
 .icon-chat-unread {
     -unity-background-image-tint-color: rgb(227, 227, 227);
     background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/mark_unread_chat_alt_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');

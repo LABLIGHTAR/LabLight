@@ -208,7 +208,11 @@ public class ProtocolWindowController : BaseWindowController
             statusIndicator.AddToClassList("check-item-status-indicator");
             if (itemState.IsChecked.Value)
             {
-                statusIndicator.AddToClassList("check-item-status-indicator-completed");
+                statusIndicator.AddToClassList("icon-check-circle");
+            }
+            else
+            {
+                statusIndicator.AddToClassList("icon-radio-unchecked");
             }
 
             var checkItemText = new Label(itemDef.Text);

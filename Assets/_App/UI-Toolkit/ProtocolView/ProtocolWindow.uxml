@@ -1,14 +1,14 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements" editor-extension-mode="False">
     <Style src="ProtocolWindow.uss" />
-    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
-    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss?fileID=7433441132597879392&amp;guid=b24467c9ab0b0a34c8e7b3a2a912b59a&amp;type=3#Icons" />
+    <Style src="/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss" />
+    <Style src="/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss" />
     <ui:VisualElement name="protocol-view-root" class="protocol-view-root">
         <ui:VisualElement name="checklist-panel" class="content-column-panel protocol-view-left-panel">
             <ui:Label name="checklist-step-title-label" text="Step Title Placeholder" class="checklist-step-title" />
             <ui:VisualElement name="checklist-header" class="protocol-view-header">
-                <ui:Button name="previous-step-button" text="&lt;" />
+                <ui:Button name="previous-step-button" class="icon-button nav-icon-button icon-arrow-left" />
                 <ui:Label name="step-indicator-label" text="Step 1 / X" class="step-indicator" />
-                <ui:Button name="next-step-button" text="&gt;" />
+                <ui:Button name="next-step-button" class="icon-button nav-icon-button icon-arrow-right" />
             </ui:VisualElement>
             <ui:ScrollView name="checklist-scroll-view" class="protocol-scroll-view">
                 <ui:VisualElement name="checklist-container" />
@@ -16,9 +16,7 @@
             <ui:VisualElement name="checklist-footer" class="protocol-view-footer checklist-signoff-footer">
                 <ui:VisualElement class="horizontal-separator" />
                 <ui:VisualElement name="sign-off-area" class="sign-off-area-container">
-                    <ui:Button name="sign-off-action-button" class="icon-button sign-off-icon-button">
-                        <ui:Image name="sign-off-icon" class="icon-button-icon" />
-                    </ui:Button>
+                    <ui:Button name="sign-off-action-button" class="icon-button icon-signature sign-off-icon-button" />
                     <ui:Label name="signature-line-label" class="signature-line" />
                 </ui:VisualElement>
             </ui:VisualElement>
@@ -35,21 +33,11 @@
             <ui:VisualElement name="content-footer" class="protocol-view-footer">
                 <ui:VisualElement class="horizontal-separator" />
                 <ui:VisualElement name="action-buttons-container" class="button-group-row-spaced">
-                    <ui:Button name="camera-button" class="icon-button">
-                        <ui:Image name="camera-icon" class="icon-button-icon" />
-                    </ui:Button>
-                    <ui:Button name="pdf-button" class="icon-button">
-                        <ui:Image name="pdf-icon" class="icon-button-icon" />
-                    </ui:Button>
-                    <ui:Button name="calculator-button" class="icon-button">
-                        <ui:Image name="calculator-icon" class="icon-button-icon" />
-                    </ui:Button>
-                    <ui:Button name="comments-button" class="icon-button">
-                        <ui:Image name="comments-icon" class="icon-button-icon" />
-                    </ui:Button>
-                    <ui:Button name="ar-view-button" class="icon-button">
-                        <ui:Image name="ar-view-icon" class="icon-button-icon" />
-                    </ui:Button>
+                    <ui:Button name="camera-button" class="icon-button icon-camera" />
+                    <ui:Button name="pdf-button" class="icon-button icon-pdf" />
+                    <ui:Button name="calculator-button" class="icon-button icon-calculator" />
+                    <ui:Button name="comments-button" class="icon-button icon-chat" />
+                    <ui:Button name="ar-view-button" class="icon-button icon-change-circle" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

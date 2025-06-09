@@ -30,26 +30,25 @@
     margin-bottom: 10px;
 }
 
-.protocol-view-header > Button {
-    min-width: 45px; /* Ensure enough width for text/icon */
-    min-height: 30px; /* Ensure enough height */
-    padding: 5px 10px; /* Padding inside the button */
-    font-size: 16px; /* Adjust font size if needed */
-    -unity-font-style: bold;
+.nav-icon-button {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    margin-left: 5px;
+    margin-right: 5px;
     background-color: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
     border-width: 1px;
-    border-radius: 15px; /* Rounded corners like other panel buttons */
-    margin-left: 5px; /* Space from edges or other elements */
-    margin-right: 5px; /* Space from edges or other elements */
+    border-radius: 18px; /* half of width/height for a perfect circle */
 }
 
-.protocol-view-header > Button:hover {
+.nav-icon-button:hover {
     background-color: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
 }
 
-.protocol-view-header > Button:active {
+.nav-icon-button:active {
     background-color: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
 }
@@ -115,17 +114,8 @@
 .check-item-status-indicator {
     width: 20px;
     height: 20px;
-    border-radius: 10px;
-    background-color: white; /* Default state */
     margin-right: 10px;
-    border-width: 1px;
-    border-color: rgba(0,0,0,0.3);
     flex-shrink: 0; /* Prevent this element from shrinking */
-}
-
-.check-item-status-indicator-completed {
-    /* background-image: resource("checkmark_icon"); Add actual checkmark icon here */
-    background-color: lightgreen; /* Placeholder for completed */
 }
 
 .check-item-text {
