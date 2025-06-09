@@ -13,15 +13,9 @@ using UnityEngine.UIElements;
 public class UnityUIDriver : MonoBehaviour, IUIDriver
 {
     #region Serialized Fields (UI Panel References)
-    [SerializeField] private UserSelectionPanelViewController userSelectionPanel;
     [SerializeField] private UIDocument userLoginWindow;
     [SerializeField] private UIDocument dashboardWindow;
     [SerializeField] private UIDocument protocolWindow;
-    [SerializeField] private ProtocolPanelViewController protocolPanel;
-    [SerializeField] private ChecklistPanelViewController checklistPanel;
-    [SerializeField] private ProtocolMenuViewController protocolMenuPanel;
-    [SerializeField] private TimerViewController timerPanel;
-    [SerializeField] private LLMChatPanelViewController chatPanel;
     #endregion
 
     #region Private Fields
@@ -49,8 +43,8 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         _llmChatProvider = ServiceRegistry.GetService<ILLMChatProvider>();
         if (_llmChatProvider != null)
         {
-            if (chatPanel != null) _llmChatProvider.OnResponse.AddListener(chatPanel.DisplayResponse);
-            else Debug.LogError("UnityUIDriver: ChatPanel is null, cannot subscribe to LLMChatProvider.OnResponse.");
+            // if (chatPanel != null) _llmChatProvider.OnResponse.AddListener(chatPanel.DisplayResponse);
+            // else Debug.LogError("UnityUIDriver: ChatPanel is null, cannot subscribe to LLMChatProvider.OnResponse.");
         }
         else
         {
@@ -90,9 +84,9 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
             _authProvider.OnSignInSuccess -= HandleSignInSuccess;
             _authProvider.OnSignOutSuccess -= HandleSignOutSuccess;
         }
-        if (_llmChatProvider != null && chatPanel != null)
+        if (_llmChatProvider != null /*&& chatPanel != null*/)
         {
-            _llmChatProvider.OnResponse.RemoveListener(chatPanel.DisplayResponse);
+            // _llmChatProvider.OnResponse.RemoveListener(chatPanel.DisplayResponse);
         }
     }
     #endregion
@@ -112,15 +106,9 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     #region UI Update Methods (Implementing IUIDriver)
     public void OnProtocolChange(ProtocolDefinition protocol)
     {
-        if (protocolMenuPanel == null)
-        {
-            Debug.LogError("UnityUIDriver: ProtocolMenuPanel is not assigned.");
-            return;
-        }
-
         if (protocol == null)
         {
-            DisplayProtocolMenu();
+            DisplayDashboard();
         }
         else
         {
@@ -135,6 +123,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
             // ProtocolView should be reacting to ProtocolState changes internally.
             // No direct call needed here unless a specific refresh is required.
         }
+        return;
     }
 
     public void OnCheckItemChange(List<ProtocolState.CheckItemState> checkItemStates)
@@ -144,10 +133,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public void OnChatMessageReceived(string message)
     {
-        if (chatPanel != null && chatPanel.gameObject.activeInHierarchy)
-        {
-            chatPanel.DisplayResponse(message);
-        }
+        Debug.LogWarning("OnChatMessageReceived is not implemented in the new UI.");
     }
 
     public void SendAuthStatus(bool isAuthenticated)
@@ -160,18 +146,14 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void DisplayUserSelection()
     {
         HideAllPanels();
-        if (userSelectionPanel != null && userSelectionPanel.gameObject != null) 
+        if (userLoginWindow != null)
         {
-            userSelectionPanel.gameObject.SetActive(true);
-        } 
-        else if (userLoginWindow != null)
-        {
-             Debug.LogWarning("DisplayUserSelection called, but legacy userLoginToolkitPanel not found or active. Defaulting to userLoginToolkitPanel. Consider using DisplayUserSelectionMenu directly.");
+             Debug.LogWarning("DisplayUserSelection called, but legacy userSelectionPanel not found. Defaulting to userLoginWindow. Consider using DisplayUserSelectionMenu directly.");
             userLoginWindow.gameObject.SetActive(true);
         }
         else
         {
-            Debug.LogError("UnityUIDriver: Neither userSelectionPanel nor userLoginToolkitPanel is assigned for DisplayUserSelection.");
+            Debug.LogError("UnityUIDriver: userLoginWindow is not assigned for DisplayUserSelection.");
         }
     }
 
@@ -242,23 +224,19 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         }
         else
         {
-            Debug.LogError("UnityUIDriver: dashboardMenuToolkitPanel (UIDocument) is not assigned.");
+            Debug.LogError("UnityUIDriver: dashboardWindow (UIDocument) is not assigned.");
         }
     }
 
     public void DisplayProtocolMenu()
     {
-        if (protocolMenuPanel == null) { Debug.LogError("UnityUIDriver: ProtocolMenuPanel is null."); return; }
-        Debug.Log("UnityUIDriver: Displaying protocol menu");
-        HideAllPanels();
-        protocolMenuPanel.gameObject.SetActive(true);
+        Debug.Log("UnityUIDriver: Displaying protocol menu by showing dashboard.");
+        DisplayDashboard();
     }
 
     public void DisplayTimer(int seconds)
     {
-        if (timerPanel == null) { Debug.LogError("UnityUIDriver: TimerPanel is null."); return; }
-        timerPanel.gameObject.SetActive(true);
-        timerPanel.SetTimer(seconds);
+        Debug.LogWarning("DisplayTimer is not implemented in the new UI.");
     }
 
     public void DisplayCalculator()
@@ -273,8 +251,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public void DisplayLLMChat()
     {
-        if (chatPanel == null) { Debug.LogError("UnityUIDriver: ChatPanel is null."); return; }
-        chatPanel.gameObject.SetActive(true);
+        Debug.LogWarning("DisplayLLMChat is not implemented in the new UI.");
     }
 
     public void DisplayVideoPlayer(string url)
@@ -316,9 +293,8 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         try
         {
             await _uiCallbackHandler.HandleUserSelection(userID);
-            Debug.Log($"UnityUIDriver: User {userID} selected via handler. Displaying protocol menu.");
-            DisplayProtocolMenu();
-            if (userSelectionPanel != null) userSelectionPanel.gameObject.SetActive(false);
+            Debug.Log($"UnityUIDriver: User {userID} selected via handler. Displaying dashboard.");
+            DisplayDashboard();
         }
         catch (Exception ex)
         {
@@ -361,11 +337,9 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (_uiCallbackHandler == null) { Debug.LogError("UnityUIDriver: _uiCallbackHandler is null in CloseProtocolCallback."); return; }
         _uiCallbackHandler.HandleCloseProtocol();
 
-        if (checklistPanel != null) checklistPanel.gameObject.SetActive(false);
-        Debug.Log("UnityUIDriver: CloseProtocolCallback - UI specific actions post-handler.");
+        Debug.Log("UnityUIDriver: CloseProtocolCallback - UI specific actions post-handler. Returning to dashboard.");
         
-        SceneLoader.Instance.LoadSceneClean("ProtocolMenu"); 
-        if (protocolMenuPanel != null) protocolMenuPanel.gameObject.SetActive(true);
+        DisplayDashboard();
     }
 
     public void ChatMessageCallback(string message)
@@ -443,15 +417,8 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     #region Helper Methods
     private void HideAllPanels()
     {
-        if (userSelectionPanel != null && userSelectionPanel.gameObject != null) userSelectionPanel.gameObject.SetActive(false);
         if (userLoginWindow != null) userLoginWindow.gameObject.SetActive(false);
         if (dashboardWindow != null) dashboardWindow.gameObject.SetActive(false);
-        if (protocolWindow != null) protocolWindow.gameObject.SetActive(false);
-        if (protocolPanel != null && protocolPanel.gameObject != null) protocolPanel.gameObject.SetActive(false);
-        if (checklistPanel != null && checklistPanel.gameObject != null) checklistPanel.gameObject.SetActive(false);
-        if (protocolMenuPanel != null && protocolMenuPanel.gameObject != null) protocolMenuPanel.gameObject.SetActive(false);
-        if (timerPanel != null && timerPanel.gameObject != null) timerPanel.gameObject.SetActive(false);
-        if (chatPanel != null && chatPanel.gameObject != null) chatPanel.gameObject.SetActive(false);
         if (protocolWindow != null) protocolWindow.gameObject.SetActive(false);
     }
     #endregion
