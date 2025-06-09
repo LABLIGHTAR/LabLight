@@ -24,7 +24,7 @@
 .notices-column {
     /* Uses .content-column-panel from CoreStyles for base look */
     width: 20%;
-    min-width: 150px;
+    min-width: 250px;
     position: relative;
 }
 
@@ -86,4 +86,21 @@
     border-radius: 40px;
     width: 80px; 
     height: 80px;
+}
+
+.nav-button {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.nav-button-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.nav-button-label {
+    /* The label doesn't need specific styles if the parent button handles text alignment and color */
 } 

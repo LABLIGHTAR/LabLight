@@ -7,6 +7,11 @@
     background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/home_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
 }
 
+.icon-home-filled {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/home_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+}
+
 .icon-settings {
     -unity-background-image-tint-color: rgb(227, 227, 227);
     background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/settings_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
@@ -66,6 +71,16 @@
 .icon-timer {
     -unity-background-image-tint-color: rgb(227, 227, 227);
     background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/alarm_add_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-notifications {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/notifications_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-logout {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/logout_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
 }
 
 /* Status Indicators */
