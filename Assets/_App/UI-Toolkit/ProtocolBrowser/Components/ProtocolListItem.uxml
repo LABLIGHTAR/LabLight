@@ -10,8 +10,8 @@
             </ui:VisualElement>
         </ui:Button>
         <ui:VisualElement name="protocol-item-actions-group" class="protocol-item-actions-group">
-            <ui:Button name="save-unsave-button" text="Save" class="button button-primary" />
-            <ui:Button name="delete-protocol-button" text="Delete" class="button button-secondary" style="display: none;" />
+            <ui:Button name="save-unsave-button" class="icon-button icon-star" />
+            <ui:Button name="delete-protocol-button" class="icon-button icon-delete" style="display: none;" />
         </ui:VisualElement>
     </ProtocolListItemController>
 </ui:UXML>

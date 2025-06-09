@@ -192,13 +192,15 @@ using Newtonsoft.Json; // For serializing protocol data
 
             if (string.IsNullOrEmpty(_database.CurrentUserId))
             {
-                _saveUnsaveButton.text = "N/A";
                 _saveUnsaveButton.SetEnabled(false);
                 return;
             }
-            // Assuming ProtocolData has an 'Id' property (uint)
+            
             bool isSaved = _database.IsProtocolSavedByUser(_protocolData.Id, _database.CurrentUserId);
-            _saveUnsaveButton.text = isSaved ? "Unsave" : "Save";
+            
+            // Toggle the 'saved' class on the root element of this component
+            this.EnableInClassList("saved", isSaved);
+
             _saveUnsaveButton.userData = isSaved; 
             _saveUnsaveButton.SetEnabled(true);
         }

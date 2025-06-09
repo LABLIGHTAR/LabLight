@@ -80,4 +80,9 @@
     margin-left: 0;
     margin-right: 0;
     width: 100%;
+}
+
+.protocol-list-item.saved .icon-star {
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/star_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+    -unity-background-image-tint-color: rgb(255, 193, 7); /* A gold/yellow color */
 } 

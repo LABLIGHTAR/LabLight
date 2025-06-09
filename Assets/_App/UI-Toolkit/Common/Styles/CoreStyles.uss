@@ -285,14 +285,17 @@
     background-color: rgba(255, 255, 255, 0.1);
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.2);
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     padding: 0;
-    margin: 0 5px;
+    margin: 4px 5px;
     align-items: center;
     justify-content: center;
     color: white;
-    border-radius: 20px;
+    border-radius: 16px;
+    background-size: 60% 60%; /* Scale icon to 60% of the button's size */
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .icon-button:hover {
@@ -303,15 +306,6 @@
 .icon-button:active {
     background-color: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
-}
-
-.icon-button-icon {
-    width: 24px;
-    height: 24px;
-    background-color: rgba(0, 0, 0, 0.3); /* Temporary placeholder background for visibility */
-    /* For SVG or PNG icons that need their color to be set via tint */
-    /* -unity-background-image-tint-color: white; */ 
-    /* Or, if using font icons, the color property of .icon-button will apply */
 }
 
 /* Styles for the main clickable area (protocol name/owner) */
