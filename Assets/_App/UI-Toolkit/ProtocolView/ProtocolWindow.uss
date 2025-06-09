@@ -248,31 +248,4 @@
 .icon-button {
     background-color: transparent;
     border-width: 0;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    margin: 0 5px; /* Spacing between icon buttons */
-    align-items: center; /* Center the icon image */
-    justify-content: center; /* Center the icon image */
-}
-
-.icon-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.icon-button-icon {
-    width: 24px;
-    height: 24px;
-    /* tint-color: white; To ensure icons are visible if they are single color */
-    /* background-color: grey; Placeholder until actual icons are set */
-}
-
-.button-group-row-spaced { /* This is from CoreStyles, but ensure it works well here */
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%; 
-    height: 100%; /* Try to make it fill remaining space in footer after separator */
-    flex-grow: 1; /* Allow it to take available space */
 } 

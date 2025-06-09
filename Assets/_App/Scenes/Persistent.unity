@@ -119,71 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &16268597
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 16268600}
-  - component: {fileID: 16268599}
-  - component: {fileID: 16268598}
-  m_Layer: 0
-  m_Name: Browse Protocols
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &16268598
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 16268597}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e68b321a01d7c824f89cd3c3454334dd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  protocolListItemTemplate: {fileID: 9197481963319205126, guid: 1b590a7cba23eac42b794fba7a4d95ba, type: 3}
---- !u!114 &16268599
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 16268597}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_PanelSettings: {fileID: 11400000, guid: 60e029b7170c5e442a855dcabb5cfe2c, type: 2}
-  m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: c49c80c1951dc2b44bd0718f3f0d0306, type: 3}
-  m_SortingOrder: 0
-  m_WorldSpaceSizeMode: 1
-  m_WorldSpaceWidth: 1920
-  m_WorldSpaceHeight: 1080
---- !u!4 &16268600
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 16268597}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &46269580
 GameObject:
   m_ObjectHideFlags: 0
@@ -1071,26 +1006,14 @@ GameObject:
   m_Component:
   - component: {fileID: 201392468}
   - component: {fileID: 201392467}
-  - component: {fileID: 201392466}
+  - component: {fileID: 201392469}
   m_Layer: 0
-  m_Name: Dashboard
+  m_Name: Dashboard Window
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &201392466
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 201392465}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0423f89997350044990400d74be101b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &201392467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1105,7 +1028,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: 60e029b7170c5e442a855dcabb5cfe2c, type: 2}
   m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: 8666ca2d60796b7448cd00926aebcdfb, type: 3}
+  sourceAsset: {fileID: 9197481963319205126, guid: 90da83f1828175544928061b1c1372d5, type: 3}
   m_SortingOrder: 0
   m_WorldSpaceSizeMode: 1
   m_WorldSpaceWidth: 1920
@@ -1125,6 +1048,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &201392469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 201392465}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d566a60fea992f459e9dd3ca99ff3d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windowSize: {x: 1800, y: 1000}
+  dashboardHomeComponentAsset: {fileID: 9197481963319205126, guid: a3c885b1b595cf940ae35184e694372e, type: 3}
+  browseProtocolsComponentAsset: {fileID: 9197481963319205126, guid: 43168500d6678ca428e12eaab9dd5b4a, type: 3}
+  savedProtocolsComponentAsset: {fileID: 9197481963319205126, guid: a3919506fbee4bb458070167d49841bc, type: 3}
+  protocolListItemAsset: {fileID: 9197481963319205126, guid: 1b590a7cba23eac42b794fba7a4d95ba, type: 3}
 --- !u!1 &203844586
 GameObject:
   m_ObjectHideFlags: 0
@@ -3173,7 +3113,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce85264bfc69da840869394228a06e6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  windowSize: {x: 800, y: 600}
+  windowSize: {x: 500, y: 600}
   userSelectionComponentAsset: {fileID: 9197481963319205126, guid: 1db65c45dc5bd424a981c5e4a466fe3b, type: 3}
   existingUserLoginComponentAsset: {fileID: 9197481963319205126, guid: c5749f4a965ff0849938122bc2871e2c, type: 3}
   registerUserComponentAsset: {fileID: 9197481963319205126, guid: 007137d995f7c0b46850027bb76803ca, type: 3}
@@ -3390,6 +3330,71 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaaf37227c2cc4a12b54f65586e7cd93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &574808743
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 574808745}
+  - component: {fileID: 574808744}
+  - component: {fileID: 574808746}
+  m_Layer: 0
+  m_Name: Protocol Window
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &574808744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 574808743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PanelSettings: {fileID: 11400000, guid: 60e029b7170c5e442a855dcabb5cfe2c, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 19907cc17504cc14fadf675c93150738, type: 3}
+  m_SortingOrder: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+--- !u!4 &574808745
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 574808743}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &574808746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 574808743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ec403aa2629efb4485062d293f66e8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windowSize: {x: 800, y: 600}
 --- !u!43 &608523753
 Mesh:
   m_ObjectHideFlags: 0
@@ -4679,71 +4684,6 @@ Mesh:
     offset: 0
     size: 0
     path: 
---- !u!1 &784628984
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 784628987}
-  - component: {fileID: 784628986}
-  - component: {fileID: 784628985}
-  m_Layer: 0
-  m_Name: Saved Protocols
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &784628985
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 784628984}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32cd8608f04eee046a950ba05473e25e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  protocolListItemTemplate: {fileID: 9197481963319205126, guid: 1b590a7cba23eac42b794fba7a4d95ba, type: 3}
---- !u!114 &784628986
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 784628984}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_PanelSettings: {fileID: 11400000, guid: 60e029b7170c5e442a855dcabb5cfe2c, type: 2}
-  m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: f8c00d1bdafac6147a314fcb147da2a2, type: 3}
-  m_SortingOrder: 0
-  m_WorldSpaceSizeMode: 1
-  m_WorldSpaceWidth: 1920
-  m_WorldSpaceHeight: 1080
---- !u!4 &784628987
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 784628984}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &791448894
 Mesh:
   m_ObjectHideFlags: 0
@@ -5328,11 +5268,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   userSelectionPanel: {fileID: 0}
-  userLoginToolkitPanel: {fileID: 499898816}
-  dashboardMenuToolkitPanel: {fileID: 201392467}
-  browseProtocolsMenuToolkitPanel: {fileID: 16268599}
-  savedProtocolsMenuToolkitPanel: {fileID: 784628986}
-  protocolViewToolkitPanel: {fileID: 0}
+  userLoginWindow: {fileID: 0}
+  dashboardWindow: {fileID: 0}
+  protocolWindow: {fileID: 0}
   protocolPanel: {fileID: 1725938590}
   checklistPanel: {fileID: 1725938589}
   protocolMenuPanel: {fileID: 197844286}
@@ -18041,8 +17979,7 @@ SceneRoots:
   - {fileID: 1818934017}
   - {fileID: 499898817}
   - {fileID: 201392468}
-  - {fileID: 16268600}
-  - {fileID: 784628987}
+  - {fileID: 574808745}
   - {fileID: 1062131496}
   - {fileID: 1725938588}
   - {fileID: 289094603}

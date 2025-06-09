@@ -14,9 +14,9 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 {
     #region Serialized Fields (UI Panel References)
     [SerializeField] private UserSelectionPanelViewController userSelectionPanel;
-    [SerializeField] private UIDocument userLoginToolkitPanel;
-    [SerializeField] private UIDocument dashboardMenuToolkitPanel;
-    [SerializeField] private UIDocument protocolViewToolkitPanel;
+    [SerializeField] private UIDocument userLoginWindow;
+    [SerializeField] private UIDocument dashboardWindow;
+    [SerializeField] private UIDocument protocolWindow;
     [SerializeField] private ProtocolPanelViewController protocolPanel;
     [SerializeField] private ChecklistPanelViewController checklistPanel;
     [SerializeField] private ProtocolMenuViewController protocolMenuPanel;
@@ -29,6 +29,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     private ILLMChatProvider _llmChatProvider;
     private IUICallbackHandler _uiCallbackHandler;
     private UserLoginWindowController _userLoginController;
+    private ProtocolWindowController _protocolWindowController;
     #endregion
 
     #region Unity Lifecycle Methods (Initialization & Cleanup)
@@ -72,9 +73,13 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
             Debug.LogError("UnityUIDriver: ProtocolState.Instance is null. Cannot subscribe to streams.");
         }
 
-        if (userLoginToolkitPanel != null)
+        if (userLoginWindow != null)
         {
-            _userLoginController = userLoginToolkitPanel.GetComponent<UserLoginWindowController>();
+            _userLoginController = userLoginWindow.GetComponent<UserLoginWindowController>();
+        }
+        if (protocolWindow != null)
+        {
+            _protocolWindowController = protocolWindow.GetComponent<ProtocolWindowController>();
         }
     }
 
@@ -125,7 +130,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public void OnStepChange(ProtocolState.StepState stepState)
     {
-        if (protocolViewToolkitPanel != null && protocolViewToolkitPanel.gameObject.activeSelf)
+        if (protocolWindow != null && protocolWindow.gameObject.activeSelf)
         {
             // ProtocolView should be reacting to ProtocolState changes internally.
             // No direct call needed here unless a specific refresh is required.
@@ -159,10 +164,10 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         {
             userSelectionPanel.gameObject.SetActive(true);
         } 
-        else if (userLoginToolkitPanel != null)
+        else if (userLoginWindow != null)
         {
              Debug.LogWarning("DisplayUserSelection called, but legacy userLoginToolkitPanel not found or active. Defaulting to userLoginToolkitPanel. Consider using DisplayUserSelectionMenu directly.");
-            userLoginToolkitPanel.gameObject.SetActive(true);
+            userLoginWindow.gameObject.SetActive(true);
         }
         else
         {
@@ -173,9 +178,9 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void DisplayUserSelectionMenu()
     {
         HideAllPanels();
-        if (userLoginToolkitPanel != null)
+        if (userLoginWindow != null)
         {
-            userLoginToolkitPanel.gameObject.SetActive(true);
+            userLoginWindow.gameObject.SetActive(true);
         }
         else
         {
@@ -186,9 +191,9 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void DisplayReturningUserLogin(LocalUserProfileData userProfile)
     {
         HideAllPanels();
-        if (userLoginToolkitPanel != null)
+        if (userLoginWindow != null)
         {
-            userLoginToolkitPanel.gameObject.SetActive(true);
+            userLoginWindow.gameObject.SetActive(true);
             // The UserLoginController will handle showing the correct view internally.
             // We just need to ensure the main panel is active.
         }
@@ -201,9 +206,9 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void DisplayUserRegistration()
     {
         HideAllPanels();
-        if (userLoginToolkitPanel != null)
+        if (userLoginWindow != null)
         {
-            userLoginToolkitPanel.gameObject.SetActive(true);
+            userLoginWindow.gameObject.SetActive(true);
             // The UserLoginController will handle showing the correct view internally.
         }
         else
@@ -215,9 +220,9 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void DisplayUserLogin()
     {
         HideAllPanels();
-        if (userLoginToolkitPanel != null)
+        if (userLoginWindow != null)
         {
-            userLoginToolkitPanel.gameObject.SetActive(true);
+            userLoginWindow.gameObject.SetActive(true);
             // The UserLoginController will handle showing the correct view internally.
         }
         else
@@ -229,10 +234,10 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void DisplayDashboard()
     {
         HideAllPanels();
-        if (dashboardMenuToolkitPanel != null)
+        if (dashboardWindow != null)
         {
-            dashboardMenuToolkitPanel.gameObject.SetActive(true);
-            var controller = dashboardMenuToolkitPanel.GetComponent<DashboardWindowController>();
+            dashboardWindow.gameObject.SetActive(true);
+            var controller = dashboardWindow.GetComponent<DashboardWindowController>();
             // The new controller's logic is in OnEnable, so no OnDisplay call is needed.
         }
         else
@@ -279,20 +284,19 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public void DisplayPDFReader(string url)
     {
-        Debug.LogWarning("DisplayPDFReader not implemented for UnityUIDriver.");
+        Debug.Log("DisplayPDFReader called, but no implementation is available on this platform.");
     }
 
     public void DisplayProtocolView()
     {
         HideAllPanels();
-        if (protocolViewToolkitPanel != null)
+        if (protocolWindow != null)
         {
-            protocolViewToolkitPanel.gameObject.SetActive(true);
-            // ProtocolView's OnAttachToPanel and internal subscriptions will handle its content.
+            protocolWindow.gameObject.SetActive(true);
         }
         else
         {
-            Debug.LogError("UnityUIDriver: protocolViewToolkitPanel (UIDocument) is not assigned for DisplayProtocolView.");
+            Debug.LogError("UnityUIDriver: protocolViewToolkitPanel (UIDocument) is not assigned.");
         }
     }
     #endregion
@@ -440,14 +444,15 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     private void HideAllPanels()
     {
         if (userSelectionPanel != null && userSelectionPanel.gameObject != null) userSelectionPanel.gameObject.SetActive(false);
-        if (userLoginToolkitPanel != null) userLoginToolkitPanel.gameObject.SetActive(false);
-        if (dashboardMenuToolkitPanel != null) dashboardMenuToolkitPanel.gameObject.SetActive(false);
-        if (protocolViewToolkitPanel != null) protocolViewToolkitPanel.gameObject.SetActive(false);
+        if (userLoginWindow != null) userLoginWindow.gameObject.SetActive(false);
+        if (dashboardWindow != null) dashboardWindow.gameObject.SetActive(false);
+        if (protocolWindow != null) protocolWindow.gameObject.SetActive(false);
         if (protocolPanel != null && protocolPanel.gameObject != null) protocolPanel.gameObject.SetActive(false);
         if (checklistPanel != null && checklistPanel.gameObject != null) checklistPanel.gameObject.SetActive(false);
         if (protocolMenuPanel != null && protocolMenuPanel.gameObject != null) protocolMenuPanel.gameObject.SetActive(false);
         if (timerPanel != null && timerPanel.gameObject != null) timerPanel.gameObject.SetActive(false);
         if (chatPanel != null && chatPanel.gameObject != null) chatPanel.gameObject.SetActive(false);
+        if (protocolWindow != null) protocolWindow.gameObject.SetActive(false);
     }
     #endregion
 }
