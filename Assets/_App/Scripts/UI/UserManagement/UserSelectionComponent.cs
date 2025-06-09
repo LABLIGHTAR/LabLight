@@ -26,6 +26,7 @@ public class UserSelectionComponent : VisualElement
     
     public UserSelectionComponent(VisualTreeAsset asset)
     {
+        AddToClassList("view-container");
         asset.CloneTree(this);
         
         _userScrollView = this.Q<ScrollView>("user-scroll-view");

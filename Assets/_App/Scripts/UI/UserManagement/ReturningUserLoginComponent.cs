@@ -22,6 +22,7 @@ public class ReturningUserLoginComponent : VisualElement
 
     public ReturningUserLoginComponent(VisualTreeAsset asset)
     {
+        AddToClassList("view-container");
         asset.CloneTree(this);
         
         _profileImage = this.Q<VisualElement>("profile-image");

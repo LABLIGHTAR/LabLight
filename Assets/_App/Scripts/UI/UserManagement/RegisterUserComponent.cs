@@ -12,6 +12,7 @@ public class RegisterUserComponent : VisualElement
     private TextField _usernameField;
     private TextField _emailField;
     private TextField _passwordField;
+    private TextField _confirmPasswordField;
     private Button _registerButton;
     private Button _backButton;
     private Label _errorLabel;
@@ -20,11 +21,13 @@ public class RegisterUserComponent : VisualElement
 
     public RegisterUserComponent(VisualTreeAsset asset)
     {
+        AddToClassList("view-container");
         asset.CloneTree(this);
 
-        _usernameField = this.Q<TextField>("username-field");
+        _usernameField = this.Q<TextField>("name-field");
         _emailField = this.Q<TextField>("email-field");
         _passwordField = this.Q<TextField>("password-field");
+        _confirmPasswordField = this.Q<TextField>("confirm-password-field");
         _registerButton = this.Q<Button>("register-button");
         _backButton = this.Q<Button>("back-button");
         _errorLabel = this.Q<Label>("error-label"); 
@@ -42,6 +45,7 @@ public class RegisterUserComponent : VisualElement
         string name = _usernameField.text;
         string email = _emailField.text;
         string password = _passwordField.text;
+        string confirmPassword = _confirmPasswordField.text;
         
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -56,6 +60,11 @@ public class RegisterUserComponent : VisualElement
         if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
         {
             ShowError("Password must be at least 6 characters long.");
+            return;
+        }
+        if (password != confirmPassword)
+        {
+            ShowError("Passwords do not match.");
             return;
         }
 
@@ -81,6 +90,7 @@ public class RegisterUserComponent : VisualElement
         _usernameField?.SetValueWithoutNotify("");
         _emailField?.SetValueWithoutNotify("");
         _passwordField?.SetValueWithoutNotify("");
+        _confirmPasswordField?.SetValueWithoutNotify("");
         if (_errorLabel != null) _errorLabel.style.display = DisplayStyle.None;
     }
 

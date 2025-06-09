@@ -19,9 +19,10 @@ public class ExistingUserLoginComponent : VisualElement
     
     public ExistingUserLoginComponent(VisualTreeAsset asset)
     {
+        AddToClassList("view-container");
         asset.CloneTree(this);
 
-        _emailField = this.Q<TextField>("email-field");
+        _emailField = this.Q<TextField>("email-input");
         _passwordField = this.Q<TextField>("password-field");
         _loginButton = this.Q<Button>("login-button");
         _backButton = this.Q<Button>("back-button");
