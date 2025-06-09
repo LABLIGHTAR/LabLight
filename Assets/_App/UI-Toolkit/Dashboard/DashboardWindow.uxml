@@ -1,0 +1,29 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <Style src="DashboardWindow.uss" />
+    <ui:VisualElement name="dashboard-container" class="glassmorphic-panel">
+        <!-- Navigation Column -->
+        <ui:VisualElement name="nav-bar" class="nav-bar-column content-column-panel">
+            <ui:Button name="nav-home" text="Home" class="button button-primary" />
+            <ui:Button name="nav-messages" text="Messages" class="button button-primary" />
+            <ui:Button name="nav-notifications" text="Notifications" class="button button-primary" />
+            <ui:Button name="nav-saved-protocols" text="Saved Protocols" class="button button-primary" />
+            <ui:Button name="nav-browse-protocols" text="Browse Protocols" class="button button-primary" />
+            <ui:Button name="nav-settings" text="Settings" class="button button-primary" />
+            <ui:Button name="nav-logout" text="Log Out" class="button button-secondary" />
+        </ui:VisualElement>
+        
+        <!-- Main Content (Component Swapping Area) -->
+        <ui:VisualElement name="main-content-container" class="main-content-column" />
+
+        <!-- Notices Column -->
+        <ui:VisualElement name="notices-panel" class="notices-column content-column-panel">
+            <ui:VisualElement name="notices-inner-content" class="flex-grow-column">
+                <ui:Label text="Notices:" class="h2 notice-title" />
+                <ui:ScrollView name="notices-scroll-view">
+                    <ui:Label name="notices-content-label" text="Running low on Skittles Protocol reagent, order more? (Placeholder)" class="text-wrap-normal" />
+                </ui:ScrollView>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 

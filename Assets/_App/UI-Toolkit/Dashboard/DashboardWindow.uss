@@ -1,20 +1,16 @@
-/* DashboardMenu.uss - Styles for the Dashboard View */
+/* DashboardWindow.uss - Styles for the Dashboard Window layout */
 
 #dashboard-container {
     width: 100%;
     height: 100%;
-    min-width: 100%;
-    min-height: 100%;
     margin: 0px;
     padding: 0px;
-    align-self: stretch;
     flex-direction: row;
     align-items: stretch;
-    justify-content: flex-start;
 }
 
 .nav-bar-column {
-    /* Inherits background, border, radius, base padding from .content-column-panel */
+    /* Uses .content-column-panel from CoreStyles for base look */
     width: 20%;
     min-width: 150px;
 }
@@ -22,10 +18,11 @@
 .main-content-column {
     width: 60%;
     padding: 20px;
+    flex-grow: 1;
 }
 
 .notices-column {
-    /* Inherits background, border, radius, base padding from .content-column-panel */
+    /* Uses .content-column-panel from CoreStyles for base look */
     width: 20%;
     min-width: 150px;
     position: relative;
@@ -39,10 +36,19 @@
     height: 100%;
 }
 
-
 .notice-title {
     margin-bottom: 10px;
     -unity-text-align: middle-center;
+}
+
+.notices-scroll-view {
+    flex-grow: 1;
+}
+
+/* Style for the currently selected navigation button */
+.button-primary-selected {
+    background-color: rgba(100, 150, 255, 0.4);
+    border-color: rgba(100, 150, 255, 0.8);
 }
 
 /* Header Section Styles */
@@ -65,10 +71,6 @@
     align-self: flex-start;
 }
 
-.notices-scroll-view {
-    flex-grow: 1;
-}
-
 .optional-content-section {
     margin-top: 20px;
 }
@@ -84,4 +86,4 @@
     border-radius: 40px;
     width: 80px; 
     height: 80px;
-}
+} 

@@ -2,8 +2,8 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(BrowseProtocolsMenuController))]
-public class BrowseProtocolsMenuControllerEditor : Editor
+[CustomEditor(typeof(DashboardWindowController))]
+public class DashboardWindowControllerEditor : Editor
 {
     private string _protocolName = "New Protocol Name";
     private string _protocolContent = "{\"initial\": \"content\"}"; // Default to basic JSON structure
@@ -14,7 +14,7 @@ public class BrowseProtocolsMenuControllerEditor : Editor
     {
         DrawDefaultInspector();
 
-        BrowseProtocolsMenuController controller = (BrowseProtocolsMenuController)target;
+        DashboardWindowController controller = (DashboardWindowController)target;
 
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("Editor Utilities", EditorStyles.boldLabel);
@@ -35,7 +35,6 @@ public class BrowseProtocolsMenuControllerEditor : Editor
             }
             else
             {
-                // Confirmation dialog
                 if (EditorUtility.DisplayDialog("Confirm Protocol Creation", 
                     $"Create protocol with:\nName: {_protocolName}\nPublic: {_isPublic}\nOrg ID: {_organizationId}", 
                     "Create", "Cancel"))

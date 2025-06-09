@@ -16,8 +16,6 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private UserSelectionPanelViewController userSelectionPanel;
     [SerializeField] private UIDocument userLoginToolkitPanel;
     [SerializeField] private UIDocument dashboardMenuToolkitPanel;
-    [SerializeField] private UIDocument browseProtocolsMenuToolkitPanel;
-    [SerializeField] private UIDocument savedProtocolsMenuToolkitPanel;
     [SerializeField] private UIDocument protocolViewToolkitPanel;
     [SerializeField] private ProtocolPanelViewController protocolPanel;
     [SerializeField] private ChecklistPanelViewController checklistPanel;
@@ -234,8 +232,8 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (dashboardMenuToolkitPanel != null)
         {
             dashboardMenuToolkitPanel.gameObject.SetActive(true);
-            var controller = dashboardMenuToolkitPanel.GetComponent<DashboardMenuController>();
-            controller?.OnDisplay();
+            var controller = dashboardMenuToolkitPanel.GetComponent<DashboardWindowController>();
+            // The new controller's logic is in OnEnable, so no OnDisplay call is needed.
         }
         else
         {
@@ -282,32 +280,6 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void DisplayPDFReader(string url)
     {
         Debug.LogWarning("DisplayPDFReader not implemented for UnityUIDriver.");
-    }
-
-    public void DisplayBrowseProtocolsMenu()
-    {
-        HideAllPanels();
-        if (browseProtocolsMenuToolkitPanel != null)
-        {
-            browseProtocolsMenuToolkitPanel.gameObject.SetActive(true);
-        }
-        else
-        {
-            Debug.LogError("UnityUIDriver: browseProtocolsMenuToolkitPanel (UIDocument) is not assigned.");
-        }
-    }
-
-    public void DisplaySavedProtocolsMenu()
-    {
-        HideAllPanels();
-        if (savedProtocolsMenuToolkitPanel != null)
-        {
-            savedProtocolsMenuToolkitPanel.gameObject.SetActive(true);
-        }
-        else
-        {
-            Debug.LogError("UnityUIDriver: savedProtocolsMenuToolkitPanel (UIDocument) is not assigned.");
-        }
     }
 
     public void DisplayProtocolView()
@@ -470,8 +442,6 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (userSelectionPanel != null && userSelectionPanel.gameObject != null) userSelectionPanel.gameObject.SetActive(false);
         if (userLoginToolkitPanel != null) userLoginToolkitPanel.gameObject.SetActive(false);
         if (dashboardMenuToolkitPanel != null) dashboardMenuToolkitPanel.gameObject.SetActive(false);
-        if (browseProtocolsMenuToolkitPanel != null) browseProtocolsMenuToolkitPanel.gameObject.SetActive(false);
-        if (savedProtocolsMenuToolkitPanel != null) savedProtocolsMenuToolkitPanel.gameObject.SetActive(false);
         if (protocolViewToolkitPanel != null) protocolViewToolkitPanel.gameObject.SetActive(false);
         if (protocolPanel != null && protocolPanel.gameObject != null) protocolPanel.gameObject.SetActive(false);
         if (checklistPanel != null && checklistPanel.gameObject != null) checklistPanel.gameObject.SetActive(false);

@@ -29,6 +29,11 @@ public class BaseWindowController : MonoBehaviour
         }
     }
 
+    protected virtual void OnDisable()
+    {
+        // This method is intended to be overridden by derived classes.
+    }
+
     protected virtual void ApplyWindowSize()
     {
         if (rootVisualElement != null)

@@ -1,0 +1,29 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="DashboardHomeComponent.uss" />
+    <ui:VisualElement name="home-component-container">
+        <ui:VisualElement name="header-section" class="header-section">
+            <ui:VisualElement name="user-greeting-container" class="flex-row-center-items">
+                <ui:VisualElement name="profile-image" class="profile-image-placeholder" />
+                <ui:VisualElement name="greeting-container" class="margin-left-small">
+                    <ui:Label name="greeting-label" text="Good morning," class="h2" />
+                    <ui:Label name="user-name-label" text="Nik Stires" class="h1" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="time-container" class="time-container">
+                <ui:Label name="time-label" text="8:57 AM" class="h2 time-display" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="optional-content-section" class="optional-content-section">
+            <ui:Label text="Continue where you left off: " class="h3" />
+            <ui:VisualElement name="continue-placeholder" class="placeholder-box-base height-50px margin-bottom-small" />
+            <ui:Label text="Your protocols: " class="h3" />
+            <ui:VisualElement name="protocols-placeholder" class="placeholder-box-base height-100px" />
+        </ui:VisualElement>
+        <ui:VisualElement name="notices-container" class="notices-container">
+            <ui:Label text="Notices:" class="h2 notice-title" />
+            <ui:VisualElement name="notice-item" class="notice-item">
+                <ui:Label text="Reagent level is low for PCR Master Mix. Would you like to reorder, or have the lab manager re-agent, order more? (Placeholder)" class="text-wrap-normal" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 

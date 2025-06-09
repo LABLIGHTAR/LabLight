@@ -31,8 +31,6 @@ public interface IUIDriver
     void DisplayLLMChat();
     void DisplayVideoPlayer(string url);
     void DisplayPDFReader(string url);
-    void DisplayBrowseProtocolsMenu();
-    void DisplaySavedProtocolsMenu();
     void DisplayProtocolView();
     #endregion
 

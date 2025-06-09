@@ -286,18 +286,6 @@ public class SwiftUIDriver : IUIDriver, IDisposable
         Debug.Log("SwiftUIDriver: DisplayDashboard called. Instructing SwiftUI to open DashboardView.");
     }
 
-    public void DisplayBrowseProtocolsMenu()
-    {
-        OpenSwiftUIWindow("BrowseProtocolsView"); // Replace "BrowseProtocolsView" with the actual SwiftUI view name
-        Debug.Log("SwiftUIDriver: DisplayBrowseProtocolsMenu called. Instructing SwiftUI to open BrowseProtocolsView.");
-    }
-
-    public void DisplaySavedProtocolsMenu()
-    {
-        OpenSwiftUIWindow("SavedProtocolsView"); // Replace "SavedProtocolsView" with the actual SwiftUI view name
-        Debug.Log("SwiftUIDriver: DisplaySavedProtocolsMenu called. Instructing SwiftUI to open SavedProtocolsView.");
-    }
-
     public void DisplayProtocolView()
     {
         OpenSwiftUIWindow("ProtocolView"); // Assuming "ProtocolView" is the SwiftUI view name
