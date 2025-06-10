@@ -10,6 +10,7 @@ public class SavedProtocolsComponent : VisualElement
     private IUIDriver _uiDriver;
     private IFileManager _fileManager;
     private IDatabase _database;
+    private IAudioService _audioService;
 
     private ScrollView _protocolsScrollView;
     private Button _refreshButton;
@@ -24,6 +25,7 @@ public class SavedProtocolsComponent : VisualElement
         _uiDriver = uiDriver;
         _fileManager = fileManager;
         _database = database;
+        _audioService = ServiceRegistry.GetService<IAudioService>();
 
         _protocolsScrollView = this.Q<ScrollView>("protocols-scroll-view");
         _refreshButton = this.Q<Button>("refresh-button");
@@ -69,6 +71,7 @@ public class SavedProtocolsComponent : VisualElement
     
     private void OnRefreshClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         Debug.Log("Refresh button clicked. Reloading saved protocols.");
         LoadAndDisplayProtocols();
     }

@@ -55,6 +55,7 @@ public class ProtocolWindowController : BaseWindowController
 
     // Services and State
     private IUIDriver _uiDriver;
+    private IAudioService _audioService;
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private bool _isSignedOff = false;
 
@@ -63,6 +64,7 @@ public class ProtocolWindowController : BaseWindowController
         base.OnEnable();
 
         _uiDriver = ServiceRegistry.GetService<IUIDriver>();
+        _audioService = ServiceRegistry.GetService<IAudioService>();
         if (_uiDriver == null)
         {
             Debug.LogError("[ProtocolViewWindowController] UIDriver not found in ServiceRegistry.");
@@ -156,12 +158,12 @@ public class ProtocolWindowController : BaseWindowController
         _arViewButton?.UnregisterCallback<ClickEvent>(OnArViewButtonClicked);
     }
     
-    private void OnPreviousStepClicked(ClickEvent evt) => _uiDriver?.StepNavigationCallback(_currentStepIndex - 1);
-    private void OnNextStepClicked(ClickEvent evt) => _uiDriver?.StepNavigationCallback(_currentStepIndex + 1);
-    private void OnCalculatorClicked(ClickEvent evt) => _uiDriver?.DisplayCalculator();
-    private void OnCommentsClicked(ClickEvent evt) => _uiDriver?.DisplayLLMChat();
-    private void OnCameraButtonClicked(ClickEvent evt) => Debug.Log("Camera Button Clicked");
-    private void OnArViewButtonClicked(ClickEvent evt) => Debug.Log("AR View Button Clicked");
+    private void OnPreviousStepClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); _uiDriver?.StepNavigationCallback(_currentStepIndex - 1); }
+    private void OnNextStepClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); _uiDriver?.StepNavigationCallback(_currentStepIndex + 1); }
+    private void OnCalculatorClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); _uiDriver?.DisplayCalculator(); }
+    private void OnCommentsClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); _uiDriver?.DisplayLLMChat(); }
+    private void OnCameraButtonClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); Debug.Log("Camera Button Clicked"); }
+    private void OnArViewButtonClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); Debug.Log("AR View Button Clicked"); }
 
     private void PopulateChecklist(List<ProtocolState.CheckItemState> checklistItemStatesList)
     {
@@ -256,6 +258,7 @@ public class ProtocolWindowController : BaseWindowController
 
     private void HandleChecklistItemClicked(ClickEvent evt, int itemIndex)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         if (_isSignedOff) return;
 
         var checklistItemStatesList = ProtocolState.Instance.CurrentStepState?.Value?.Checklist;
@@ -351,8 +354,10 @@ public class ProtocolWindowController : BaseWindowController
                 case "weburl":
                     if (contentItem.properties.TryGetValue("url", out object urlObj))
                     {
-                        var button = new Button(() =>
+                        var button = new Button();
+                        button.RegisterCallback<ClickEvent>(evt =>
                         {
+                            _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
                             string url = urlObj.ToString();
                             if (contentItem.contentType.ToLower() == "sound")
                             {
@@ -474,6 +479,7 @@ public class ProtocolWindowController : BaseWindowController
 
     private void OnPdfButtonClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         if (_currentProtocol?.protocolPDFNames?.Count > 0)
         {
             _uiDriver?.DisplayPDFReader(_currentProtocol.protocolPDFNames[0]);
@@ -512,6 +518,7 @@ public class ProtocolWindowController : BaseWindowController
 
     private void OnSignOffButtonClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         if (_isSignedOff) return;
 
         var checklist = ProtocolState.Instance.CurrentStepState?.Value?.Checklist;

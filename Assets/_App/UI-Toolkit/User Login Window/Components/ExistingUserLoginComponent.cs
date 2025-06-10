@@ -14,6 +14,7 @@ public class ExistingUserLoginComponent : VisualElement
     private Button _loginButton;
     private Button _backButton;
     private Label _errorLabel;
+    private IAudioService _audioService;
 
     public ExistingUserLoginComponent() { }
     
@@ -21,6 +22,8 @@ public class ExistingUserLoginComponent : VisualElement
     {
         AddToClassList("view-container");
         asset.CloneTree(this);
+
+        _audioService = ServiceRegistry.GetService<IAudioService>();
 
         _emailField = this.Q<TextField>("email-input");
         _passwordField = this.Q<TextField>("password-field");
@@ -36,6 +39,7 @@ public class ExistingUserLoginComponent : VisualElement
 
     private void OnLoginClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         if (_errorLabel != null) _errorLabel.style.display = DisplayStyle.None;
 
         string email = _emailField.text;
@@ -57,6 +61,7 @@ public class ExistingUserLoginComponent : VisualElement
     
     private void OnBackClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         OnBack?.Invoke();
     }
 

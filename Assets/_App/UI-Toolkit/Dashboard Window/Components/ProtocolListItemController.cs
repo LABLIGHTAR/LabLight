@@ -33,6 +33,7 @@ using Newtonsoft.Json; // For serializing protocol data
         private ProtocolDefinition _protocolDefinition; // Stores the deserialized full protocol definition
         private IUICallbackHandler _uiCallbackHandler;
         private IDatabase _database;
+        private IAudioService _audioService;
 
         public ProtocolListItemController()
         {
@@ -58,6 +59,7 @@ using Newtonsoft.Json; // For serializing protocol data
             // Querying elements is best done after they are part of the visual tree.
             // Registering a callback for AttachToPanelEvent is a robust way to do this.
             RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
+            _audioService = ServiceRegistry.GetService<IAudioService>();
         }
 
         private void OnAttachToPanel(AttachToPanelEvent evt)
@@ -207,6 +209,7 @@ using Newtonsoft.Json; // For serializing protocol data
 
         private void OnSelectProtocolClicked(ClickEvent evt)
         {
+            _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
             if (_protocolData == null || _uiCallbackHandler == null) return;
 
             if (_protocolDefinition == null)
@@ -223,6 +226,7 @@ using Newtonsoft.Json; // For serializing protocol data
 
         private void OnSaveUnsaveClicked(ClickEvent evt)
         {
+            _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
             if (_protocolData == null || _database == null) return;
 
             bool isCurrentlySaved = (bool)_saveUnsaveButton.userData;
@@ -244,6 +248,7 @@ using Newtonsoft.Json; // For serializing protocol data
 
         private void OnDeleteProtocolClicked(ClickEvent evt)
         {
+            _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
             if (_protocolData == null || _uiCallbackHandler == null || _database == null) return;
             
             // Optional: Add a confirmation dialog here before deleting.

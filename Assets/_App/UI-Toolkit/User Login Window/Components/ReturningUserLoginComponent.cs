@@ -15,6 +15,7 @@ public class ReturningUserLoginComponent : VisualElement
     private Button _loginButton;
     private Button _backButton; // "Switch User"
     private Label _errorLabel;
+    private IAudioService _audioService;
     
     private LocalUserProfileData _currentUserProfile;
 
@@ -24,6 +25,8 @@ public class ReturningUserLoginComponent : VisualElement
     {
         AddToClassList("view-container");
         asset.CloneTree(this);
+        
+        _audioService = ServiceRegistry.GetService<IAudioService>();
         
         _profileImage = this.Q<VisualElement>("profile-image");
         _welcomeLabel = this.Q<Label>("welcome-label");
@@ -55,6 +58,7 @@ public class ReturningUserLoginComponent : VisualElement
     
     private void OnLoginClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         if (_currentUserProfile == null || string.IsNullOrEmpty(_currentUserProfile.Email))
         {
             SetError("User profile is not properly loaded. Please go back and select a user.");
@@ -76,6 +80,7 @@ public class ReturningUserLoginComponent : VisualElement
 
     private void OnSwitchUserClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         OnSwitchUser?.Invoke();
     }
 

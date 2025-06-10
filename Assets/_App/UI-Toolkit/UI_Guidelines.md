@@ -55,3 +55,40 @@ To streamline window creation, all Window Controllers should inherit from `BaseW
   - **Must** inherit from `UnityEngine.UIElements.VisualElement`.
   - These are **not** attached to GameObjects. They are instantiated in code by a Window Controller and added to the visual tree.
   - They are responsible for their own internal logic and expose C# events (e.g., `OnSubmit`, `OnCancel`) to communicate user actions back to the hosting Window Controller.
+
+---
+
+## 4. Playing Audio Feedback
+
+To provide a consistent and responsive user experience, all interactive UI elements (like buttons and clickable list items) should play an audio cue on activation.
+
+### The Audio Service
+
+A global `IAudioService` is available through the `ServiceRegistry`. This service manages audio playback, including pooling `AudioSource`s for performance.
+
+### Usage
+
+1.  **Get a Reference**: In your component or controller script, get a reference to the service. This is typically done once in the constructor (for Components inheriting from `VisualElement`) or `OnEnable` (for MonoBehaviours).
+
+    ```csharp
+    private IAudioService _audioService;
+    // ...
+    _audioService = ServiceRegistry.GetService<IAudioService>();
+    ```
+
+2.  **Play the Sound**: In the `ClickEvent` callback for your button, call the `PlayButtonPress()` method. This should be the first line in the callback to ensure the sound plays immediately on user interaction. The method can be called in two ways:
+
+    - **For a 3D (spatial) sound:** Pass the world position of the UI element as an argument. This makes the sound originate from the element's location. The standard way to get this is from the `ClickEvent` itself. This is the preferred method for world-space UI.
+    - **For a 2D (non-spatial) sound:** Call the method with no arguments. This is suitable for general UI feedback that isn't tied to a specific location in 3D space.
+
+    ```csharp
+    private void OnMyButtonClicked(ClickEvent evt)
+    {
+        // For a 3D sound originating from the button's location (preferred):
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
+
+        // ... rest of your button logic
+    }
+    ```
+
+By following this pattern, all buttons will use the same sound effect, which can be managed globally from the `AudioService` configuration.

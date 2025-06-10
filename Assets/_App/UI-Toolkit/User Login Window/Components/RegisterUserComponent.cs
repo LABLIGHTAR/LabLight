@@ -16,6 +16,7 @@ public class RegisterUserComponent : VisualElement
     private Button _registerButton;
     private Button _backButton;
     private Label _errorLabel;
+    private IAudioService _audioService;
     
     public RegisterUserComponent() { }
 
@@ -23,6 +24,8 @@ public class RegisterUserComponent : VisualElement
     {
         AddToClassList("view-container");
         asset.CloneTree(this);
+
+        _audioService = ServiceRegistry.GetService<IAudioService>();
 
         _usernameField = this.Q<TextField>("name-field");
         _emailField = this.Q<TextField>("email-field");
@@ -40,6 +43,7 @@ public class RegisterUserComponent : VisualElement
     
     private void OnRegisterClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         if (_errorLabel != null) _errorLabel.style.display = DisplayStyle.None;
 
         string name = _usernameField.text;
@@ -73,6 +77,7 @@ public class RegisterUserComponent : VisualElement
     
     private void OnBackClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         OnBack?.Invoke();
     }
     

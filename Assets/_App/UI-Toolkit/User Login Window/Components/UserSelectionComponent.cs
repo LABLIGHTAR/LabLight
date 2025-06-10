@@ -16,6 +16,7 @@ public class UserSelectionComponent : VisualElement
     private Button _loginButton;
     private Button _registerButton;
     private Label _errorLabel;
+    private IAudioService _audioService;
     
     public VisualTreeAsset userItemTemplate;
 
@@ -29,6 +30,8 @@ public class UserSelectionComponent : VisualElement
         AddToClassList("view-container");
         asset.CloneTree(this);
         
+        _audioService = ServiceRegistry.GetService<IAudioService>();
+        
         _userScrollView = this.Q<ScrollView>("user-scroll-view");
         _loginButton = this.Q<Button>("login-button");
         _registerButton = this.Q<Button>("register-button");
@@ -36,8 +39,8 @@ public class UserSelectionComponent : VisualElement
 
         if (_errorLabel != null) _errorLabel.style.display = DisplayStyle.None;
         
-        _loginButton?.RegisterCallback<ClickEvent>(evt => OnLoginClicked?.Invoke());
-        _registerButton?.RegisterCallback<ClickEvent>(evt => OnRegisterClicked?.Invoke());
+        _loginButton?.RegisterCallback<ClickEvent>(evt => { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); OnLoginClicked?.Invoke(); });
+        _registerButton?.RegisterCallback<ClickEvent>(evt => { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); OnRegisterClicked?.Invoke(); });
     }
 
     public void ShowError(string message)
@@ -83,6 +86,7 @@ public class UserSelectionComponent : VisualElement
             {
                 if (userItem.userData is LocalUserProfileData selectedUser)
                 {
+                    _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
                     OnUserSelected?.Invoke(selectedUser);
                 }
             });

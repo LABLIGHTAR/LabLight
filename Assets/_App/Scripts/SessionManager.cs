@@ -55,6 +55,9 @@ public class SessionManager : MonoBehaviour
         var uiCallbackHandler = new UICallbackHandler();
         ServiceRegistry.RegisterService<IUICallbackHandler>(uiCallbackHandler);
 
+        AudioService = GetComponent<AudioService>();
+        ServiceRegistry.RegisterService<IAudioService>(AudioService);
+
         #if UNITY_VISIONOS && !UNITY_EDITOR
         UIDriver = new SwiftUIDriver();
         ServiceRegistry.RegisterService<IUIDriver>(UIDriver);
@@ -96,6 +99,7 @@ public class SessionManager : MonoBehaviour
     private IUIDriver UIDriver { get; set; }
     private IFileManager FileManager { get; set; }
     private ILLMChatProvider LLMChatProvider { get; set; }
+    private IAudioService AudioService { get; set; }
     #endregion
 
     #region Serialized Fields

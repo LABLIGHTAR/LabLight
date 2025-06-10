@@ -27,6 +27,7 @@ public partial class DashboardWindowController : BaseWindowController
     private IUIDriver _uiDriver;
     private IFileManager _fileManager;
     private IDatabase _database;
+    private IAudioService _audioService;
 
     protected override void OnEnable()
     {
@@ -36,6 +37,7 @@ public partial class DashboardWindowController : BaseWindowController
         _uiDriver = ServiceRegistry.GetService<IUIDriver>();
         _fileManager = ServiceRegistry.GetService<IFileManager>();
         _database = ServiceRegistry.GetService<IDatabase>();
+        _audioService = ServiceRegistry.GetService<IAudioService>();
         _sessionManager = SessionManager.instance;
 
         // Query UI Elements
@@ -49,9 +51,9 @@ public partial class DashboardWindowController : BaseWindowController
         _navButtons = new List<Button> { _navHomeButton, _navBrowseProtocolsButton, _navSavedProtocolsButton, _navSettingsButton };
 
         // Register Callbacks
-        _navHomeButton?.RegisterCallback<ClickEvent>(evt => ShowHomeComponent());
-        _navBrowseProtocolsButton?.RegisterCallback<ClickEvent>(evt => ShowBrowseProtocolsComponent());
-        _navSavedProtocolsButton?.RegisterCallback<ClickEvent>(evt => ShowSavedProtocolsComponent());
+        _navHomeButton?.RegisterCallback<ClickEvent>(evt => { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); ShowHomeComponent(); });
+        _navBrowseProtocolsButton?.RegisterCallback<ClickEvent>(evt => { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); ShowBrowseProtocolsComponent(); });
+        _navSavedProtocolsButton?.RegisterCallback<ClickEvent>(evt => { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); ShowSavedProtocolsComponent(); });
         _navSettingsButton?.RegisterCallback<ClickEvent>(OnNavSettingsClicked);
         _navLogoutButton?.RegisterCallback<ClickEvent>(OnNavLogoutClicked);
 
@@ -116,6 +118,7 @@ public partial class DashboardWindowController : BaseWindowController
 
     private void OnNavSettingsClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         Debug.Log("Settings button clicked - Navigation to settings view not yet implemented.");
         // Placeholder for settings component
         var placeholder = new Label("Settings Component (Not Implemented Yet)");
@@ -126,6 +129,7 @@ public partial class DashboardWindowController : BaseWindowController
 
     private void OnNavLogoutClicked(ClickEvent evt)
     {
+        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         Debug.Log("Log Out button clicked.");
         _uiDriver?.RequestSignOut();
     }
