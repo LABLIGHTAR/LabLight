@@ -16,6 +16,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private UIDocument userLoginWindow;
     [SerializeField] private UIDocument dashboardWindow;
     [SerializeField] private UIDocument protocolWindow;
+    [SerializeField] private UIDocument calculatorWindow;
     #endregion
 
     #region Private Fields
@@ -241,7 +242,14 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
 
     public void DisplayCalculator()
     {
-        Debug.LogWarning("UnityUIDriver: DisplayCalculator is not yet implemented.");
+        if (calculatorWindow != null)
+        {
+            calculatorWindow.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: calculatorWindow (UIDocument) is not assigned.");
+        }
     }
 
     public void DisplayWebPage(string url)
@@ -420,6 +428,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (userLoginWindow != null) userLoginWindow.gameObject.SetActive(false);
         if (dashboardWindow != null) dashboardWindow.gameObject.SetActive(false);
         if (protocolWindow != null) protocolWindow.gameObject.SetActive(false);
+        if (calculatorWindow != null) calculatorWindow.gameObject.SetActive(false);
     }
     #endregion
 }

@@ -9,7 +9,6 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using TMPro;
-using Unity.VisualScripting;
 
 public class ChecklistPanelViewController : LLBasePanel
 {
