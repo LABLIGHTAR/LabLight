@@ -9,10 +9,17 @@
     border-color: rgba(255, 255, 255, 0.2);
     color: white;
     width: 100%;
+    transition: scale 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
 }
 
 .user-item:hover {
     background-color: rgba(255, 255, 255, 0.2);
+    scale: 1.02 1.02;
+}
+
+.user-item:active {
+    scale: 0.99 0.99;
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .user-item-selected {

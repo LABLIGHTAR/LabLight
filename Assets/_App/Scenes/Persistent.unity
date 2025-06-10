@@ -1437,6 +1437,7 @@ GameObject:
   m_Component:
   - component: {fileID: 499898817}
   - component: {fileID: 499898816}
+  - component: {fileID: 499898818}
   m_Layer: 0
   m_Name: User Login Window
   m_TagString: Untagged
@@ -1478,6 +1479,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &499898818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 499898814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce85264bfc69da840869394228a06e6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windowSize: {x: 600, y: 800}
+  userSelectionComponentAsset: {fileID: 9197481963319205126, guid: 1db65c45dc5bd424a981c5e4a466fe3b, type: 3}
+  existingUserLoginComponentAsset: {fileID: 9197481963319205126, guid: c5749f4a965ff0849938122bc2871e2c, type: 3}
+  registerUserComponentAsset: {fileID: 9197481963319205126, guid: 007137d995f7c0b46850027bb76803ca, type: 3}
+  returningUserLoginComponentAsset: {fileID: 9197481963319205126, guid: ede84ad30f28bfb4eaf061868b90652b, type: 3}
+  userItemTemplate: {fileID: 9197481963319205126, guid: 24c070ecbb431da4fae248c3debdc89f, type: 3}
 --- !u!1001 &530725335
 PrefabInstance:
   m_ObjectHideFlags: 0

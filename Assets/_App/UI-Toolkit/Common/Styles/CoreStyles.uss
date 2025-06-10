@@ -149,6 +149,7 @@
     font-size: 16px;
     border-width: 1px;
     -unity-font-style: bold;
+    transition: scale 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
 }
 
 .button-primary {
@@ -159,10 +160,12 @@
 .button-primary:hover {
     background-color: rgba(255, 255, 255, 0.25);
     border-color: rgba(255, 255, 255, 0.5);
+    scale: 1.05 1.05;
 }
 
 .button-primary:active {
     background-color: rgba(255, 255, 255, 0.1);
+    scale: 0.98 0.98;
 }
 
 .button-secondary {
@@ -173,10 +176,12 @@
 .button-secondary:hover {
     background-color: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.4);
+    scale: 1.05 1.05;
 }
 
 .button-secondary:active {
     background-color: rgba(255, 255, 255, 0.02);
+    scale: 0.98 0.98;
 }
 
 /* === Input Fields === */
@@ -186,6 +191,8 @@
     /* Stack label on top of input */
     flex-direction: column;
     align-items: stretch;
+    --unity-cursor-color: white;
+    --unity-selection-color: rgba(100, 150, 255, 0.5);
 }
 
 .form-field > .unity-label {
@@ -210,12 +217,19 @@
     flex-grow: 0; /* Prevent vertical stretching */
     width: 100%;
     min-width: 0;
+    transition: scale 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
+}
+
+.form-field > .unity-text-input:hover,
+.form-field > .unity-base-text-field__input:hover {
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 .form-field > .unity-text-input:focus,
 .form-field > .unity-base-text-field__input:focus {
     border-color: rgba(100, 150, 255, 0.8);
     background-color: rgba(0, 0, 0, 0.4);
+    scale: 1.01 1.01;
 }
 
 /* === Component-Specific: Scroll Views === */
@@ -296,16 +310,19 @@
     background-size: 60% 60%; /* Scale icon to 60% of the button's size */
     background-repeat: no-repeat;
     background-position: center;
+    transition: scale 0.15s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
 }
 
 .icon-button:hover {
     background-color: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
+    scale: 1.1 1.1;
 }
 
 .icon-button:active {
     background-color: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
+    scale: 0.95 0.95;
 }
 
 /* Styles for the main clickable area (protocol name/owner) */

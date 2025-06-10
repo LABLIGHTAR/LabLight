@@ -43,6 +43,22 @@ A base `.button` class provides common styling (padding, font size, etc.). Modif
 - `.button .button-secondary`: A button for secondary actions, like "Cancel" or "Back".
 - `.icon-button`: A small, circular button intended for use with an icon.
 
+### Icons (`Icons.uss`)
+
+To maintain a consistent iconography across the application, a dedicated `Icons.uss` stylesheet is provided. This file contains a collection of utility classes that apply a specific SVG icon as a background image.
+
+These classes are typically used in conjunction with the `.icon-button` style.
+
+- **Usage:** Add the appropriate `.icon-*` class to your button or visual element.
+- **Example:** `<Button class="icon-button icon-refresh" />`
+
+A few examples of available icons include:
+
+- `.icon-refresh`: A refresh symbol.
+- `.icon-delete`: A trash can for delete actions.
+- `.icon-star`: An outline of a star.
+- `.icon-add`: A circle with a plus sign.
+
 ### Form Fields
 
 - `.form-field`: The standard style for all text input fields, including `TextField`.

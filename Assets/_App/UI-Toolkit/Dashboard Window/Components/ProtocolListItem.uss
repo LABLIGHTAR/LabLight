@@ -10,10 +10,17 @@
     border-radius: 8px;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.1);
+    transition: scale 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
 }
 
 .protocol-list-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
+    scale: 1.02 1.02;
+}
+
+.protocol-list-item:active {
+    scale: 0.99 0.99;
+    background-color: rgba(255, 255, 255, 0.02);
 }
 
 .protocol-item-info-container {
