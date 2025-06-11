@@ -22,6 +22,7 @@ public class ProtocolWindowController : BaseWindowController
     private const string PdfButtonName = "pdf-button";
     private const string CalculatorButtonName = "calculator-button";
     private const string CommentsButtonName = "comments-button";
+    private const string TimerButtonName = "timer-button";
     private const string SignOffActionButtonName = "sign-off-action-button";
     private const string SignatureLineLabelName = "signature-line-label";
     private const string CameraButtonName = "camera-button";
@@ -43,6 +44,7 @@ public class ProtocolWindowController : BaseWindowController
     private Button _pdfButton;
     private Button _calculatorButton;
     private Button _commentsButton;
+    private Button _timerButton;
     private Button _signOffActionButton;
     private Label _signatureLineLabel;
     private Button _cameraButton;
@@ -120,6 +122,7 @@ public class ProtocolWindowController : BaseWindowController
         _pdfButton = rootVisualElement.Q<Button>(PdfButtonName);
         _calculatorButton = rootVisualElement.Q<Button>(CalculatorButtonName);
         _commentsButton = rootVisualElement.Q<Button>(CommentsButtonName);
+        _timerButton = rootVisualElement.Q<Button>(TimerButtonName);
         _signOffActionButton = rootVisualElement.Q<Button>(SignOffActionButtonName);
         _signatureLineLabel = rootVisualElement.Q<Label>(SignatureLineLabelName);
         _cameraButton = rootVisualElement.Q<Button>(CameraButtonName);
@@ -141,6 +144,7 @@ public class ProtocolWindowController : BaseWindowController
         _pdfButton?.RegisterCallback<ClickEvent>(OnPdfButtonClicked);
         _calculatorButton?.RegisterCallback<ClickEvent>(OnCalculatorClicked);
         _commentsButton?.RegisterCallback<ClickEvent>(OnCommentsClicked);
+        _timerButton?.RegisterCallback<ClickEvent>(OnTimerButtonClicked);
         _signOffActionButton?.RegisterCallback<ClickEvent>(OnSignOffButtonClicked);
         _cameraButton?.RegisterCallback<ClickEvent>(OnCameraButtonClicked);
         _arViewButton?.RegisterCallback<ClickEvent>(OnArViewButtonClicked);
@@ -153,6 +157,7 @@ public class ProtocolWindowController : BaseWindowController
         _pdfButton?.UnregisterCallback<ClickEvent>(OnPdfButtonClicked);
         _calculatorButton?.UnregisterCallback<ClickEvent>(OnCalculatorClicked);
         _commentsButton?.UnregisterCallback<ClickEvent>(OnCommentsClicked);
+        _timerButton?.UnregisterCallback<ClickEvent>(OnTimerButtonClicked);
         _signOffActionButton?.UnregisterCallback<ClickEvent>(OnSignOffButtonClicked);
         _cameraButton?.UnregisterCallback<ClickEvent>(OnCameraButtonClicked);
         _arViewButton?.UnregisterCallback<ClickEvent>(OnArViewButtonClicked);
@@ -161,6 +166,7 @@ public class ProtocolWindowController : BaseWindowController
     private void OnPreviousStepClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); _uiDriver?.StepNavigationCallback(_currentStepIndex - 1); }
     private void OnNextStepClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); _uiDriver?.StepNavigationCallback(_currentStepIndex + 1); }
     private void OnCalculatorClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); _uiDriver?.DisplayCalculator(); }
+    private void OnTimerButtonClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); _uiDriver?.DisplayTimer(); }
     private void OnCommentsClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); _uiDriver?.DisplayLLMChat(); }
     private void OnCameraButtonClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); Debug.Log("Camera Button Clicked"); }
     private void OnArViewButtonClicked(ClickEvent evt) { _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center); Debug.Log("AR View Button Clicked"); }

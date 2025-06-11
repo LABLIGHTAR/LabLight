@@ -187,7 +187,11 @@ public class SwiftUIDriver : IUIDriver, IDisposable
                     if (arAction.properties.TryGetValue("duration", out object durationObj) && 
                         int.TryParse(durationObj.ToString(), out int seconds))
                     {
-                        DisplayTimer(seconds); // This calls OpenSwiftTimerWindow
+                        DisplayTimer(seconds);
+                    }
+                    else
+                    {
+                        DisplayTimer();
                     }
                 }
             }
@@ -262,7 +266,14 @@ public class SwiftUIDriver : IUIDriver, IDisposable
     }
 
     public void DisplayProtocolMenu() { OpenSwiftUIWindow("ProtocolMenu"); }
-    public void DisplayTimer(int seconds) { OpenSwiftTimerWindow(seconds); }
+    public void DisplayTimer(int? initialSeconds = null)
+    {
+        OpenSwiftUIWindow("Timer");
+        if (initialSeconds.HasValue)
+        {
+            SendMessageToSwiftUI($"setTimer|{initialSeconds.Value}");
+        }
+    }
     public void DisplayCalculator() { OpenSwiftUIWindow("Calculator"); }
     public void DisplayWebPage(string url) { OpenSwiftSafariWindow(url); }
     public void DisplayLLMChat() { OpenSwiftUIWindow("LLMChat"); }
@@ -542,8 +553,14 @@ public class SwiftUIDriver : IUIDriver, IDisposable
                 case "requestVideo": DisplayVideoPlayer(data); break;
                 case "requestPDF": DisplayPDFReader(data); break;
                 case "requestTimer": 
-                    if (int.TryParse(data, out int seconds)) DisplayTimer(seconds);
-                    else Debug.LogError($"SwiftUIDriver: Invalid timer duration from SwiftUI: {data}");
+                    if (int.TryParse(data, out int seconds))
+                    {
+                        DisplayTimer(seconds);
+                    }
+                    else
+                    {
+                        DisplayTimer();
+                    }
                     break;
                 case "requestWebpage": DisplayWebPage(data); break;
                 

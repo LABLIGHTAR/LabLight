@@ -17,6 +17,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     [SerializeField] private UIDocument dashboardWindow;
     [SerializeField] private UIDocument protocolWindow;
     [SerializeField] private UIDocument calculatorWindow;
+    [SerializeField] private UIDocument timerWindow;
     #endregion
 
     #region Private Fields
@@ -235,9 +236,21 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         DisplayDashboard();
     }
 
-    public void DisplayTimer(int seconds)
+    public void DisplayTimer(int? initialSeconds = null)
     {
-        Debug.LogWarning("DisplayTimer is not implemented in the new UI.");
+        if (timerWindow != null)
+        {
+            timerWindow.gameObject.SetActive(true);
+            if (initialSeconds.HasValue)
+            {
+                var controller = timerWindow.GetComponent<TimerWindowController>();
+                controller?.SetInitialTime(initialSeconds.Value);
+            }
+        }
+        else
+        {
+            Debug.LogError("UnityUIDriver: timerWindow (UIDocument) is not assigned.");
+        }
     }
 
     public void DisplayCalculator()
@@ -429,6 +442,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
         if (dashboardWindow != null) dashboardWindow.gameObject.SetActive(false);
         if (protocolWindow != null) protocolWindow.gameObject.SetActive(false);
         if (calculatorWindow != null) calculatorWindow.gameObject.SetActive(false);
+        if (timerWindow != null) timerWindow.gameObject.SetActive(false);
     }
     #endregion
 }

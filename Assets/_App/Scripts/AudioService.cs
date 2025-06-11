@@ -8,6 +8,8 @@ public class AudioService : MonoBehaviour, IAudioService
 
     [Header("Audio Clips")]
     [SerializeField] private AudioClip buttonPressClip;
+    [SerializeField] private AudioClip alarmClip;
+    [SerializeField] private AudioClip beepClip;
 
     private List<AudioSource> _audioSources;
     private Camera _mainCamera;
@@ -34,6 +36,16 @@ public class AudioService : MonoBehaviour, IAudioService
     public void PlayButtonPress(Vector3? position = null) 
     {
         Play(buttonPressClip, position, 0.7f);
+    }
+
+    public void PlayAlarm(Vector3? position = null)
+    {
+        Play(alarmClip, position, 0.6f);
+    }
+
+     public void PlayBeep(Vector3? position = null)
+    {
+        Play(beepClip, position, 0.7f);
     }
     
     private void Play(AudioClip clip, Vector3? position = null, float volume = 1f)

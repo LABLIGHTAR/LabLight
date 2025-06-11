@@ -25,7 +25,7 @@ public interface IUIDriver
     void DisplayUserRegistration();
     void DisplayUserLogin();
     void DisplayDashboard();
-    void DisplayTimer(int seconds);
+    void DisplayTimer(int? initialSeconds = null);
     void DisplayCalculator();
     void DisplayWebPage(string url);
     void DisplayLLMChat();

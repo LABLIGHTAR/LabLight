@@ -2813,6 +2813,8 @@ MonoBehaviour:
   userLoginWindow: {fileID: 499898816}
   dashboardWindow: {fileID: 201392467}
   protocolWindow: {fileID: 574808744}
+  calculatorWindow: {fileID: 2099661257}
+  timerWindow: {fileID: 1294963353}
 --- !u!114 &973196470
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2895,6 +2897,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   poolSize: 10
   buttonPressClip: {fileID: 8300000, guid: 449d6153bca2c44a283b4cbd7c192f3f, type: 3}
+  alarmClip: {fileID: 8300000, guid: eabde91bf2267e54b84e7a6611edc5e3, type: 3}
+  beepClip: {fileID: 8300000, guid: 369a9e819fd8f3846a836cf322e12bee, type: 3}
 --- !u!1 &974636988
 GameObject:
   m_ObjectHideFlags: 0
@@ -5509,6 +5513,71 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e016ef92e52934343857fd26e55140c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1294963351
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1294963354}
+  - component: {fileID: 1294963353}
+  - component: {fileID: 1294963352}
+  m_Layer: 0
+  m_Name: Timer Window
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &1294963352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1294963351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e46e5876fab60ce41991893c1beb6702, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windowSize: {x: 500, y: 350}
+--- !u!114 &1294963353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1294963351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PanelSettings: {fileID: 11400000, guid: 60e029b7170c5e442a855dcabb5cfe2c, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: fc4f3f20efc188a4ab191a833f2865c8, type: 3}
+  m_SortingOrder: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+--- !u!4 &1294963354
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1294963351}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1319727836
 GameObject:
   m_ObjectHideFlags: 0
@@ -8727,7 +8796,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09a77dffe23d7e941a2d4b019d82541c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  windowSize: {x: 300, y: 400}
+  windowSize: {x: 450, y: 600}
 --- !u!114 &2099661257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10928,6 +10997,7 @@ SceneRoots:
   - {fileID: 201392468}
   - {fileID: 574808745}
   - {fileID: 2099661258}
+  - {fileID: 1294963354}
   - {fileID: 1062131496}
   - {fileID: 911377943}
   - {fileID: 1199061409}

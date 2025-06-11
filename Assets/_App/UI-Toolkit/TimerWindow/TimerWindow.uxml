@@ -1,0 +1,38 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <Style src="TimerWindow.uss" />
+    <ui:VisualElement name="timer-window" class="glassmorphic-panel timer-container">
+
+        <!-- Top Row: Presets & Clock -->
+        <ui:VisualElement class="button-row-presets">
+            <ui:VisualElement class="button-pair">
+                <ui:Button name="t1-button" text="T1" class="button preset-button" />
+                <ui:Button name="t2-button" text="T2" class="button preset-button" />
+            </ui:VisualElement>
+             <ui:VisualElement class="button-pair">
+                <ui:Button name="t3-button" text="T3" class="button preset-button" />
+                <ui:Button name="t4-button" text="T4" class="button preset-button" />
+            </ui:VisualElement>
+            <ui:Button name="clock-button" text="CLOCK" class="button clock-button" />
+        </ui:VisualElement>
+
+        <!-- Display -->
+        <ui:VisualElement class="display-container">
+            <ui:Label name="display-label" text="0:00:00" class="display-label" />
+        </ui:VisualElement>
+
+        <!-- Bottom Row: Controls -->
+        <ui:VisualElement class="button-row-controls">
+             <ui:VisualElement class="button-pair">
+                <ui:Button name="h-button" text="H" class="button control-button" />
+                <ui:Button name="m-button" text="M" class="button control-button" />
+            </ui:VisualElement>
+            <ui:VisualElement class="button-pair">
+                <ui:Button name="s-button" text="S" class="button control-button" />
+                <ui:Button name="c-button" text="C" class="button control-button" />
+            </ui:VisualElement>
+            <ui:Button name="start-stop-button" text="START" class="button start-stop-button" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML> 

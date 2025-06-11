@@ -36,6 +36,7 @@
                     <ui:Button name="camera-button" class="icon-button icon-camera" />
                     <ui:Button name="pdf-button" class="icon-button icon-pdf" />
                     <ui:Button name="calculator-button" class="icon-button icon-calculator" />
+                    <ui:Button name="timer-button" class="icon-button icon-timer" />
                     <ui:Button name="comments-button" class="icon-button icon-chat" />
                     <ui:Button name="ar-view-button" class="icon-button icon-change-circle" />
                 </ui:VisualElement>
