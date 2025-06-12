@@ -252,6 +252,7 @@ GameObject:
   - component: {fileID: 339371875}
   - component: {fileID: 339371876}
   - component: {fileID: 339371877}
+  - component: {fileID: 339371878}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -300,6 +301,7 @@ MonoBehaviour:
   m_TextureMaterial: {fileID: 2100000, guid: 02fd697d8b4c34f92b0856c22bba880d, type: 2}
   m_LoadLevelButton: {fileID: 1359347119}
   m_MaxSpawnedObjects: 150
+  m_FPSCounter: {fileID: 339371878}
 --- !u!114 &339371876
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -328,6 +330,19 @@ MonoBehaviour:
   m_VolumeCamera: {fileID: 2026256749}
   m_SwiftUIDriver: {fileID: 0}
   m_MeshSwiftUIDriver: {fileID: 339371875}
+--- !u!114 &339371878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339371872}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d817506aa1a347d19969ead4843df2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RefreshPeriod: 0.75
 --- !u!1 &817724680
 GameObject:
   m_ObjectHideFlags: 0
@@ -1626,7 +1641,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   OpenWindowOnLoad: 1
   m_ShowVolumeCameraEventsFoldout: 0
-  OnWindowEvent:
+  WindowStateChanged:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1660057539 &9223372036854775807

@@ -7,142 +7,96 @@ using TMPro;
 using UniRx;
 using UnityEngine.XR.Interaction.Toolkit;
 using System.Linq;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using System.IO;
 
 public class ProtocolPanelViewController : MonoBehaviour
 {
-    [SerializeField] TextMeshProUGUI procedureTitle;
-    //[SerializeField] TextMeshProUGUI stepText;
-    [SerializeField] Transform contentFrame;
+    [SerializeField] private TextMeshProUGUI procedureTitle;
+    [SerializeField] private Transform contentFrame;
+    [SerializeField] private XRSimpleInteractable openPDFButton;
+    [SerializeField] private TextController textPrefab;
+    [SerializeField] private ImageController imagePrefab;
+    [SerializeField] private VideoController videoPrefab;
+    [SerializeField] private SoundController soundPrefab;
 
-    //content item prefabs
-    [SerializeField] LayoutController ContainerHorizontalItem;
-    [SerializeField] LayoutController ContainerVerticalItem;
-    [SerializeField] TextController TextItem;
-    [SerializeField] PropertyTextController PropertyItem;
-    [SerializeField] ImageController ImageItem;
-    [SerializeField] VideoController VideoItem;
-    [SerializeField] SoundController SoundItem;
-
-    private List<MonoBehaviour> contentItemInstances = new List<MonoBehaviour>();
+    private UnityUIDriver uiDriver;
     private List<ContentItem> currentContentItems = new List<ContentItem>();
-
-    private void Awake()
-    {
-        ProtocolState.checklistStream.Subscribe(_ => UpdateContentItems()).AddTo(this);
-    }
+    private List<MonoBehaviour> contentItemInstances = new List<MonoBehaviour>();
 
     void Start()
     {
-        procedureTitle.text = ProtocolState.procedureDef.title;
-        //UpdateStepDisplay();
+        uiDriver = (UnityUIDriver)ServiceRegistry.GetService<IUIDriver>();
+        procedureTitle.text = ProtocolState.Instance.ActiveProtocol.Value.title;
         UpdateContentItems();
+        openPDFButton.selectExited.AddListener(_ => OnOpenPDFButtonClicked());
     }
 
-    private void UpdateContentItems()
+    private void CreateContentItem(ContentItem contentItem, LayoutGroup container)
     {
-        var currentStep = ProtocolState.procedureDef.steps[ProtocolState.Step];
+        MonoBehaviour controller = null;
 
-        //Get new content items
-        var newContentItems = new List<ContentItem>();
-        if(currentStep.checklist != null && currentStep.checklist[ProtocolState.CheckItem].contentItems.Count > 0)
+        switch (contentItem.contentType.ToLower())
         {
-            newContentItems.AddRange(currentStep.contentItems.Where(contentItem => contentItem.contentType != ContentType.Video));
-            newContentItems.AddRange(currentStep.checklist[ProtocolState.CheckItem].contentItems.Where(contentItem => contentItem.contentType != ContentType.Video));
+            case "text":
+                var textController = Instantiate(textPrefab, container.transform);
+                textController.ContentItem = contentItem;
+                controller = textController;
+                break;
+
+            case "image":
+                var imageController = Instantiate(imagePrefab, container.transform);
+                imageController.ContentItem = contentItem;
+                controller = imageController;
+                break;
+
+            case "sound":
+                var soundController = Instantiate(soundPrefab, container.transform);
+                soundController.ContentItem = contentItem;
+                controller = soundController;
+                break;
+
+            case "weburl":
+                if (contentItem.properties.TryGetValue("url", out object webURL))
+                {
+                    uiDriver.DisplayWebPage(webURL.ToString());
+                }
+                break;
+            case "video":
+                if(contentItem.properties.TryGetValue("url", out object videoURL))
+                {
+                    uiDriver.DisplayVideoPlayer(videoURL.ToString());
+                }
+                break;
+            case "informationpanel":
+                /* based on these properties 
+                 "Properties": 
+                    "arObjectID": "wellplate_01",
+                    "Text": "Pipette into Well A1",
+                    "ImageURL": "wellplate.png",
+                    "Volume": "5 uL"*/
+                if(contentItem.properties.TryGetValue("arObjectID", out object arObjectID))
+                {
+                    Debug.Log("arObjectID: " + arObjectID);
+                }
+                if(contentItem.properties.TryGetValue("Text", out object text))
+                {
+                    Debug.Log("Text: " + text);
+                }
+                if(contentItem.properties.TryGetValue("ImageURL", out object imageURL))
+                {
+                    Debug.Log("ImageURL: " + imageURL);
+                }
+                if(contentItem.properties.TryGetValue("Volume", out object volume))
+                {
+                    Debug.Log("Volume: " + volume);
+                }
+                break;
         }
-        else
+
+        if (controller != null)
         {
-            newContentItems.AddRange(currentStep.contentItems.Where(contentItem => contentItem.contentType != ContentType.Video));
-        }
-
-        if(newContentItems.Count == 0)
-        {
-            //if there are no content items disable view
-            foreach(Transform child in transform)
-            {
-                child.gameObject.SetActive(false);
-            }
-        }
-        else if(currentContentItems != null && currentContentItems == newContentItems)
-        {
-            //if content items are the same as the previous content items do nothing
-            currentContentItems = newContentItems;
-        }
-        else
-        {
-            //if we have new items then clear the old ones and create new ones
-            ClearContentItems();
-            CreateContentItems(newContentItems, contentFrame.GetComponent<LayoutGroup>(), null);  
-            currentContentItems = newContentItems; 
-            foreach(Transform child in transform)
-            {
-                child.gameObject.SetActive(true);
-            }
-        }
-    }
-
-    private void CreateContentItems(List<ContentItem> contentItems, LayoutGroup container, ContainerElementViewController containerController, bool store = true)
-    {
-        foreach (var contentItem in contentItems)
-        {
-            switch (contentItem.contentType)
-            {
-                case ContentType.Property:
-                    PropertyTextController propertyTextController = Instantiate(PropertyItem, container.transform);
-                    propertyTextController.ContentItem = contentItem as PropertyItem;
-                    propertyTextController.ContainerController = containerController;
-
-                    if (store)
-                    {
-                        contentItemInstances.Add(propertyTextController);
-                    }
-                    break;
-                case ContentType.Text:
-                    var textController = Instantiate(TextItem, container.transform);
-                    textController.ContentItem = contentItem as TextItem;
-
-                    if (store)
-                    {
-                        contentItemInstances.Add(textController);
-                    }
-                    break;
-                case ContentType.Image:
-                    var imageController = Instantiate(ImageItem, container.transform);
-                    imageController.ContentItem = contentItem as ImageItem;
-
-                    if (store)
-                    {
-                        contentItemInstances.Add(imageController);
-                    }
-                    break;
-                case ContentType.Sound:
-                    var soundController = Instantiate(SoundItem, container.transform);
-                    soundController.ContentItem = contentItem as SoundItem;
-
-                    if (store)
-                    {
-                        contentItemInstances.Add(soundController);
-                    }
-                    break;
-                case ContentType.Layout:
-                    // Recurse into subcontainers and their items
-                    LayoutItem layoutItem = ((LayoutItem)contentItem);
-                    var layoutController = Instantiate((layoutItem.layoutType == LayoutType.Vertical) ? ContainerVerticalItem : ContainerHorizontalItem, container.transform);
-                    layoutController.ContentItem = contentItem as LayoutItem;
-
-                    if (store)
-                    {
-                        contentItemInstances.Add(layoutController);
-                    }
-                    CreateContentItems(layoutItem.contentItems, layoutController.LayoutGroup, containerController);
-                    break;
-                case ContentType.WebUrl:
-                    // Open a web browser
-                    WebUrlItem webUrlItem = contentItem as WebUrlItem;
-                    ServiceRegistry.GetService<IWebPageProvider>().OpenWebPage(webUrlItem.url);
-                    break;
-                default:
-                    break;
-            }
+            contentItemInstances.Add(controller);
         }
     }
 
@@ -153,5 +107,64 @@ public class ProtocolPanelViewController : MonoBehaviour
             Destroy(contentItem.gameObject);
         }
         contentItemInstances.Clear();
+    }
+
+    public void UpdateContentItems()
+    {
+        var newContentItems = new List<ContentItem>();
+        
+        // Check if current step has content items
+        if (ProtocolState.Instance.CurrentStepDefinition.contentItems?.Any() == true)
+        {
+            newContentItems.AddRange(ProtocolState.Instance.CurrentStepDefinition.contentItems);
+        }
+
+        // If there's a checklist, add its content items too
+        if (ProtocolState.Instance.HasCurrentChecklist() && 
+            ProtocolState.Instance.CurrentCheckItemDefinition.contentItems?.Any() == true)
+        {
+            newContentItems.AddRange(ProtocolState.Instance.CurrentCheckItemDefinition.contentItems);
+        }
+
+        if(newContentItems.Count == 0)
+        {
+            foreach(Transform child in transform)
+            {
+                child.gameObject.SetActive(false);
+            }
+        }
+        else if(currentContentItems != null && currentContentItems == newContentItems)
+        {
+            currentContentItems = newContentItems;
+        }
+        else
+        {
+            ClearContentItems();
+            foreach (var contentItem in newContentItems)
+            {
+                CreateContentItem(contentItem, contentFrame.GetComponent<LayoutGroup>());
+            }
+            currentContentItems = newContentItems;
+            
+            foreach(Transform child in transform)
+            {
+                child.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    private void OnOpenPDFButtonClicked()
+    {
+        var protocol = ProtocolState.Instance.ActiveProtocol.Value;
+        if (protocol.protocolPDFNames?.Count > 0)
+        {
+            string pdfName = protocol.protocolPDFNames[0]; // Use first PDF for now
+            Debug.Log($"displaying PDF: {pdfName}");
+            uiDriver.DisplayPDFReader(pdfName);
+        }
+        else
+        {
+            Debug.Log("no PDFs available");
+        }
     }
 }

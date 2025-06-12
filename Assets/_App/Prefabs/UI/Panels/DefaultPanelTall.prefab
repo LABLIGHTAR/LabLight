@@ -1116,11 +1116,31 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 322152597622010093, guid: b75c8ed483bf6400f87babff5226a4fb, type: 3}
       propertyPath: m_fontSize
-      value: 37.45
+      value: 20.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 322152597622010093, guid: b75c8ed483bf6400f87babff5226a4fb, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2354786158105215210, guid: b75c8ed483bf6400f87babff5226a4fb, type: 3}
       propertyPath: m_Name
       value: PanelHeaderTall
+      objectReference: {fileID: 0}
+    - target: {fileID: 5294149170260669544, guid: b75c8ed483bf6400f87babff5226a4fb, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 281.5765
+      objectReference: {fileID: 0}
+    - target: {fileID: 5294149170260669544, guid: b75c8ed483bf6400f87babff5226a4fb, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 22.47537
+      objectReference: {fileID: 0}
+    - target: {fileID: 5294149170260669544, guid: b75c8ed483bf6400f87babff5226a4fb, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.0003
+      objectReference: {fileID: 0}
+    - target: {fileID: 5294149170260669544, guid: b75c8ed483bf6400f87babff5226a4fb, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0.00035
       objectReference: {fileID: 0}
     - target: {fileID: 8052299787605041135, guid: b75c8ed483bf6400f87babff5226a4fb, type: 3}
       propertyPath: m_LocalPosition.x

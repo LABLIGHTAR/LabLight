@@ -2,45 +2,41 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
- 
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.UI;
 
 /// <summary>
 /// Controls the behavior of the action center panel in the scene.
 /// </summary>
 public class ActionCenterPanelViewController : MonoBehaviour
 {
-    [SerializeField] private PlaneInteractionManagerScriptableObject planeManager;
-    [SerializeField] GameObject timerPrefab;
-    [SerializeField] GameObject hazardZonePanelPrefab;
-    [SerializeField] UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable recordingButton;
+    [SerializeField] private HeadPlacementEventChannel headPlacementEventChannel;
+    [SerializeField] XRSimpleInteractable recordingButton;
     bool isRecording = false;
-    [SerializeField] UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable replayButton;
+    [SerializeField] XRSimpleInteractable replayButton;
     bool isReplaying = false;
-    [SerializeField] UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable internetBrowserButton;
-    bool isBrowserOpen = false;
+    [SerializeField] XRSimpleInteractable internetBrowserButton;
+    [SerializeField] XRSimpleInteractable chatButton;
+    [SerializeField] XRSimpleInteractable timerButton;
+    [SerializeField] XRSimpleInteractable calculatorButton;
+    [SerializeField] XRSimpleInteractable closeAppButton;
+   
+    bool isSpeechRecognitionEnabled = true;
+    [SerializeField] XRSimpleInteractable speechRecognitionButton;
+    [SerializeField] Image speechRecognitionButtonImage;
+    [SerializeField] Sprite speechRecognitionButtonImageEnabled;
+    [SerializeField] Sprite speechRecognitionButtonImageDisabled;
 
     void Start()
     {
         recordingButton.selectExited.AddListener(_ => ToggleLighthouseRecording());
         replayButton.selectExited.AddListener(_ => ToggleLighthouseReplay());
-        internetBrowserButton.selectExited.AddListener(_ => OpenInternetBrowser());
-    }
-
-    /// <summary>
-    /// Spawns a timer object at the same position and rotation as the action center panel, and deactivates the panel.
-    /// </summary>
-    public void SpawnTimer()
-    {
-        var timer = Instantiate(timerPrefab);
-        timer.transform.position = transform.position;
-        timer.transform.rotation = transform.rotation;
-    }
-
-    public void SpawnHazardZonePanel()
-    {
-        var hazardZonePanel = Instantiate(hazardZonePanelPrefab);
-        hazardZonePanel.transform.position = transform.position;
-        hazardZonePanel.transform.rotation = transform.rotation;
+        internetBrowserButton.selectExited.AddListener(_ => ServiceRegistry.GetService<IUIDriver>().DisplayWebPage(""));
+        calculatorButton.selectExited.AddListener(_ => ServiceRegistry.GetService<IUIDriver>().DisplayCalculator());
+        chatButton.selectExited.AddListener(_ => ServiceRegistry.GetService<IUIDriver>().DisplayLLMChat());
+        timerButton.selectExited.AddListener(_ => ServiceRegistry.GetService<IUIDriver>().DisplayTimer(30));
+        closeAppButton.selectExited.AddListener(_ => Application.Quit());
+        speechRecognitionButton.selectExited.AddListener(_ => ToggleSpeechRecognition());
     }
 
     /// <summary>
@@ -58,6 +54,7 @@ public class ActionCenterPanelViewController : MonoBehaviour
 
     public void OpenSpatialNotesEditor()
     {
+        this.gameObject.SetActive(false);
         SceneLoader.Instance.LoadSceneAdditive("SpatialNotesEditor");
     }    
 
@@ -95,8 +92,17 @@ public class ActionCenterPanelViewController : MonoBehaviour
         isReplaying = !isReplaying;
     }
 
-    void OpenInternetBrowser()
+    void ToggleSpeechRecognition()
     {
-        ServiceRegistry.GetService<IWebPageProvider>().OpenWebPage("");
+        isSpeechRecognitionEnabled = !isSpeechRecognitionEnabled;
+        speechRecognitionButtonImage.sprite = isSpeechRecognitionEnabled ? speechRecognitionButtonImageDisabled : speechRecognitionButtonImageEnabled;
+        if (isSpeechRecognitionEnabled)
+        {
+            SpeechRecognizer.Instance.EnableSpeechRecognition();
+        }
+        else
+        {
+            SpeechRecognizer.Instance.DisableSpeechRecognition();
+        }
     }
 }

@@ -33,14 +33,14 @@ public class FootPedalController : MonoBehaviour
 
     void OnEnable()
     {
-        InputSystem.actions.FindAction("Progress Forward").performed += NextProcedureAction;
-        InputSystem.actions.FindAction("Progress Backward").performed += PreviousProcedureAction;
+        InputSystem.actions.FindAction("Progress Forward").performed += NextProtocolAction;
+        InputSystem.actions.FindAction("Progress Backward").performed += PreviousProtocolAction;
     }
 
     void OnDisable()
     {
-        InputSystem.actions.FindAction("Progress Forward").performed -= NextProcedureAction;
-        InputSystem.actions.FindAction("Progress Backward").performed -= PreviousProcedureAction;
+        InputSystem.actions.FindAction("Progress Forward").performed -= NextProtocolAction;
+        InputSystem.actions.FindAction("Progress Backward").performed -= PreviousProtocolAction;
     }
 
     // Airturn Duo 500 acts as a keyboard
@@ -82,11 +82,11 @@ public class FootPedalController : MonoBehaviour
     //     }
     // }
 
-    public void NextProcedureAction(InputAction.CallbackContext context)
+    public void NextProtocolAction(InputAction.CallbackContext context)
     {
         if(context.performed)
         {
-            Debug.Log("Next procedure action");
+            Debug.Log("Next protocol action");
             footPedalInterval = Time.time;
             // if(ProtocolState.LockingTriggered.Value)
             // {
@@ -97,12 +97,12 @@ public class FootPedalController : MonoBehaviour
             //     ProtocolState.AlignmentTriggered.Value = false;
             //     AlignmentController.ResetModel(lockingDisplay.GetSpecificArViews().Where(arview => arview.Key.arDefinitionType == ArDefinitionType.Model).Select(x => x.Value).ToList());
             // }
-            if(ProtocolState.Steps[ProtocolState.Step].Checklist != null)
+            if(ProtocolState.Instance.HasCurrentChecklist())
             {
-                if(ProtocolState.Steps[ProtocolState.Step].SignedOff)
+                if(ProtocolState.Instance.CurrentStepState.Value.SignedOff.Value)
                 {
                     checklist.NextStep();
-                }else if(ProtocolState.CheckItem == ProtocolState.Steps[ProtocolState.Step].Checklist.Count - 1 && ProtocolState.Steps[ProtocolState.Step].Checklist[ProtocolState.CheckItem].IsChecked.Value && !ProtocolState.Steps[ProtocolState.Step].SignedOff)
+                }else if(ProtocolState.Instance.CurrentCheckNum == ProtocolState.Instance.CurrentChecklist.Count - 1 && ProtocolState.Instance.CurrentCheckItemState.Value.IsChecked.Value && !ProtocolState.Instance.CurrentStepState.Value.SignedOff.Value)
                 {
                     checklist.SignOff();
                 }else
@@ -116,12 +116,12 @@ public class FootPedalController : MonoBehaviour
         }
     }
 
-    public void PreviousProcedureAction(InputAction.CallbackContext context)
+    public void PreviousProtocolAction(InputAction.CallbackContext context)
     {
         if(context.performed)
         {
             Debug.Log("Previous Procedure Action");
-            if(ProtocolState.CheckItem == 0 || ProtocolState.Steps[ProtocolState.Step].SignedOff)
+            if(ProtocolState.Instance.CurrentCheckNum == 0 || ProtocolState.Instance.CurrentStepState.Value.SignedOff.Value)
             {
                 checklist.PreviousStep();
             }else

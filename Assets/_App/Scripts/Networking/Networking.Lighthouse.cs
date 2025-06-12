@@ -15,7 +15,7 @@ public partial class Networking : MonoBehaviour, ILighthouseControl
         if (!string.IsNullOrEmpty(_directIpAddress))
         {
             SessionState.Recording = true;
-            string filename = ProtocolState.ProcedureTitle + "_step" + ProtocolState.Step;
+            string filename = ProtocolState.Instance.ProtocolTitle.Value + "_step" + ProtocolState.Instance.CurrentStep.Value;
             var packetType = packet_type.packet_client_video_start_recording;
             PingServer(packetType, filename, 0f);
         }
@@ -190,18 +190,23 @@ public partial class Networking : MonoBehaviour, ILighthouseControl
         if(!string.IsNullOrEmpty(_directIpAddress))
         {
             var packetType = packet_type.packet_client_protocol_state;
+            var protocolState = ProtocolState.Instance;
+            var currentStep = protocolState.CurrentStepState.Value;
+            var currentCheckItem = protocolState.CurrentCheckItemState.Value;
+
             PingServer
             (
                 packetType, 
-                ProtocolState.ProcedureTitle, 
+                protocolState.ProtocolTitle.Value, 
                 "operatorName", 
-                ProtocolState.StartTime.ToString(), 
-                ProtocolState.Step + 1, 
-                ProtocolState.Steps.Count, 
-                ProtocolState.Steps[ProtocolState.Step].CheckNum + 1, 
-                ProtocolState.Steps[ProtocolState.Step].Checklist == null ? 0 : ProtocolState.Steps[ProtocolState.Step].Checklist.Count,
-                "Check Item Text", 
-                ProtocolState.Steps[ProtocolState.Step].SignedOff ? 1 : 0
+                protocolState.StartTime.Value.ToString(), 
+                protocolState.CurrentStep.Value + 1, 
+                protocolState.Steps.Count, 
+                protocolState.CurrentCheckNum + 1, 
+                currentStep?.Checklist?.Count ?? 0,
+                currentCheckItem?.Text ?? "", 
+                currentStep?.SignedOff.Value ?? false ? 1 : 0,
+                false //resume value
             );
         }
     }

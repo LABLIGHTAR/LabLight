@@ -1,683 +1,373 @@
-  using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UI;
-using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 public class ArObjectManager : MonoBehaviour
 {
-
     public ProtocolItemLockingManager lockingManager;
-
-    public PlaneInteractionManagerScriptableObject planeInteractionManagerSO;
-
-    [Header("World Container Prefabs")]
-    public ContainerElementViewController WorldContainerHorizontal;
-    public ContainerElementViewController WorldContainerVertical;
-
-    [Header("Content Item Prefabs")]
-    [Tooltip("Placed in contentFrame canvas")]
-    public LayoutController ContainerHorizontalItem;
-    public LayoutController ContainerVerticalItem;
-    public TextController TextItem;
-    public PropertyTextController PropertyItem;
-    // public ImageController ImageItem;
-    // public VideoController VideoItem;
-    // public SoundController SoundItem;
-
-    //prefabs for generic
-    public ArrowElementViewController ArrowPrefab;
-
-    private List<ArDefinition> genericArDefinitions = new List<ArDefinition>();
-    private Dictionary<ArDefinition, List<ArElementViewController>> genericArViews = new Dictionary<ArDefinition, List<ArElementViewController>>();
-
-    private List<ArDefinition> specificArDefinitions = new List<ArDefinition>();
-    private Dictionary<ArDefinition, ArElementViewController> specificArViews = new Dictionary<ArDefinition, ArElementViewController>();
-
-    private List<MonoBehaviour> contentItemInstances = new List<MonoBehaviour>();
-
-    private Dictionary<ModelArDefinition, GameObject> anchorPrefabsDict = new Dictionary<ModelArDefinition, GameObject>();
-    private Transform workspaceTransform;
-
-    private Coroutine enqueueObjectsCoroutine;
-
-    void Awake()
-    {
-        //add audio... 
-        ProtocolState.procedureStream.Subscribe(_ => InitializeArObjects()).AddTo(this);
-        ProtocolState.stepStream.Subscribe(_ => RebuildArObjects()).AddTo(this);
-        ProtocolState.checklistStream.Subscribe(_ => RebuildArObjects()).AddTo(this);
-
-        SessionState.TrackedObjects.ObserveAdd().Subscribe(x => processAddedObject(x.Value)).AddTo(this);
-        SessionState.TrackedObjects.ObserveRemove().Subscribe(x => processRemovedObject(x.Value)).AddTo(this);
-
-        SessionState.enableGenericVisualizations.Subscribe(_ => ToggleGenericViews()).AddTo(this);
-    }
-
-    void Start()
-    {
-        lockingManager = this.GetComponent<ProtocolItemLockingManager>();
-    }
-
-    void OnDisable()
-    {
-        ClearScene();
-        ProtocolState.AlignmentTriggered.Value = false;
-    }
-
-    private void InitializeArObjects()
-    {
-        workspaceTransform = SessionManager.instance.WorkspaceTransform;
-        //workspaceTransform.position = new Vector3(workspaceTransform.position.x, workspaceTransform.position.y + 0.04f, workspaceTransform.position.z);
-        if(ProtocolState.procedureDef != null)
-        {
-            var currentProcedure = ProtocolState.procedureDef;
-            if(currentProcedure.globalArElements != null)
-            {
-                specificArDefinitions.AddRange(currentProcedure.globalArElements.Where(ar => ar.IsSpecific()));
-                
-                foreach(var arDefinition in specificArDefinitions)
-                {
-                    SpecificArDefinitionAdded(arDefinition);
-                }
-            }
-            genericArDefinitions.AddRange(currentProcedure.globalArElements.Where(ar => ar.IsGeneric()));
-            if(SessionState.enableGenericVisualizations.Value)
-            {
-                ServiceRegistry.GetService<ILighthouseControl>()?.DetectorMode(4,1,10f);
-            }
-        }
-    }
-
-    private void processAddedObject(TrackedObject trackedObject)
-    {
-        //ignore detections within the bounds of an anchored model
-        var modelViews = specificArViews.Where(arView => arView.Key.IsOfInterest(trackedObject.label) && arView.Key.arDefinitionType == ArDefinitionType.Model);
-        foreach (var modelView in modelViews)
-        {
-            ModelElementViewController modelController = (ModelElementViewController)specificArViews[modelView.Key];
-            if ((Vector3.Distance(trackedObject.position, modelController.transform.position) < (modelController.GetComponent<CapsuleCollider>().radius * 0.9f)) && modelController.positionLocked)
-                return;
-        }
-
-        // Select instances that are waiting for this trackedObject to arrive
-        var arViews = specificArViews.Where(arView => arView.Key.IsOfInterest(trackedObject.label) && !((WorldPositionController)arView.Value).positionLocked && ((WorldPositionController)arView.Value).selectedForLocking);
-        
-        // Resolve
-        foreach (var arView in arViews)
-        {
-            arView.Value.TrackedObjects.Add(trackedObject);
-        }
-        if(SessionState.enableGenericVisualizations.Value)
-        {
-            Debug.Log("Processing added generic object" + trackedObject.label);
-            processAddedGenericObject(trackedObject);
-        }
-    }
-
-    private void processAddedGenericObject(TrackedObject trackedObject)
-    {
-        Transform parent = SessionManager.instance.CharucoTransform;
-
-        // Apply generic definitions
-        Debug.Log(genericArDefinitions.Count);
-        foreach (var arDefinition in genericArDefinitions)
-        {
-            Debug.Log(arDefinition.arDefinitionType);
-            switch (arDefinition.arDefinitionType)
-            {
-                case ArDefinitionType.Container:
-                    createGenericArContainerView((ContainerArDefinition)arDefinition, parent, trackedObject);
-                    break;
-                case ArDefinitionType.Model:
-                    if (!arDefinition.IsTargeted() || arDefinition.IsOfInterest(trackedObject.label))
-                    {
-                        createGenericModel((ModelArDefinition)arDefinition, parent, trackedObject);
-                    }
-                    break;
-                case ArDefinitionType.Arrow:
-                    // JA not sure what happens here, RS this should generate an arrow for each trackedobject, but also not something that will happen often
-                    break;
-                //case ArDefinitionType.BoundingBox:
-                //    createGenericArView(BoundingBoxPrefab, arDefinition, parent, trackedObject);
-                //    break;
-                default:
-                    Debug.LogError("ArDefinition of type '" + arDefinition.arDefinitionType + "' is not supported as generic definition yet.");
-                    break;
-            }
-        }
-    }
-
-    private void processRemovedObject(TrackedObject trackedObject)
-    {
-        // Select instances that are waiting for this trackedObject to arrive
-        var arViews = specificArViews.Where(arView => arView.Key.IsOfInterest(trackedObject.label));
-
-        // Undo resolve so specifc views can disable themselves
-        foreach (var arView in arViews)
-        {
-            arView.Value.TrackedObjects.Remove(trackedObject);
-        }
-        if(SessionState.enableGenericVisualizations.Value)
-        {
-            processRemovedGenericObject(trackedObject);
-        }
-    }
-
-    private void processRemovedGenericObject(TrackedObject trackedObject)
-    {
-        foreach (var arDefinition in genericArDefinitions)
-        {
-            List<ArElementViewController> views;
-            if (genericArViews.TryGetValue(arDefinition, out views))
-            {
-                var trackedObjectView = (from view in views
-                                         where view.TrackedObjects.Contains(trackedObject)
-                                         select view).FirstOrDefault();
-
-                if (trackedObjectView)
-                {
-                    Destroy(trackedObjectView.gameObject);
-                    views.Remove(trackedObjectView);
-                }
-            }
-        }
-    }
-
-    private static List<TrackedObject> ResolveTrackedObjects(string[] targets)
-    {
-        var trackedObjects = new List<TrackedObject>();
-        if (targets != null)
-        {
-            foreach (var target in targets)
-            {
-                var trackedObject = (from to in SessionState.TrackedObjects where to.label == target select to).FirstOrDefault();
-                if (trackedObject != null)
-                {
-                    trackedObjects.Add(trackedObject);
-                }
-            }
-        }
-
-        return trackedObjects;
-    }
-
-    private void RebuildArObjects()
-    {
-        if(specificArDefinitions.Count == 0)
-        {
-            InitializeArObjects();
-        }
-        //rebuild models
-        foreach (var modelDef in specificArViews.Keys.Where(key => key.arDefinitionType == ArDefinitionType.Model))
-        {
-            ((ModelElementViewController)specificArViews[modelDef]).disablePreviousHighlight();
-            ApplyOperations(modelDef, specificArViews[modelDef]);
-        }
-
-        //apply locking if needed
-        // if (anchorDefs.Count > 0)
-        // {
-        //     //reassign tracked objects on locking start
-        //     foreach (var of in SessionState.TrackedObjects)
-        //     {
-        //         processAddedObject(of);
-        //     }
-        //     //lockingDisplayController.TriggerLocking(new List<ArDefinition>(anchorDefs), specificArViews);
-        // }
-        // anchorDefs.Clear();
-        // if(enqueueObjectsCoroutine == null)
-        // {
-        //     enqueueObjectsCoroutine = StartCoroutine(enqueueObjects(anchorPrefabs));
-        // }else
-        // {
-        //     Debug.Log("courtine already started for requesting object placement");
-        // }
-    }
-
-    // private void UpdateGenericDefinitions()
-    // {
-    //     List<ArDefinition> oldGenericArDefinitions = new List<ArDefinition>(genericArDefinitions);
-
-    //     List<ArDefinition> rebuiltGenericArDefinitions = new List<ArDefinition>();
-
-    //     if (ProtocolState.procedureDef != null)
-    //     {
-    //         var currentProcedure = ProtocolState.procedureDef;
-    //         if (currentProcedure.globalArElements != null) //should only be called once at beginning of procedure AM
-    //         {
-    //             rebuiltGenericArDefinitions.AddRange(currentProcedure.globalArElements.Where(ar => ar.IsGeneric()));
-    //             genericArDefinitions.RemoveAll(ar => ar.arDefinitionType == ArDefinitionType.Container);
-    //         }
-    //     }
-
-    //     foreach (var arDefinition in rebuiltGenericArDefinitions)
-    //     {
-    //         if (!genericArDefinitions.Contains(arDefinition))
-    //         {
-    //             genericArDefinitions.Add(arDefinition);
-    //             GenericArDefinitionAdded(arDefinition);
-    //         }
-    //     }
-
-    //     foreach (var arDefinition in oldGenericArDefinitions)
-    //     {
-    //         if (!rebuiltGenericArDefinitions.Contains(arDefinition))
-    //         {
-    //             genericArDefinitions.Remove(arDefinition);
-    //             GenericArDefinitionRemoved(arDefinition);
-    //         }
-    //     }
-    // }
-
-    private void SpecificArDefinitionAdded(ArDefinition arDefinition)
-    {
-        // Precreate ArViews for all arDefinitions even though the optional TrackedObject does not exist yet
-        // Each ArView is responsible for showing/hiding itself depending on the availability of the TrackedObject it should be attached to
-        // When the object is not there it may show an alternative view to indicate that it is expecting a certain TrackedObject
-
-        switch (arDefinition.arDefinitionType)
-        {
-            case ArDefinitionType.Line:
-                // Not handled
-                break;
-            case ArDefinitionType.Outline:
-                // Not handled
-                break;
-            case ArDefinitionType.Overlay:
-                // Not handled
-                break;
-            case ArDefinitionType.Model:
-                createModel((ModelArDefinition)arDefinition);
-                break;
-            case ArDefinitionType.Container:
-                createContainer((ContainerArDefinition)arDefinition);
-                break;
-            case ArDefinitionType.Arrow:
-                //createArrow((ArrowArDefinition)arDefinition, workspaceTransform); not handled
-                break;
-        }
-    }
-
-    private void SpecificArDefinitionRemoved(ArDefinition arDefinition)
-    {
-        ArElementViewController arView;
-        if (specificArViews.TryGetValue(arDefinition, out arView))
-        {
-            Destroy(arView.gameObject);
-            specificArViews.Remove(arDefinition);
-        }
-    }
-
-    // private void GenericArDefinitionAdded(ArDefinition arDefinition)
-    // {
-    //     Transform parent = SessionManager.instance.workspaceTransform;
-
-    //     switch (arDefinition.arDefinitionType)
-    //     {
-    //         case ArDefinitionType.Line:
-    //             //not handled
-    //             break;
-    //         case ArDefinitionType.Outline:
-    //             //not handled
-    //             break;
-    //         case ArDefinitionType.Overlay:
-    //             //not handled
-    //             break;
-    //         case ArDefinitionType.Model:
-    //             createModel((ModelArDefinition)arDefinition);
-    //             break;
-    //         case ArDefinitionType.Container:
-    //             createGenericArContainerView((ContainerArDefinition)arDefinition, parent);
-    //             break;
-    //         case ArDefinitionType.Arrow:
-    //             //createArrow((ArrowArDefinition)arDefinition, parent); not handled
-    //             break;
-    //     }
-    // }
-
-    private void GenericArDefinitionRemoved(ArDefinition arDefinition)
-    {
-        List<ArElementViewController> arViews;
-        if (genericArViews.TryGetValue(arDefinition, out arViews))
-        {
-            foreach (var arView in arViews)
-            {
-                Destroy(arView.gameObject);
-            }
-            genericArViews.Remove(arDefinition);
-        }
-    }
-
-    private void ApplyOperations(ArDefinition arDefinition, ArElementViewController arViewController) //todo NS
-    {
-        if (ProtocolState.procedureDef != null)
-        {
-            var currentProcedure = ProtocolState.procedureDef;
-
-            if (currentProcedure.steps != null && currentProcedure.steps[ProtocolState.Step] != null)
-            {
-                var currentStep = currentProcedure.steps[ProtocolState.Step];
-                
-                if (currentStep.checklist != null && currentStep.checklist.Count > 0 && ProtocolState.CheckItem < currentStep.checklist.Count && !ProtocolState.Steps[ProtocolState.Step].Checklist[ProtocolState.CheckItem].IsChecked.Value)
-                {
-                    var currentCheckItem = currentStep.checklist[ProtocolState.CheckItem];
-                    if (currentCheckItem != null)
-                    {
-                        foreach (var operation in currentCheckItem.operations)
-                        {
-                            if (operation.arDefinition == arDefinition)
-                            {
-                                if (operation.arOperationType == ArOperationType.Anchor && arDefinition.arDefinitionType == ArDefinitionType.Model && anchorPrefabsDict.ContainsKey((ModelArDefinition)arDefinition))
-                                {
-                                    //anchorDefs.Add(arDefinition);
-                                    //anchorPrefabs.Add(arViewController.gameObject);
-                                    if(enqueueObjectsCoroutine == null)
-                                    {
-                                        enqueueObjectsCoroutine = StartCoroutine(startNextObjectPlacement(anchorPrefabsDict[(ModelArDefinition)arDefinition]));
-                                    }else
-                                    {
-                                        Debug.Log("courtine already started for requesting object placement");
-                                    }
-                                }
-                                else
-                                {
-                                    operation.Apply(arViewController);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void createModel(ModelArDefinition modelArDefinition, TrackedObject trackedObject = null)
-    {
-        //var prefabPath = ProtocolState.procedureDef.mediaBasePath + "/" + modelArDefinition.url;
-        var prefabPath = "Models/" + modelArDefinition.url;
-        ServiceRegistry.GetService<IMediaProvider>().GetPrefab(prefabPath).Subscribe(prefab =>
-        {
-            ArElementViewController arViewPrefab = prefab.GetComponent<ArElementViewController>();
-            if (arViewPrefab)
-            {
-                var prefabInstance = Instantiate(arViewPrefab, workspaceTransform);
-                // Resolve all trackedObjects that this definition wants
-                List<TrackedObject> trackedObjects = ResolveTrackedObjects(modelArDefinition.Targets());
-                Debug.Log("creating model - " + modelArDefinition.name);
-                prefabInstance.Initialize(modelArDefinition, trackedObjects);
-
-
-                // RS Quick fix to prevent overwriting models that were late loaded
-                // Check if this can be done better
-                if (specificArViews.ContainsKey(modelArDefinition))
-                {
-                    Destroy(specificArViews[modelArDefinition].gameObject);
-                }
-                
-                specificArViews[modelArDefinition] = prefabInstance;
-
-                //if we are creating an unlocked model with an anchor condition deactivate it until locking starts
-                // if(modelArDefinition.condition.conditionType == ConditionType.Anchor && !((WorldPositionController)specificArViews[modelArDefinition]).positionLocked)
-                // {
-                //     specificArViews[modelArDefinition].transform.gameObject.SetActive(false);
-                // }
-                specificArViews[modelArDefinition].transform.gameObject.SetActive(false); //current all game objects start turned off AM 
-
-                // Check if we need to perform operations on this view
-                anchorPrefabsDict[modelArDefinition] = prefabInstance.gameObject;
-
-
-
-                ApplyOperations(modelArDefinition, prefabInstance);
-            }
-            else
-            {
-                ServiceRegistry.Logger.LogError("Loaded model " + modelArDefinition.url + " does not contain the model script.");
-            }
-        }, (e) =>
-        {
-            ServiceRegistry.Logger.LogError("Could not load model " + modelArDefinition.url + ". " + e.ToString());
-        });
-    }
-
-    private void createContainer(ContainerArDefinition arDefinition)
-    {
-        ContainerElementViewController viewController = Instantiate((arDefinition.layout.layoutType == LayoutType.Vertical) ? WorldContainerVertical : WorldContainerHorizontal, workspaceTransform);
-
-        var layoutController = viewController.GetComponent<LayoutController>();
-        LayoutGroup container = layoutController.LayoutGroup;
-
-        // Resolve all trackedObjects that this definition wants
-        List<TrackedObject> trackedObjects = ResolveTrackedObjects(arDefinition.Targets());
-
-        viewController.Initialize(arDefinition, trackedObjects);
-        specificArViews[arDefinition] = viewController;
-
-        CreateContentItem(arDefinition.layout.contentItems, container, viewController);
-    }
-
-    private void CreateContentItem(List<ContentItem> contentItems, LayoutGroup container, ContainerElementViewController containerController, bool store = true)
-    {
-        foreach (var contentItem in contentItems)
-        {
-            switch (contentItem.contentType)
-            {
-                case ContentType.Property:
-                    PropertyTextController propertyTextController = Instantiate(PropertyItem, container.transform);
-                    propertyTextController.ContentItem = contentItem as PropertyItem;
-                    propertyTextController.ContainerController = containerController;
-
-                    if (store)
-                    {
-                        contentItemInstances.Add(propertyTextController);
-                    }
-                    break;
-                case ContentType.Text:
-                    var textController = Instantiate(TextItem, container.transform);
-                    textController.ContentItem = contentItem as TextItem;
-
-                    if (store)
-                    {
-                        contentItemInstances.Add(textController);
-                    }
-                    break;
-                // case ContentType.Image:
-                //     var imageController = Instantiate(ImageItem, container.transform);
-                //     imageController.ContentItem = contentItem as ImageItem;
-
-                //     if (store)
-                //     {
-                //         contentItemInstances.Add(imageController);
-                //     }
-                //     break;
-                // case ContentType.Video:
-                //     var videoController = Instantiate(VideoItem, container.transform);
-                //     videoController.ContentItem = contentItem as VideoItem;
-
-                //     if (store)
-                //     {
-                //         contentItemInstances.Add(videoController);
-                //     }
-                //     break;
-                // case ContentType.Sound:
-                //     var soundController = Instantiate(SoundItem, container.transform);
-                //     soundController.ContentItem = contentItem as SoundItem;
-
-                //     if (store)
-                //     {
-                //         contentItemInstances.Add(soundController);
-                //     }
-                //     break;
-                case ContentType.Layout:
-                    // Recurse into subcontainers and their items
-                    LayoutItem layoutItem = ((LayoutItem)contentItem);
-                    var layoutController = Instantiate((layoutItem.layoutType == LayoutType.Vertical) ? ContainerVerticalItem : ContainerHorizontalItem, container.transform);
-                    layoutController.ContentItem = contentItem as LayoutItem;
-
-                    if (store)
-                    {
-                        contentItemInstances.Add(layoutController);
-                    }
-                    CreateContentItem(layoutItem.contentItems, layoutController.LayoutGroup, containerController);
-                    break;
-            }
-        }
-    }
-
-    private void createGenericModel(ModelArDefinition modelArDefinition, Transform parent, TrackedObject trackedObject = null)
-    {
-        //var prefabPath = ProtocolState.procedureDef.mediaBasePath + "/" + modelArDefinition.url;
-        var prefabPath = "Models/" + modelArDefinition.url;
-        ServiceRegistry.GetService<IMediaProvider>().GetPrefab(prefabPath).Subscribe(prefab =>
-        {
-            ArElementViewController arViewPrefab = prefab.GetComponent<ArElementViewController>();
-            if (arViewPrefab)
-            {
-                var prefabInstance = Instantiate(arViewPrefab, parent);
-                List<ArElementViewController> views;
-                if (!genericArViews.TryGetValue(modelArDefinition, out views))
-                {
-                    views = new List<ArElementViewController>();
-                    genericArViews[modelArDefinition] = views;
-                }
-                views.Add(prefabInstance);
-
-                prefabInstance.Initialize(modelArDefinition, new List<TrackedObject>() { trackedObject });
-            }
-            else
-            {
-                ServiceRegistry.Logger.LogError("Loaded model " + modelArDefinition.url + " does not contain the model script.");
-            }
-        }, (e) =>
-        {
-            ServiceRegistry.Logger.LogError("Could not load model " + modelArDefinition.url + ". " + e.ToString());
-        });
-    }
-
-
-    private ArElementViewController createGenericArView(ArElementViewController prefab, ArDefinition arDefinition, Transform parent, TrackedObject trackedObject)
-    {
-        var genericInstance = Instantiate(prefab, parent);
-        genericInstance.Initialize(arDefinition, new List<TrackedObject>() { trackedObject });
-        List<ArElementViewController> views;
-        if (!genericArViews.TryGetValue(arDefinition, out views))
-        {
-            views = new List<ArElementViewController>();
-            genericArViews[arDefinition] = views;
-        }
-        views.Add(genericInstance);
-        return genericInstance;
-    }
-    private void createGenericArContainerView(ContainerArDefinition containerArDefinition, Transform parent, TrackedObject trackedObject)
-    {
-        var prefab = (containerArDefinition.layout.layoutType == LayoutType.Vertical) ? WorldContainerVertical : WorldContainerHorizontal;
-        var containerViewController = createGenericArView(prefab, containerArDefinition, parent, trackedObject) as ContainerElementViewController;
-
-        var layoutController = containerViewController.GetComponent<LayoutController>();
-        var container = layoutController.LayoutGroup;
-
-        if (container != null)
-        {
-            CreateContentItem(containerArDefinition.layout.contentItems, container, containerViewController, false);
-        }
-        else
-        {
-            Debug.LogWarning("Missing LayoutGroup on one of the container prefabs");
-        }
-    }
+    public HeadPlacementEventChannel headPlacementEventChannel;
+
+    private readonly Dictionary<ArObject, ArObjectViewController> arViews = new Dictionary<ArObject, ArObjectViewController>();
+    private readonly Dictionary<string, GameObject> modelPrefabCache = new Dictionary<string, GameObject>();
+    private readonly HashSet<string> lockedObjectIds = new HashSet<string>();
     
-        //maybe remove AM
-    private void createArrow(ArrowArDefinition arrowArDefinition, Transform parent)
+    private Transform workspaceTransform;
+    private Coroutine placementCoroutine;
+    private bool isInitialized;
+    private int pendingArViewInitializations = 0;
+
+    private void Awake()
     {
-        ArrowElementViewController arViewPrefab = ArrowPrefab.GetComponent<ArrowElementViewController>();
-        if (arViewPrefab)
-        {
-            var prefabInstance = Instantiate(ArrowPrefab, parent);
-
-            // Resolve all trackedObjects that this definition wants
-            List<TrackedObject> trackedObjects = ResolveTrackedObjects(arrowArDefinition.Targets());
-
-            prefabInstance.Initialize(arrowArDefinition, trackedObjects);
-            specificArViews[arrowArDefinition] = prefabInstance;
-
-            // Arrows do not currently support operations
-        }
-        else
-        {
-            ServiceRegistry.Logger.LogError("Arrow does not contain arrow controller script.");
-        }
-    }
-    private void clearContentItems()
-    {
-        foreach (var contentItem in contentItemInstances)
-        {
-            Destroy(contentItem.gameObject);
-        }
-        contentItemInstances.Clear();
+        InitializeSubscriptions();
     }
 
-    private void ClearScene()
+    private void Start()
     {
-        clearContentItems();
+        lockingManager = GetComponent<ProtocolItemLockingManager>();
+    }
 
-        foreach (var arView in specificArViews)
+    private void OnDisable()
+    {
+        ClearScene(true);
+    }
+
+    private void InitializeSubscriptions()
+    {
+        if (ProtocolState.Instance == null) return;
+
+        ProtocolState.Instance.ProtocolStream
+            .Subscribe(protocol => HandleProtocolChange(protocol))
+            .AddTo(this);
+
+        // ProtocolState.Instance.StepStream
+        //     .Subscribe(_ => UpdateArActions())
+        //     .AddTo(this);
+
+        ProtocolState.Instance.ChecklistStream
+            .Subscribe(_ => UpdateArActions())
+            .AddTo(this);
+        HandleProtocolChange(ProtocolState.Instance.ActiveProtocol.Value);
+    }
+
+    private void HandleProtocolChange(ProtocolDefinition protocol)
+    {
+        ClearScene(true);
+        if (protocol?.globalArObjects != null)
         {
-            if(arView.Value != null)
+            pendingArViewInitializations = protocol.globalArObjects.Count;
+            InitializeArObjects(protocol.globalArObjects);
+        }
+    }
+
+    private void InitializeArObjects(List<ArObject> arObjects)
+    {
+        if (!TryGetWorkspaceTransform()) return;
+
+        foreach (var arObject in arObjects)
+        {
+            if (ValidateArObject(arObject))
             {
-                Destroy(arView.Value.gameObject);
+                CreateArView(arObject);
             }
         }
-        specificArViews.Clear();
-
-        foreach(var arDef in genericArViews.Keys)
-        {
-            foreach(var arView in genericArViews[arDef])
-            {   
-                Destroy(arView.gameObject);
-            }
-        }
-        genericArViews.Clear();
+        isInitialized = true;
     }
 
-    public void ToggleGenericViews()
+    private bool TryGetWorkspaceTransform()
     {
-        if(SessionState.enableGenericVisualizations.Value)
+        workspaceTransform = SessionManager.instance?.CharucoTransform;
+        if (workspaceTransform == null)
         {
-            ServiceRegistry.GetService<ILighthouseControl>()?.DetectorMode(4,1,10f);
-            
-            foreach(var arDef in genericArViews.Keys)
+            Debug.LogError("WorkspaceTransform not found");
+            return false;
+        }
+        return true;
+    }
+
+    private bool ValidateArObject(ArObject arObject)
+    {
+        if (string.IsNullOrEmpty(arObject.rootPrefabName))
+        {
+            Debug.LogWarning($"Invalid ArObject: Missing rootPrefabName");
+            return false;
+        }
+        return true;
+    }
+
+    private void CreateArView(ArObject arObject)
+    {
+        var prefabPath = $"Models/{arObject.rootPrefabName}.prefab";
+        
+        ServiceRegistry.GetService<IMediaProvider>()?.GetPrefab(prefabPath)
+            .Subscribe(
+                prefab => InstantiateArView(prefab, arObject),
+                error => Debug.LogError($"[ArObjectManager] Failed to load prefab {prefabPath}: {error}")
+            )
+            .AddTo(this);
+    }
+
+    private void InstantiateArView(GameObject prefab, ArObject arObject)
+    {
+        if (!prefab.TryGetComponent<ArObjectViewController>(out var arViewPrefab))
+        {
+            Debug.LogError($"[ArObjectManager] Prefab {prefab.name} missing ArObjectViewController component");
+            pendingArViewInitializations--;
+            CheckInitializationComplete();
+            return;
+        }
+
+        if (arViews.ContainsKey(arObject))
+        {
+            Destroy(arViews[arObject].gameObject);
+        }
+
+        var instance = Instantiate(arViewPrefab, workspaceTransform);
+        instance.Initialize(arObject);
+        instance.gameObject.SetActive(false);
+
+        arViews[arObject] = instance;
+        modelPrefabCache[arObject.arObjectID] = instance.gameObject;
+
+        pendingArViewInitializations--;
+        CheckInitializationComplete();
+    }
+
+    private void CheckInitializationComplete()
+    {
+        if (pendingArViewInitializations == 0)
+        {
+            isInitialized = true;
+            UpdateArActions();
+        }
+    }
+
+    private CheckItemDefinition previousCheckItem;
+    private void UpdateArActions()
+    {
+        if(previousCheckItem != null && previousCheckItem == ProtocolState.Instance.CurrentCheckItemDefinition) return;
+        previousCheckItem = ProtocolState.Instance.CurrentCheckItemDefinition;
+
+        if (!isInitialized || !ProtocolState.Instance.HasCurrentCheckItem() || ProtocolState.Instance.CurrentStepState.Value.SignedOff.Value) return;
+
+        var currentCheckItem = ProtocolState.Instance.CurrentCheckItemDefinition;
+        if (currentCheckItem == null) return;
+
+        ProcessArActions(currentCheckItem.arActions);
+    }
+
+    private void ProcessArActions(List<ArAction> actions)
+    {    
+        var lockActions = new List<ArAction>(); //actions.Where(a => a.actionType.ToLower() == "lock").ToList();
+        var highlightActions = new Dictionary<string, List<ArAction>>();
+        var placementActions = new List<ArAction>();
+
+        foreach (var action in actions)
+        {
+            switch (action.actionType.ToLower())
             {
-                foreach(var arView in genericArViews[arDef])
-                {   
-                    arView.gameObject.SetActive(true);
+                case "lock":
+                    lockActions.Add(action);
+                    break;
+                case "highlight":
+                    if (!string.IsNullOrEmpty(action.arObjectID))
+                    {
+                        if (!highlightActions.ContainsKey(action.arObjectID))
+                            highlightActions[action.arObjectID] = new List<ArAction>();
+                        highlightActions[action.arObjectID].Add(action);
+                    }
+                    break;
+                case "placement":
+                    placementActions.Add(action);
+                    break;
+            }
+        }
+        if(lockActions.Count > 0)   
+        {
+            ProcessLockActions(lockActions);
+        }
+        if(highlightActions.Count > 0)  
+        {
+            ProcessHighlightActions(highlightActions);
+        }
+        if(placementActions.Count > 0)
+        {
+            ProcessPlacementActions(placementActions);
+        }
+
+        if (actions.Count == 0)
+        {
+            foreach(var arView in arViews)
+            {
+                if(arView.Value is ArObjectViewController vc)
+                {
+                    vc.DisablePreviousHighlight();
                 }
             }
         }
-        else
-        {
-            ServiceRegistry.GetService<ILighthouseControl>()?.DetectorMode(4,0,10f);
+    }
 
-            foreach(var arDef in genericArViews.Keys)
+    private void ProcessLockActions(List<ArAction> lockActions)
+    {
+        var objectsToLock = new List<GameObject>();
+
+        foreach (var action in lockActions)
+        {
+            if (!ValidateLockAction(action, out var arIDList)) continue;
+
+            foreach (string id in arIDList)
             {
-                foreach(var arView in genericArViews[arDef])
-                {   
-                    arView.gameObject.SetActive(false);
+                if (modelPrefabCache.TryGetValue(id, out var prefab))
+                {
+                    objectsToLock.Add(prefab);
+                    lockedObjectIds.Add(id);
+                }
+            }
+        }
+
+        if (objectsToLock.Count > 0)
+        {
+            lockingManager.EnqueueObjects(objectsToLock);
+        }
+    }
+
+    private bool ValidateLockAction(ArAction action, out List<string> arIDList)
+    {
+        arIDList = null;
+
+        if (action.properties == null)
+        {
+            Debug.LogWarning($"Lock action properties are null: {action.arObjectID}");
+            return false;
+        }
+
+        if (!action.properties.TryGetValue("arIDList", out var arIDListObj) || arIDListObj == null)
+        {
+            Debug.LogWarning($"Invalid arIDList in lock action: {action.arObjectID}");
+            return false;
+        }
+
+        // If ArIDs for locking are created at time of Parsing they will be saved as a JArray when reserialized
+        // Convert the JSON array to a List<string>
+        if (arIDListObj is JArray jArray)
+        {
+            arIDList = jArray.ToObject<List<string>>();
+        }
+        else if (arIDListObj is List<object> objList)
+        {
+            arIDList = objList.Select(x => x?.ToString()).ToList();
+        }
+
+        // Filter out empty strings
+        arIDList = arIDList?.Where(id => !string.IsNullOrEmpty(id)).ToList();
+        
+        return arIDList != null && arIDList.Count > 0;
+    }
+
+    private void ProcessHighlightActions(Dictionary<string, List<ArAction>> highlightActions)
+    {
+        foreach (var arView in arViews)
+        {
+            if (arView.Value is ArObjectViewController modelView)
+            {
+                var arObjectId = arView.Key.arObjectID;
+                if (highlightActions.TryGetValue(arObjectId, out var actions))
+                {
+                    modelView.HighlightGroup(actions);
+                }
+                else
+                {
+                    modelView.DisablePreviousHighlight();
                 }
             }
         }
     }
 
-    private IEnumerator startNextObjectPlacement(GameObject model)
+    private void ProcessPlacementActions(List<ArAction> placementActions)
+    {
+        foreach (var action in placementActions)
+        {
+            if (modelPrefabCache.TryGetValue(action.arObjectID, out var prefab))
+            {
+                RequestObjectPlacement(prefab);
+            }
+        }
+    }
+
+    private void RequestObjectPlacement(GameObject model)
+    {
+        if (placementCoroutine != null)
+        {
+            StopCoroutine(placementCoroutine);
+        }
+        placementCoroutine = StartCoroutine(StartObjectPlacement(model));
+    }
+
+    private IEnumerator StartObjectPlacement(GameObject model)
     {
         yield return new WaitForSeconds(0.36f);
-        if(model != null)
+        if (model != null)
         {
-            planeInteractionManagerSO.SetHeadtrackedObject.Invoke(model);
+            headPlacementEventChannel.SetHeadtrackedObject.Invoke(model);
         }
-        enqueueObjectsCoroutine = null;
+        placementCoroutine = null;
+    }
+
+    private void ClearScene(bool clearLockedObjects = false)
+    {
+        foreach (var view in arViews.Values)
+        {
+            if (view != null)
+            {
+                Destroy(view.gameObject);
+            }
+        }
+        
+        arViews.Clear();
+        modelPrefabCache.Clear();
+        
+        if (clearLockedObjects)
+        {
+            lockedObjectIds.Clear();
+            ProtocolState.Instance.AlignmentTriggered.Value = false;
+        }
+        
+        isInitialized = false;
+    }
+
+
+    private void UpdateArActionsForObject(ArObject arObject, ArObjectViewController instance)
+    {
+        if (!ProtocolState.Instance.HasCurrentCheckItem()) return;
+
+        var currentCheckItem = ProtocolState.Instance.CurrentCheckItemDefinition;
+        if (currentCheckItem == null) return;
+
+        // Return early if check item hasn't changed
+        if (previousCheckItem != null && previousCheckItem == currentCheckItem) return;
+        previousCheckItem = currentCheckItem;
+
+        // Filter actions that target this specific object
+        var relevantActions = currentCheckItem.arActions
+            .Where(action => action.arObjectID == arObject.arObjectID)
+            .ToList();
+
+        if (relevantActions.Count > 0)
+        {
+            ProcessArActions(relevantActions);
+        }
+        foreach(var arView in arViews)
+        {
+            if(arView.Key.arObjectID != arObject.arObjectID)
+            {
+                if(arView.Value is ArObjectViewController modelView)
+                {
+                    modelView.DisablePreviousHighlight();
+                }
+            }
+        }
     }
 }

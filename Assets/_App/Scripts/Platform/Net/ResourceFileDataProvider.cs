@@ -8,129 +8,105 @@ using System.Threading.Tasks;
 using UniRx;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Video;
 
 /// <summary>
 /// Originally known as Api 
-/// 
+///  
 /// Loads data from Resources folder (builtin readonly Unity folder)
 /// 
 /// Implements IDataProvider interface for accessing available procedures and updating runtime state
 /// Implements IMediaProvider interface for accessing images, sound, videos and prefabs
 /// </summary>
-public class ResourceFileDataProvider : IProcedureDataProvider, IMediaProvider
+public class ResourceFileDataProvider : IProtocolDataProvider, IMediaProvider
 {
-    public Task<List<ProcedureDescriptor>> GetProcedureList()
+    private const string PROTOCOLS_BASE_PATH = "ProtocolV2/";
+    
+    // Generic asset loading method to reduce duplication
+    private static IEnumerator LoadAssetCoroutine<T>(
+        string resourcePath, 
+        IObserver<T> observer, 
+        CancellationToken cancellationToken) where T : UnityEngine.Object
     {
-        return LoadTextAsset("Procedure/index").Select(jsonString =>
+        string normalizedPath = Path.ChangeExtension(resourcePath, null);
+        
+        // Try direct loading first
+        ResourceRequest loadRequest = Resources.LoadAsync<T>(normalizedPath);
+        yield return new WaitUntil(() => loadRequest.isDone);
+
+        if (cancellationToken.IsCancellationRequested)
         {
-            try
-            {
-                return Parsers.ParseProcedures(jsonString);
-            }
-            catch (Exception e)
-            {
-                ServiceRegistry.Logger.LogError("Could not create procedures " + e.ToString());
-                throw;
-            }
-        }).ToTask();
-    }
+            yield break;
+        }
 
-    public IObservable<ProcedureDefinition> GetOrCreateProcedureDefinition(string procedureName)
-    {
-        var basePath = "Procedure/" + procedureName;
-        var systemIoPath = @"Assets/Resources/" + basePath;
+        T asset = loadRequest.asset as T;
 
-        return LoadTextAsset(basePath + "/index").Select(jsonString =>
+        // Fallback to searching all resources if direct load failed
+        if (asset == null)
         {
-            try
-            {
-                var procedure = Parsers.ParseProcedure(jsonString);
+            string assetName = Path.GetFileName(normalizedPath);
+            T[] allAssets = Resources.LoadAll<T>("");
 
-                if (procedure.version < 9)
+            foreach (var candidateAsset in allAssets)
+            {
+                if (candidateAsset.name.Equals(assetName, StringComparison.OrdinalIgnoreCase))
                 {
-                    UpdateProcedureVersion(procedure);
+                    asset = candidateAsset;
+                    break;
                 }
-
-                // Set basepath for media to the same path
-                procedure.mediaBasePath = basePath;
-
-                return procedure;
             }
-            catch (Exception e)
-            {
-                ServiceRegistry.Logger.LogError("Parsing protocol definition " + e.ToString());
-                throw;
-            }
-        });
-    }
+        }
 
-    // public void DeleteProcedureDefinition(string procedureName)
-    // {
-    //     string indexPath;
-    //     #if UNITY_EDITOR
-    //         indexPath = Application.dataPath + "/Resources/Procedure/index.json";
-    //     #else
-    //         indexPath = Application.persistentDataPath + "/Resources/Procedure/index.json";
-    //     #endif
-
-    //     string jsonString = File.ReadAllText(indexPath);
-    //     Debug.Log(jsonString);
-    //     var procedures = JsonConvert.DeserializeObject<List<ProcedureDescriptor>>(jsonString);
-    //     var procedureToDelete = procedures.Find(p => p.title == procedureName);
-    //     procedures.Remove(procedureToDelete);
-    //     string updatedIndex = JsonConvert.SerializeObject(procedures, Formatting.Indented);
-    //     Debug.Log(updatedIndex);
-    //     File.WriteAllText(indexPath, updatedIndex);
-    // }
-
-    /// <summary>
-    /// Version 1 switched to automatic serialization/deserialization withouth manual parsing
-    /// Version 2 introduces Containers with ContentItems, SlideArdDefinitions and LabelArDefinitions are obsolete and need to be replaced with containers and content 
-    /// Version 3 introduces SoundItems that replace the SoundArDefinitions
-    /// Version 4 replaces font size with enumeration for header or block 
-    /// Version 5 renamed action to arDefinitionType, added globalArDefinitions array, removed frame from ArDefinition; everything is now assumed in Charuco frame, but behaviour depends on targetId (eg. container without target goes to slide frame)
-    /// Version 6 model, prefab name is now renamed to url to have the same structure as content items
-    /// Version 7 propertyitem, new contentitem that shows a trackedobject property as string
-    /// Version 8 removed target from ArDefinition and replaced with condition to handle more flexible visualization conditions
-    /// Version 9 all ArDefinitions are now global at the procedureDef level, removed ArDefinitions from steps and checkItems, seperated ArDefintions and ContentItems
-    /// 
-    /// LabelARDefitions are converted to containers with TextItem
-    /// SlideARDefinitions are converted to containers with TextItems, Images and Videos where applicable
-    /// </summary>
-    /// <param name="procedure"></param>
-    private static void UpdateProcedureVersion(ProcedureDefinition procedure)
-    {
-        // Convert to version 9 content
-        procedure.version = 9;
-
-        Debug.Log("Updating '" + procedure.title + "'  to file version " + procedure.version);
-
-        var newList = new List<ArDefinition>();
-        UpdateArDefinitions(procedure.globalArElements, newList);
-        procedure.globalArElements = newList;
-    }
-
-    private static void UpdateArDefinitions(List<ArDefinition> oldList, List<ArDefinition> newList)
-    {
-        foreach (var ar in oldList)
+        if (asset == null)
         {
-            ArDefinition updatedItem = ar;
+            observer.OnError(new Exception($"Failed to load {typeof(T).Name} from path: {resourcePath}"));
+            yield break;
+        }
 
-            var containerDef = ar as ContainerArDefinition;
-            if (containerDef != null)
+        observer.OnNext(asset);
+        observer.OnCompleted();
+    }
+
+    // Example of how to use the generic loader (repeat for other asset types)
+    public IObservable<Texture2D> GetImage(string resourcePath)
+    {
+        ServiceRegistry.Logger.Log($"Loading image: {resourcePath}");
+        return Observable.FromCoroutine<Texture2D>(
+            (observer, cancellation) => LoadAssetCoroutine(resourcePath, observer, cancellation));
+    }
+
+    // Update GetProtocolList to use consistent logging
+    public Task<List<ProtocolDefinition>> GetProtocolList()
+    {
+        try
+        {
+            var protocolJsonFiles = new List<string>();
+            var resourceFiles = Resources.LoadAll(PROTOCOLS_BASE_PATH, typeof(TextAsset));
+            
+            foreach (var file in resourceFiles)
             {
-                foreach (var content in containerDef.layout.contentItems)
+                if (file is TextAsset textAsset)
                 {
-                    var textItem = content as TextItem;
-                    if (textItem != null)
-                    {
-                        textItem.textType = (textItem.fontsize < 10) ? TextType.Block : TextType.Header;
-                    }
+                    Debug.Log($"Found protocol definition: {textAsset.name}");
+                    //ServiceRegistry.Logger.Log($"Found protocol definition: {textAsset.name}");
+                    protocolJsonFiles.Add(textAsset.text);
                 }
             }
 
-            newList.Add(updatedItem);
+            if (protocolJsonFiles.Count == 0)
+            {
+                Debug.LogError($"No protocol definitions found in Resources/{PROTOCOLS_BASE_PATH}");
+                //ServiceRegistry.Logger.LogWarning($"No protocol definitions found in Resources/{PROTOCOLS_BASE_PATH}");
+            }
+
+            return Task.FromResult(Parsers.ParseProtocolList(protocolJsonFiles));
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load protocol definitions: {ex}");
+            //ServiceRegistry.Logger.LogError($"Failed to load protocol definitions: {ex}");
+            throw ex;
         }
     }
 
@@ -140,9 +116,11 @@ public class ResourceFileDataProvider : IProcedureDataProvider, IMediaProvider
     /// </summary>
     /// <param name="url"></param>
     /// <returns></returns>
-    public IObservable<string> LoadTextAsset(string url)
+    public IObservable<string> LoadTextAsset(string resourcePath)
     {
-        return Observable.FromCoroutine<string>((observer, cancellation) => LoadTextAssetCoroutine(url, observer, cancellation));
+        Debug.Log($"Loading text asset: {resourcePath}");
+        //ServiceRegistry.Logger.Log($"Loading text asset: {resourcePath}");
+        return Observable.FromCoroutine<string>((observer, cancellation) => LoadTextAssetCoroutine(resourcePath, observer, cancellation));
     }
 
     /// <summary>
@@ -152,269 +130,64 @@ public class ResourceFileDataProvider : IProcedureDataProvider, IMediaProvider
     /// <param name="observer"></param>
     /// <param name="cancel"></param>
     /// <returns></returns>
-    private static IEnumerator LoadTextAssetCoroutine(string url, IObserver<string> observer, CancellationToken cancel)
+    private static IEnumerator LoadTextAssetCoroutine(string resourcePath, IObserver<string> observer, CancellationToken cancellationToken)
     {
-        ResourceRequest resourceRequest = Resources.LoadAsync<TextAsset>(url);
-
-        //yield return new WaitForSeconds(5);
-
-        while (!resourceRequest.isDone)
-        {
-            yield return 0;
-        }
-
-        if (cancel.IsCancellationRequested)
-        {
-            yield break;
-        }
-
-        TextAsset textAsset = resourceRequest.asset as TextAsset;
-
-        if (textAsset == null || string.IsNullOrEmpty(textAsset.text))
-        {
-            observer.OnError(new Exception("Error loading TextAsset from url: " + url));
-            yield break;
-        }
-
-        observer.OnNext(textAsset.text);
-        observer.OnCompleted();
+        var textAssetObserver = new TextAssetToStringObserver(observer);
+        yield return LoadAssetCoroutine(resourcePath, textAssetObserver, cancellationToken);
     }
 
-    public IObservable<Texture2D> GetImage(string url)
+    // Helper class to convert TextAsset to string
+    private class TextAssetToStringObserver : IObserver<TextAsset>
     {
-        Debug.Log("GetImage " + url);
-        return Observable.FromCoroutine<Texture2D>((observer, cancellation) => CoGetImage(url, observer, cancellation));
-    }
+        private readonly IObserver<string> _stringObserver;
 
-    private static IEnumerator CoGetImage(string url, IObserver<Texture2D> observer, CancellationToken cancel)
-    {
-        var fileName = Path.ChangeExtension(url, null);
-        ResourceRequest resourceRequest = Resources.LoadAsync<Texture2D>(fileName);
-        while (!resourceRequest.isDone)
+        public TextAssetToStringObserver(IObserver<string> stringObserver)
         {
-            yield return 0;
+            _stringObserver = stringObserver;
         }
 
-        if (cancel.IsCancellationRequested)
+        public void OnCompleted() => _stringObserver.OnCompleted();
+        public void OnError(Exception error) => _stringObserver.OnError(error);
+        public void OnNext(TextAsset value)
         {
-            yield break;
-        }
-
-        Texture2D textureAsset = resourceRequest.asset as Texture2D;
-
-        if (textureAsset == null)
-        {
-            observer.OnError(new Exception("Error loading TextureAsset from url: " + url));
-            yield break;
-        }
-
-        observer.OnNext(textureAsset);
-        observer.OnCompleted();
-    }
-
-    public IObservable<Sprite> GetSprite(string url)
-    {
-        return Observable.FromCoroutine<Sprite>((observer, cancellation) => CoGetSprite(url, observer, cancellation));
-    }
-
-    private static IEnumerator CoGetSprite(string url, IObserver<Sprite> observer, CancellationToken cancel)
-    {
-        var fileName = Path.ChangeExtension(url, null);
-        ResourceRequest resourceRequest = Resources.LoadAsync<Sprite>(fileName);
-
-        while (!resourceRequest.isDone)
-        {
-            yield return 0;
-        }
-
-        if (cancel.IsCancellationRequested)
-        {
-            yield break;
-        }
-
-        Sprite spriteAsset = resourceRequest.asset as Sprite;
-
-        if (spriteAsset == null)
-        {
-            observer.OnError(new Exception("Error loading SpriteAsset from url: " + url));
-            yield break;
-        }
-
-        observer.OnNext(spriteAsset);
-        observer.OnCompleted();
-    }
-
-
-    public IObservable<AudioClip> GetSound(string url)
-    {
-        return Observable.FromCoroutine<AudioClip>((observer, cancellation) => CoGetSound(url, observer, cancellation));
-    }
-
-    private static IEnumerator CoGetSound(string url, IObserver<AudioClip> observer, CancellationToken cancel)
-    {
-        var fileName = Path.ChangeExtension(url, null);
-        ResourceRequest resourceRequest = Resources.LoadAsync<AudioClip>(fileName);
-
-        while (!resourceRequest.isDone)
-        {
-            yield return 0;
-        }
-
-        if (cancel.IsCancellationRequested)
-        {
-            yield break;
-        }
-
-        AudioClip audioClipAsset = resourceRequest.asset as AudioClip;
-
-        if (audioClipAsset == null)
-        {
-            observer.OnError(new Exception("Error loading AudioClip from url: " + url));
-            yield break;
-        }
-
-        observer.OnNext(audioClipAsset);
-        observer.OnCompleted();
-    }
-
-    public IObservable<VideoClip> GetVideo(string mediaPath)
-    {
-        return Observable.FromCoroutine<VideoClip>((observer, cancellation) => CoGetVideo(mediaPath, observer, cancellation));
-    }
-
-    private static IEnumerator CoGetVideo(string url, IObserver<VideoClip> observer, CancellationToken cancel)
-    {
-        var fileName = Path.ChangeExtension(url, null);
-        ResourceRequest resourceRequest = Resources.LoadAsync<VideoClip>(fileName);
-
-        while (!resourceRequest.isDone)
-        {
-            yield return 0;
-        }
-
-        if (cancel.IsCancellationRequested)
-        {
-            yield break;
-        }
-
-        VideoClip videoClipAsset = resourceRequest.asset as VideoClip;
-
-        if (videoClipAsset == null)
-        {
-            observer.OnError(new Exception("Error loading VideoClip from url: " + url));
-            yield break;
-        }
-
-        observer.OnNext(videoClipAsset);
-        observer.OnCompleted();
-    }
-
-    public IObservable<GameObject> GetPrefab(string mediaPath)
-    {
-        return Observable.FromCoroutine<GameObject>((observer, cancellation) => CoGetPrefab(mediaPath, observer, cancellation));
-    }
-
-    private static IEnumerator CoGetPrefab(string url, IObserver<GameObject> observer, CancellationToken cancel)
-    {
-        var fileName = Path.ChangeExtension(url, null);
-        ResourceRequest resourceRequest = Resources.LoadAsync<GameObject>(fileName);
-        while (!resourceRequest.isDone)
-        {
-            yield return 0;
-        }
-
-        if (cancel.IsCancellationRequested)
-        {
-            yield break;
-        }
-
-        GameObject prefabAsset = resourceRequest.asset as GameObject;
-
-        if (prefabAsset == null)
-        {
-            observer.OnError(new Exception("Error loading Prefab from url: " + url));
-            yield break;
-        }
-
-        observer.OnNext(prefabAsset);
-        observer.OnCompleted();
-    }
-
-    public IObservable<List<MediaDescriptor>> GetMediaList(string mediaBasePath)
-    {
-        List<MediaDescriptor> mediaItems = new List<MediaDescriptor>();
-        string path = @"Assets/Resources/" + mediaBasePath;
-
-        if (Directory.Exists(path))
-        {
-            var fileInfo = Directory.GetFiles(path);
-
-            foreach (var filePath in fileInfo)
+            if (string.IsNullOrEmpty(value?.text))
             {
-                string filename = Path.GetFileName(filePath).ToLowerInvariant();
-                if (!filename.EndsWith(".meta"))
-                {
-                    if (filename.EndsWith(".jpg") || filename.EndsWith(".png"))
-                    {
-                        mediaItems.Add(new MediaDescriptor()
-                        {
-                            type = MediaDescriptorType.Image,
-                            path = filename
-                        });
-                    }
-                    else if (filename.EndsWith(".mp4") || filename.EndsWith(".mov"))
-                    {
-                        mediaItems.Add(new MediaDescriptor()
-                        {
-                            type = MediaDescriptorType.Video,
-                            path = filename
-                        });
-                    }
-                    else if (filename.EndsWith(".mp3") || filename.EndsWith(".ogg"))
-                    {
-                        mediaItems.Add(new MediaDescriptor()
-                        {
-                            type = MediaDescriptorType.Sound,
-                            path = filename
-                        });
-                    }
-                    else if (filename.EndsWith(".prefab"))
-                    {
-                        mediaItems.Add(new MediaDescriptor()
-                        {
-                            type = MediaDescriptorType.Prefab,
-                            path = filename
-                        });
-                    }
-                }
+                _stringObserver.OnError(new Exception("TextAsset is null or empty"));
+                return;
             }
+            _stringObserver.OnNext(value.text);
         }
-
-        return Observable.Return<List<MediaDescriptor>>(mediaItems);
     }
 
-    /// <summary>
-    /// Save procedure to resources folder (can only be done inside Unity editor)
-    /// </summary>
-    /// <param name="procedureName"></param>
-    /// <param name="procedure"></param>
-    public void SaveProcedureDefinition(string procedureName, ProcedureDefinition procedure)
+    public IObservable<Sprite> GetSprite(string resourcePath)
     {
-#if UNITY_EDITOR
-        string path = "Assets/Resources/Procedure/" + procedureName;
-        string filePath = path + "/index.json";
+        Debug.Log($"Loading sprite: {resourcePath}");
+        //ServiceRegistry.Logger.Log($"Loading sprite: {resourcePath}");
+        return Observable.FromCoroutine<Sprite>(
+            (observer, cancellation) => LoadAssetCoroutine(resourcePath, observer, cancellation));
+    }
 
-        if (!Directory.Exists(path))
-        {
-            Directory.CreateDirectory(path);
-        }
+    public IObservable<AudioClip> GetSound(string resourcePath)
+    {
+        Debug.Log($"Loading audio: {resourcePath}");
+        //ServiceRegistry.Logger.Log($"Loading audio: {resourcePath}");
+        return Observable.FromCoroutine<AudioClip>(
+            (observer, cancellation) => LoadAssetCoroutine(resourcePath, observer, cancellation));
+    }
 
-        StreamWriter writer = new StreamWriter(filePath, false);
-        var output = JsonConvert.SerializeObject(procedure, Formatting.Indented, Parsers.serializerSettings);
-        writer.WriteLine(output);
-        writer.Close();
+    public IObservable<VideoClip> GetVideo(string resourcePath)
+    {
+        Debug.Log($"Loading video: {resourcePath}");
+        //ServiceRegistry.Logger.Log($"Loading video: {resourcePath}");
+        return Observable.FromCoroutine<VideoClip>(
+            (observer, cancellation) => LoadAssetCoroutine(resourcePath, observer, cancellation));
+    }
 
-        AssetDatabase.ImportAsset(filePath);
-#endif
+    public IObservable<GameObject> GetPrefab(string resourcePath)
+    {
+        Debug.Log($"Loading prefab: {resourcePath}");
+        //ServiceRegistry.Logger.Log($"Loading prefab: {resourcePath}");
+        return Observable.FromCoroutine<GameObject>(
+            (observer, cancellation) => LoadAssetCoroutine(resourcePath, observer, cancellation));
     }
 }

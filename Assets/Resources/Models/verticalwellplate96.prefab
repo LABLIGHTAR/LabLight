@@ -588,6 +588,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4297741796883418359, guid: e1681a84dd1ed424abaa94cdcf8c0f8c, type: 3}
+      propertyPath: scrollSpeed
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 4303309313092669603, guid: e1681a84dd1ed424abaa94cdcf8c0f8c, type: 3}
       propertyPath: m_IsActive
       value: 0

@@ -38,7 +38,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6772416621250166967, guid: a90698296b23640719ce02a157ecd741, type: 3}
       propertyPath: m_VersionIndex
-      value: 561
+      value: 564
       objectReference: {fileID: 0}
     - target: {fileID: 6772416621250166967, guid: a90698296b23640719ce02a157ecd741, type: 3}
       propertyPath: m_Faces.Array.size

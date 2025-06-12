@@ -1,0 +1,265 @@
+{
+  "version": "1.0",
+  "title": "Rotea Training Instructions",
+  "description": "A protocol for Rotea kit inspection, preparation, installation, software interaction, kit testing, and tear down. This protocol is for training purposes.",
+  "estimatedDuration": "0",
+  "protocolPDFNames": [],
+  "globalArObjects": [],
+  "steps": [
+    {
+      "isCritical": true,
+      "title": "Rotea Kit Inspection and Bag Connection",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Open the Rotea kit and inspect it for defects or sterility issues.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure1.png",
+                "text": "Rotea Kit"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Using the Process Development Record as a guide, connect the buffers, waste bag, harvest bag, and cell product to the lines outlined in the Record.",
+          "contentItems": [
+            {
+              "contentType": "text",
+              "properties": {
+                "text": "Example line connections (may change depending on process):\n- 3-5L waste bag to Line A\n- Wash buffer to Line B\n- Elution buffer to Line C\n- Cell bag to lines D and G\n- 20mL BPC to Harvest line"
+              }
+            },
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure2.png",
+                "text": "Welding Bags to the Rotea kit"
+              }
+            }
+          ],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Rotea Kit Installation: Initial Setup",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Once buffer bags are connected, press the unlock button on the bottom of the Rotea instrument to unlock the door.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure3.png",
+                "text": "Rotea Button Location"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Hang the buffer bags on the metal hooks in a way that doesn’t strain the lines. Ensure all buffers remain clamped throughout the set up.",
+          "contentItems": [
+            {
+              "contentType": "text",
+              "properties": {
+                "text": "Guidance for hanging bags:\n- Buffers A and B on the left hook.\n- Buffer C and Cell processing bag on the right hook."
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Place the Rotea kit into the Rotea.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure4.png",
+                "text": "Open Door Rotea setup"
+              }
+            }
+          ],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Rotea Kit Installation: Cone Installation",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Place the plastic cone into the metal arm in the center of the instrument by pressing down on the metal hook and pressing the plastic housing firmly down until a click is heard.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure5.png",
+                "text": "Cone Installation"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Once in place, lightly pull on the plastic housing of the cone to ensure it is properly latched. Rotate it once or twice to make sure it freely rotates without issue.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure6.png",
+                "text": "Post Cone Installation User Integrity Test"
+              }
+            }
+          ],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Rotea Kit Installation: Tubing Installation and Door Closure",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Thread the Tan colored tubing around the peristaltic pump.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure7.png",
+                "text": "Pump Tubing Installation"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Thread the buffer lines through their individually assigned lines.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure8.png",
+                "text": "Buffer Tubing Installation"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Once the kit is in place, the cone latched, and the tubing threaded, close the door. The Rotea will sense the kit, perform a quick internal test, and lock all pinch valves.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure9.png",
+                "text": "Rotea Kit Installation with Door Closed"
+              }
+            }
+          ],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Software Login and Protocol Selection",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Login to the Laptop that is interfaced with the Rotea and click on the Rotea icon on the desktop to run the Rotea Software.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure10.png",
+                "text": "Rotea App Desktop Icon (Left) Rotea App Login Screen (Right)"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Select the program outlined in the Process Development Record and once loaded, select initiate.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure11.png",
+                "text": "Rotea Protocol Selection"
+              }
+            }
+          ],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Rotea Kit Test and Final Setup Checks",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Have the instrument rescan for the kit. The instrument will prompt if it detects any errors. Perform corrective actions if advised.",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "properties": {
+                "url": "rotea_figure12.png",
+                "text": "Rotea Kit Test"
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "Make sure the buffer connections match the image on the Rotea protocol screen.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "If everything is set up correctly, remove any pinch clamps.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Rotea Kit Tear Down",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Once the training is completed, press the unlock button located at the bottom of the instrument to open the door.",
+          "contentItems": [],
+          "arActions": []
+        },
+        {
+          "text": "Unlatch the metal hook and gently pull the plastic cone towards you to remove it.",
+          "contentItems": [
+            {
+              "contentType" : "text",
+              "properties" : {
+                "text" : "The rest of the kit should be easily removed if you gently pull it towards you."
+              }
+            }
+          ],
+          "arActions": []
+        },
+        {
+          "text": "If the kit sterility has been uncompromised, set aside the kit for continued training or another run.",
+          "contentItems": [],
+          "arActions": []
+        }
+      ]
+    }
+  ]
+}

@@ -331,7 +331,7 @@ MonoBehaviour:
   distanceThreshold: 0.33
   meshRenderer: {fileID: 6444897400825893322}
   zoneTransform: {fileID: 6906383689027720547}
-  planeInteractionManagerSO: {fileID: 11400000, guid: 0e4c22905642e492a9c661e3e6ed89b8, type: 2}
+  headPlacementEventChannel: {fileID: 11400000, guid: 2e9cc040273c143bd9bb9c3be51cd7e6, type: 2}
   hudEventSO: {fileID: 11400000, guid: d9705cf1816584f66a09a019652ef80d, type: 2}
   removeButton: {fileID: 7410289146801063119}
   resizeButton: {fileID: 7875448205006290375}

@@ -33,12 +33,12 @@ public class CheckitemView : MonoBehaviour
         rawText = text.text;
         strikeText = "<s>" + text.text + "</s>";
 
-        ProtocolState.checklistStream.Subscribe(_ => {
-            if(ProtocolState.Steps[ProtocolState.Step].Checklist == null)
+        ProtocolState.Instance.ChecklistStream.Subscribe(_ => {
+            if(ProtocolState.Instance.CurrentStepState.Value.Checklist == null)
             {
                 return;
             }
-            if(ProtocolState.Steps[ProtocolState.Step].Checklist[ProtocolState.CheckItem] == data)
+            if(ProtocolState.Instance.CurrentStepState.Value.Checklist[ProtocolState.Instance.CurrentCheckNum] == data)
             {
                 SetAsActiveItem();
             }
@@ -53,7 +53,7 @@ public class CheckitemView : MonoBehaviour
     {
         if(data != null)
         {
-            if(ProtocolState.Steps[ProtocolState.Step].Checklist[ProtocolState.CheckItem] == data)
+            if(ProtocolState.Instance.CurrentStepState.Value.Checklist[ProtocolState.Instance.CurrentCheckNum] == data)
             {
                 SetAsActiveItem();
             }

@@ -39,11 +39,4 @@ public interface IMediaProvider
     /// </summary>
     /// <param name="mediaPath"></param>
     IObservable<GameObject> GetPrefab(string mediaPath);
-
-    /// <summary>
-    /// Retrieve list of available images as MediaItem descriptors
-    /// </summary>
-    /// <param name="mediaBasePath"></param>
-    /// <returns></returns>
-    IObservable<List<MediaDescriptor>> GetMediaList(string mediaBasePath);
 }

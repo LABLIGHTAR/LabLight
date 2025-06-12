@@ -9,22 +9,29 @@ EditorBuildSettings:
     path: Assets/_App/Scenes/Persistent.unity
     guid: 1651c094ee4f047ef90379568391b1fc
   - enabled: 1
-    path: Assets/_App/Scenes/ProtocolMenu.unity
-    guid: 2eb36e272a82447ebb4039cba4cfd413
+    path: Assets/_App/Scenes/Calibration.unity
+    guid: e9c98d7db1eae4990872049e4a39eb2f
   - enabled: 1
     path: Assets/_App/Scenes/Protocol.unity
     guid: 5cc9ac2b6a37148859f4d0f7f1480648
   - enabled: 1
-    path: Assets/_App/Scenes/Calibration.unity
-    guid: e9c98d7db1eae4990872049e4a39eb2f
+    path: Assets/_App/Scenes/ProtocolMenu.unity
+    guid: 2eb36e272a82447ebb4039cba4cfd413
   - enabled: 1
     path: Assets/_App/Scenes/Settings.unity
     guid: 8b99cd2156c2a4642ad37bb214c06de1
+  - enabled: 1
+    path: Assets/_App/Scenes/WorkspaceAnchorEditor.unity
+    guid: cf9a9d1074f3c4f2c9c91a0385d5ba9f
+  - enabled: 0
+    path: Assets/_App/Scenes/TestCameraStreaming.unity
+    guid: 594e98ef0442742f5b603f85cc26fa07
   m_configObjects:
     UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: b8052296fc70e4ded8d5bb7511509640, type: 2}
     UnityEditor.XR.VisionOS.VisionOSSettings: {fileID: 11400000, guid: 25e1f68848051c946b9048e8426e646c, type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: bb65518a4a80049acbc5e85e70dbbee0, type: 2}
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 3ddc3c02648b9404f8dbce190a6e8abe, type: 3}
-    com.unity.polyspatial.xr.xr_settings: {fileID: 11400000, guid: 1ba2c0de3fe3a455e83ed602a61c8e4d, type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 819bb2620b7324c88bc80bf53d7dd87c, type: 3}
+    com.unity.polyspatial.xr.xr_settings: {fileID: 11400000, guid: e6b8981b059e64c87a11c750d696d2f3, type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: d1b44b12dbc12554c862e577406554bd, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 91384b14c79fa804d924648a4e81b07c, type: 2}
+  m_UseUCBPForAssetBundles: 0

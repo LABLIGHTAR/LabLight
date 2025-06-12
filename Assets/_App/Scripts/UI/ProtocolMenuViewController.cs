@@ -1,17 +1,19 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System;
-using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
 using UniRx;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using TMPro;
 
 public class ProtocolMenuViewController : LLBasePanel
 {
+    [SerializeField]
+    TextMeshProUGUI headerText;
+
     [Header("UI Buttons")]
     [SerializeField] GridLayoutGroup buttonGrid;
     [SerializeField] GameObject buttonPrefab;
@@ -26,10 +28,10 @@ public class ProtocolMenuViewController : LLBasePanel
     
     private int currentPage = 0;
     private int maxPage = 0;
-    List<ProcedureDescriptor> protocols;
+    List<ProtocolDefinition> protocols;
     List<ProtocolMenuButton> buttons = new List<ProtocolMenuButton>();
 
-    void Awake()
+    protected override void Awake()
     {
         base.Awake();
 
@@ -59,11 +61,15 @@ public class ProtocolMenuViewController : LLBasePanel
     /// </summary>
     private void Start()
     {
-        LoadProtocols();
-
         popupPanelViewController = GameObject.FindFirstObjectByType<PopupPanelViewController>(FindObjectsInactive.Include);
         closeAppButton.selectEntered.AddListener(_ => popupPanelViewController.DisplayPopup(closeAppPopup));
         closeAppPopup.OnYesButtonPressed.AddListener(() => Application.Quit());
+    }
+
+    void OnEnable()
+    {
+        headerText.text = "Hello " + SessionState.currentUserProfile.GetName() + ", Select a Protocol";
+        LoadProtocols();
     }
 
     /// <summary>
@@ -142,11 +148,11 @@ public class ProtocolMenuViewController : LLBasePanel
     /// </summary>
     async void LoadProtocols()
     {
-        // Load procedure list
-        if(ServiceRegistry.GetService<IProcedureDataProvider>() != null)
+        // Load protocol list
+        if(ServiceRegistry.GetService<IProtocolDataProvider>() != null)
         {
-            protocols = await ServiceRegistry.GetService<IProcedureDataProvider>()?.GetProcedureList();
-            protocols.AddRange(await ((LocalFileDataProvider)ServiceRegistry.GetService<ITextDataProvider>())?.GetProcedureList());
+            protocols = await ServiceRegistry.GetService<IProtocolDataProvider>()?.GetProtocolList();
+            protocols.AddRange(await ((LocalFileDataProvider)ServiceRegistry.GetService<ITextDataProvider>())?.GetProtocolList());
             maxPage = (int)Math.Ceiling((float)protocols.Count / 8);
             currentPage = 0;
 

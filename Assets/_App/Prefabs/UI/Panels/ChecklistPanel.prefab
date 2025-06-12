@@ -481,15 +481,17 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
+  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -615,15 +617,17 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
+  m_ActiveFontFeatures: 00000000
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
+  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -669,6 +673,10 @@ PrefabInstance:
       propertyPath: m_fontSizeBase
       value: 20
       objectReference: {fileID: 0}
+    - target: {fileID: 7092376937743909115, guid: b01e6c932734e4cbf8eb701d5e2bc61a, type: 3}
+      propertyPath: OpenPDFButton
+      value: 
+      objectReference: {fileID: 7509394597875673700}
     - target: {fileID: 7229238141035760777, guid: b01e6c932734e4cbf8eb701d5e2bc61a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.365
@@ -997,7 +1005,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6852986216365709082, guid: 93a4e1b898a2e4be5ba46bcde7b51fa8, type: 3}
       propertyPath: m_fontSize
-      value: 20
+      value: 21.4
       objectReference: {fileID: 0}
     - target: {fileID: 6852986216365709082, guid: 93a4e1b898a2e4be5ba46bcde7b51fa8, type: 3}
       propertyPath: m_margin.x
@@ -1188,7 +1196,7 @@ PrefabInstance:
       value: 0.0067
       objectReference: {fileID: 0}
     - target: {fileID: 8598308293982099393, guid: 93a4e1b898a2e4be5ba46bcde7b51fa8, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 56a25e551cc7f4c29bbeea946f317768, type: 2}
     - target: {fileID: 8976761364177999035, guid: 93a4e1b898a2e4be5ba46bcde7b51fa8, type: 3}
@@ -1239,9 +1247,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1051647903648091330, guid: 93a4e1b898a2e4be5ba46bcde7b51fa8, type: 3}
       insertIndex: 3
       addedObject: {fileID: 3933781548795774706}
-    - targetCorrespondingSourceObject: {fileID: 1051647903648091330, guid: 93a4e1b898a2e4be5ba46bcde7b51fa8, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 510952946158330145}
     - targetCorrespondingSourceObject: {fileID: 1051647903648091330, guid: 93a4e1b898a2e4be5ba46bcde7b51fa8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6612728165382532219}
@@ -1415,19 +1420,6 @@ MonoBehaviour:
   checklistIncompletePopupEventSO: {fileID: 11400000, guid: b29dfca30d6084b04a3788c71023e423, type: 2}
   closeProtocolPopupEventSO: {fileID: 11400000, guid: cdd14e8d948e84f73ba410ad2852d726, type: 2}
   hudEventSO: {fileID: 11400000, guid: d9705cf1816584f66a09a019652ef80d, type: 2}
---- !u!114 &510952946158330145
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8818750408815207221}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d630d67fcb254770a81c309769601b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Button: {fileID: 7509394597875673700}
 --- !u!82 &6612728165382532219
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1439,6 +1431,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: bc16dd99a392d49649bdf9ceeecfffd2, type: 3}
+  m_Resource: {fileID: 8300000, guid: bc16dd99a392d49649bdf9ceeecfffd2, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1

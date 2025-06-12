@@ -12,33 +12,72 @@ import PDFKit
 
 struct PDFContentView: View {
     let pdfUrlString: String
+    @State private var errorMessage: String?
+    @State private var pdfURL: URL?
     
     init(_ pdfUrlString: String) {
         self.pdfUrlString = pdfUrlString
     }
-
-    var pdfURL: URL {
-        if pdfUrlString.hasPrefix("http") {
-            return URL(string: pdfUrlString)!
+    
+    var body: some View {
+        if let url = pdfURL {
+            PDFKitView(url: url)
+        } else if let error = errorMessage {
+            VStack {
+                Image(systemName: "doc.text.fill")
+                    .font(.largeTitle)
+                    .foregroundColor(.red)
+                Text(error)
+                    .foregroundColor(.red)
+                    .padding()
+            }
+            .frame(height: 200)
+            .frame(maxWidth: .infinity)
+            .background(Color(.systemGray6))
+            .cornerRadius(8)
         } else {
-            return Bundle.main.url(forResource: "Data/Raw/pdf/" + pdfUrlString, withExtension: "pdf")!
+            ProgressView()
+                .onAppear {
+                    loadPDF()
+                }
         }
     }
     
-    var body: some View {
-
+    private func loadPDF() {
+        // Try remote URL first
+        if pdfUrlString.hasPrefix("http"), let url = URL(string: pdfUrlString) {
+            pdfURL = url
+            return
+        }
         
-        PDFKitView(url: pdfURL)
-        .onAppear {
-            // Call the public function that was defined in SwiftUISamplePlugin
-            // inside UnityFramework
-            CallCSharpCallback("appeared")
+        // Try different possible paths
+        let possiblePaths = [
+            "Data/Resources/Protocol",  // Asset catalog path
+            "Data/Raw/pdf",           // Raw PDFs path
+            ""                        // Root path
+        ]
+        
+        let cleanFileName = pdfUrlString.replacingOccurrences(of: ".pdf", with: "")
+        
+        for path in possiblePaths {
+            let filePath = path.isEmpty ? cleanFileName : "\(path)/\(cleanFileName)"
+            if let url = Bundle.main.url(forResource: filePath, withExtension: "pdf") {
+                pdfURL = url
+                return
+            }
+        }
+        
+        // If we get here, we couldn't find the PDF
+        errorMessage = "PDF not found: \(pdfUrlString)"
+        print("⚠️ \(errorMessage ?? "")")
+        print("Bundle paths searched:")
+        for path in possiblePaths {
+            print("- \(path)")
         }
     }
 }
 
 struct PDFKitView: UIViewRepresentable {
-    
     let url: URL
     
     func makeUIView(context: Context) -> PDFView {

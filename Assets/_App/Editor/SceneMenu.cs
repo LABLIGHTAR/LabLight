@@ -27,10 +27,10 @@ public static class SceneMenu
         OpenScene("Settings");
     }
 
-    [MenuItem("Scenes/SpatialNotesEditor")]
-    public static void OpenSpatialNotesEditor()
+    [MenuItem("Scenes/WorkspaceAnchorEditor")]
+    public static void OpenWorkspaceAnchorEditor()
     {
-        OpenScene("SpatialNotesEditor");
+        OpenScene("WorkspaceAnchorEditor");
     }
 
     private static void OpenScene(string sceneName)

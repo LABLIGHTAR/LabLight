@@ -259,15 +259,17 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
+  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -756,15 +758,17 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
+  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -799,6 +803,7 @@ GameObject:
   - component: {fileID: 2178178577493868379}
   - component: {fileID: 3549809138570670057}
   - component: {fileID: 5156519998279596093}
+  - component: {fileID: 718132647214309788}
   m_Layer: 0
   m_Name: MenuItemButton
   m_TagString: Untagged
@@ -852,6 +857,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -896,8 +904,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.35, y: 0.59999996, z: 0.049999997}
-  m_Center: {x: -0.000000029802322, y: 0, z: 0}
+  m_Size: {x: 2.35, y: 0.59999996, z: 0.32645887}
+  m_Center: {x: 0, y: 0, z: 0.017286755}
 --- !u!114 &8357781296959519093
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -929,6 +937,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 62c152241468a497399ac23598206bad, type: 3}
+  m_Resource: {fileID: 8300000, guid: 62c152241468a497399ac23598206bad, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -1026,6 +1035,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bec180ed0ef74440b93237e826654f13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Type: 0
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_IntensityMultiplier: 1
+  m_FadeInDuration: 0
+  m_FadeOutDuration: 0
 --- !u!114 &3549809138570670057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1146,6 +1160,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4428346f32e01463d98d12e00f41851e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  title: {fileID: 1961300694751636724}
-  description: {fileID: 1684432348959994867}
-  redFillShader: {fileID: 2100000, guid: 9cee399c84de74689a3c94fdeb0831be, type: 2}
+  titleText: {fileID: 1961300694751636724}
+  descriptionText: {fileID: 1684432348959994867}
+  progressFillMaterial: {fileID: 2100000, guid: 9cee399c84de74689a3c94fdeb0831be, type: 2}
+  animationPlayer: {fileID: 3966140896951805008}
+--- !u!114 &718132647214309788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9183299600987292913}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 115f1a2a50d85cd4b9d6dad4c95622be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Interactable: {fileID: 3549809138570670057}
+  m_PokeCollider: {fileID: 1823900557989975545}
+  m_PokeConfiguration:
+    m_UseConstant: 1
+    m_ConstantValue:
+      m_PokeDirection: 6
+      m_InteractionDepthOffset: 0
+      m_EnablePokeAngleThreshold: 0
+      m_PokeAngleThreshold: 45
+    m_Variable: {fileID: 0}

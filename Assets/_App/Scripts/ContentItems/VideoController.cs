@@ -7,14 +7,14 @@ using UnityEngine.UI;
 /// <summary>
 /// Video content item
 /// </summary>
-public class VideoController : ContentController<VideoItem>
+public class VideoController : ContentController<ContentItem>
 {
     public VideoPlayer video;
     public RawImage videoTargetImage;
     public GameObject loadingIndicator;
     public IDisposable downloadSubscription;
 
-    public override VideoItem ContentItem
+    public override ContentItem ContentItem
     {
         get => base.ContentItem;
         set
@@ -26,9 +26,13 @@ public class VideoController : ContentController<VideoItem>
 
     private void UpdateView()
     {
-        var videoPath = ProtocolState.procedureDef.mediaBasePath + "/" + ContentItem.url;
+        if (ContentItem == null || !ContentItem.properties.TryGetValue("URL", out object urlValue)) 
+        {
+            return;
+        }
 
-        // Cancel previous download
+        var videoPath = ProtocolState.Instance.ActiveProtocol.Value.mediaBasePath + "/" + urlValue.ToString();
+
         downloadSubscription?.Dispose();
         downloadSubscription = null;
 

@@ -100,7 +100,7 @@ public class SceneLoader : MonoBehaviour
     {
         for(int i = 0; i < SceneManager.sceneCount; i++)
         {
-            if (SceneManager.GetSceneAt(i).name != "Persistent")
+            if (SceneManager.GetSceneAt(i).name != "Persistent" && !SceneManager.GetSceneAt(i).name.Contains("Simulated"))
             {
                 SceneManager.UnloadSceneAsync(SceneManager.GetSceneAt(i));
             }

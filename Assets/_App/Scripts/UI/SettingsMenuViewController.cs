@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,7 +21,7 @@ public class SettingsMenuViewController : LLBasePanel
 
     List<SettingsMenuButton> buttons = new List<SettingsMenuButton>();
     // Start is called before the first frame update
-    void Awake()
+    protected override void Awake()
     {
         base.Awake();
     }
@@ -33,7 +34,10 @@ public class SettingsMenuViewController : LLBasePanel
             Debug.Log("adding setting: " + setting.ToString());
             settings.Add(setting);
         }
+    }
 
+    void OnEnable()
+    {
         currentPage = 0;
         StartCoroutine(DelayBuildPage(0.1f));
     }

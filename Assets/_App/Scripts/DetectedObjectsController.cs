@@ -44,7 +44,7 @@ public class DetectedObjectsManager : MonoBehaviour
     {
         GameObject newLabelPrefab = Instantiate(labelPrefab, parent);
 
-        newLabelPrefab.GetComponent<LabelViewController>().Initialize( new List<TrackedObject> { trackedObject });
+        //newLabelPrefab.GetComponent<LabelViewController>().Initialize( new List<TrackedObject> { trackedObject });
 
         trackedObjectLabels.Add(trackedObject, newLabelPrefab);
 

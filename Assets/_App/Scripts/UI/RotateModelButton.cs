@@ -5,7 +5,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class RotateModelButton : MonoBehaviour
 {
-    [SerializeField] private ModelElementViewController model;
+    [SerializeField] private ArObjectViewController model;
 
 
     public void RotateModel(float degrees)

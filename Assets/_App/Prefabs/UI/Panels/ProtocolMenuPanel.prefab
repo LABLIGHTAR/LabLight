@@ -69,7 +69,7 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 764685924911036865, guid: dd216cbce70c340968d5d438f8592667, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 56a25e551cc7f4c29bbeea946f317768, type: 2}
     - target: {fileID: 766510690606875321, guid: dd216cbce70c340968d5d438f8592667, type: 3}
@@ -166,7 +166,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5429743727582873281, guid: dd216cbce70c340968d5d438f8592667, type: 3}
       propertyPath: m_text
-      value: Select a Protocol
+      value: Hello <User>, Select a Protocol
       objectReference: {fileID: 0}
     - target: {fileID: 5429743727582873281, guid: dd216cbce70c340968d5d438f8592667, type: 3}
       propertyPath: m_fontSize
@@ -466,6 +466,17 @@ MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 7041835875187720914, guid: dd216cbce70c340968d5d438f8592667, type: 3}
   m_PrefabInstance: {fileID: 8394669785053638953}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4550193183453624296 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5429743727582873281, guid: dd216cbce70c340968d5d438f8592667, type: 3}
+  m_PrefabInstance: {fileID: 8394669785053638953}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4689226250009768554 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3849629762114241347, guid: dd216cbce70c340968d5d438f8592667, type: 3}
@@ -507,6 +518,7 @@ MonoBehaviour:
   _pinButton: {fileID: 9128502485270313998}
   _pinnedMaterial: {fileID: 2100000, guid: 31d8649b7ebe14240956ad6622556a55, type: 2}
   _unpinnedMaterial: {fileID: 2100000, guid: 56a25e551cc7f4c29bbeea946f317768, type: 2}
+  headerText: {fileID: 4550193183453624296}
   buttonGrid: {fileID: 1096257824017719562}
   buttonPrefab: {fileID: 5827233944868290495, guid: a0fe3e35f0bae45dcbbef5b10c3db539, type: 3}
   previousButton: {fileID: 9141439557743031184}

@@ -21,7 +21,7 @@ public class LLBasePanel : MonoBehaviour
     LazyFollow _lazyFollow;
 
     // Start is called before the first frame update
-    public void Awake()
+    protected virtual void Awake()
     {
         _lazyFollow = GetComponent<LazyFollow>();
         _pinButtonInteractable = _pinButton.GetComponent<XRSimpleInteractable>();

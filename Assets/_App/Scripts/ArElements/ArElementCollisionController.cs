@@ -13,165 +13,96 @@ public class ArElementCollisionController : MonoBehaviour
 {
     public TrackedObject ThisTrackedObject;
     public string ThisObjectName;
-    public ArDefinitionType ArType;
+    public ArObject ArObjectDefinition;
 
     public Material WarningMat;
     public Material DefaultMat;
 
     public string otherObjectName;
-    // Start is called before the first frame update
+
     void Start()
     {
-        ArType = this.gameObject.GetComponent<WorldPositionController>().GetArDefinitionType();
-
-        //operates differently depending on ArElement Type
-        switch (ArType)
+        // Get tracked object and name if available
+        var objectViewController = GetComponent<ArObjectViewController>();
+        if (objectViewController != null)
         {
-            //CONTAINER TYPE
-            //if this is a container ar element then set the collider to the size of the tracked object class
-            case (ArDefinitionType.Container):
+            ThisObjectName = objectViewController.ObjectName;
+        }
 
-                //Get the object this container is tracked to
-                if (this.GetComponent<ArElementViewController>() != null)
-                {
-                    ThisTrackedObject = this.GetComponent<ArElementViewController>().TrackedObjects[0];
-                    ThisObjectName = ThisTrackedObject.label;
-                }
+        ConfigureCollider();
+    }
 
-                //Set collider size based on tracked object
-                if (ThisObjectName == "96 Well Plate")
-                {
-                    this.gameObject.GetComponent<BoxCollider>().size = new Vector3(0.125f, 0.03f, 0.08f);
-                }
-                else if (ThisObjectName == "50mL Tube Rack")
-                {
-                    this.gameObject.GetComponent<BoxCollider>().size = new Vector3(0.09f, 0.085f, 0.045f);
-                }
-                else if (ThisObjectName == "50mL Tube")
-                {
-                    this.gameObject.GetComponent<BoxCollider>().size = new Vector3(0.03f, 0.115f, 0.03f);
-                }
-                else if (ThisObjectName == "Micropipette")
-                {
-                    this.gameObject.GetComponent<BoxCollider>().size = new Vector3(0.05f, 0.25f, 0.04f);
-                }
+    private void ConfigureCollider()
+    {
+        var boxCollider = GetComponent<BoxCollider>();
+        if (boxCollider == null) return;
+
+        switch (ThisObjectName)
+        {
+            case "96 Well Plate":
+                boxCollider.size = new Vector3(0.125f, 0.03f, 0.08f);
                 break;
-
-            //MODEL TYPE
-            //if this is a model type
-            case (ArDefinitionType.Model):
-                ThisObjectName = this.GetComponent<ModelElementViewController>().ObjectName;
+            case "50mL Tube Rack":
+                boxCollider.size = new Vector3(0.09f, 0.085f, 0.045f);
                 break;
-
-            default:
+            case "50mL Tube":
+                boxCollider.size = new Vector3(0.03f, 0.115f, 0.03f);
+                break;
+            case "Micropipette":
+                boxCollider.size = new Vector3(0.05f, 0.25f, 0.04f);
                 break;
         }
-        //Debug.Log(ThisObjectName + " Added to scene");
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        //check if collision is with a Container ArElement
-        if(other.gameObject.GetComponent<ContainerElementViewController>() != null)
+        // Handle collision with other AR elements
+        var otherViewController = other.gameObject.GetComponent<ArObjectViewController>();
+        if (otherViewController != null)
         {
-            //Get Identity of colliding Container ArElement
-            otherObjectName = other.gameObject.GetComponent<ContainerElementViewController>().TrackedObjects[0].label;
-            
-            //Debug.Log(ThisObjectName + " colliding with " + otherObjectName);
+            otherObjectName = otherViewController.ObjectName;
+            if (ThisObjectName == otherObjectName) return;
 
-            //Do stuff depending on what THIS ArElement is
-            if(ThisObjectName == otherObjectName)
-            {
-                return;
-            }
-            if (ThisObjectName == "96 Well Plate")
-            {
-                if (otherObjectName == "Micropipette")
-                {
-                    //Debug.Log("Started Pipetting");
-                }
-            }
+            // Handle specific interactions
+            HandleObjectInteraction(true);
         }
 
-        //check if collision is with a Model ArElement
-        if (other.gameObject.GetComponent<ModelElementViewController>() != null)
+        // Handle collision with model elements
+        var otherModelView = other.gameObject.GetComponent<ArObjectViewController>();
+        if (otherModelView != null)
         {
-            //Get identity of colliding Model ArElement
-            otherObjectName = other.gameObject.GetComponent<ModelElementViewController>().ObjectName;
-            //Debug.Log(ThisObjectName + " colliding with " + otherObjectName);
+            otherObjectName = otherModelView.ObjectName;
         }
-
-//        //check if collision is with palm of hand (object picked up)
-//        if (other.gameObject.GetComponent<JointKinematicBody>() != null)
-//        {
-//            //Do stuff depending on what THIS ArElement is
-//            if (ThisObjectName == "96 Well Plate")
-//            {
-//                //Debug.LogWarning("Possible 96 Well Plate Contamination");
-///*                if(ArType == ArDefinitionType.Model)
-//                {
-//                    this.transform.GetChild(0).GetComponent<Renderer>().material = WarningMat;
-//                }*/
-//            }
-//            if(ThisTrackedObject.label == "Micropipette")
-//            {
-//                //Debug.Log("Micropipette picked up");
-//            }
-//        }
-
-
-        //NS TODO: Other ArElement types
     }
 
     private void OnTriggerExit(Collider other)
     {
-        //check if exit collision is with a Container ArElement
-        if (other.gameObject.GetComponent<ContainerElementViewController>() != null)
+        // Handle exit collision with other AR elements
+        var otherViewController = other.gameObject.GetComponent<ArObjectViewController>();
+        if (otherViewController != null)
         {
-            //Get Identity of colliding Container ArElement
-            otherObjectName = other.gameObject.GetComponent<ContainerElementViewController>().TrackedObjects[0].label;
+            otherObjectName = otherViewController.ObjectName;
+            if (ThisObjectName == otherObjectName) return;
 
-            //Debug.Log(ThisObjectName + " exiting collision with " + otherObjectName);
-
-            //Do stuff depending on what THIS ArElement is
-            if (ThisObjectName == otherObjectName)
-            {
-                return;
-            }
-            if (ThisObjectName == "96 Well Plate")
-            {
-                if (otherObjectName == "Micropipette")
-                {
-                    //Debug.Log("Finished Pipetting");
-                }
-            }
+            // Handle specific interactions
+            HandleObjectInteraction(false);
         }
 
-        //check if exit collision is with a Model ArElement
-        if (other.gameObject.GetComponent<ModelElementViewController>() != null)
+        // Handle exit collision with model elements
+        var otherModelView = other.gameObject.GetComponent<ArObjectViewController>();
+        if (otherModelView != null)
         {
-            //Get identity of colliding Model ArElement
-            otherObjectName = other.gameObject.GetComponent<ModelElementViewController>().ObjectName;
-            //Debug.Log(ThisObjectName + " exiting collision with " + otherObjectName);
+            otherObjectName = otherModelView.ObjectName;
         }
+    }
 
-//        //check if collision is with palm of hand (object picked up)
-//        if (other.gameObject.GetComponent<JointKinematicBody>() != null)
-//        {
-//            //Do stuff depending on what THIS ArElement is
-//            if (ThisObjectName == "96 Well Plate")
-//            {
-///*                if (ArType == ArDefinitionType.Model)
-//                {
-//                    this.transform.GetChild(0).GetComponent<Renderer>().material = DefaultMat;
-//                }*/
-//            }
-//            if (ThisTrackedObject.label == "Micropipette")
-//            {
-//                //Debug.Log("Micropipette set down");
-//            }
-//        }
-
-        //NS TODO: Other ArElement types
+    private void HandleObjectInteraction(bool isEntering)
+    {
+        // Handle specific object interactions
+        if (ThisObjectName == "96 Well Plate" && otherObjectName == "Micropipette")
+        {
+            //Debug.Log(isEntering ? "Started Pipetting" : "Finished Pipetting");
+        }
+        // Add other specific interactions here
     }
 }

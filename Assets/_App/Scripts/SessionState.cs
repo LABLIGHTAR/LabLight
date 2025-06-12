@@ -1,30 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 using UnityEngine;
 using Lighthouse.MessagePack;
 using UnityEngine.Events;
 
-public enum Mode { Master, Isolated, Observer }
-
 /// <summary>
-/// Central state containing navigation stack, observable values, ProcedureDefinition
+/// Central state containing observable values
 /// </summary>
 public class SessionState : MonoBehaviour
 {
     public static SessionState Instance;
-
-    public ProcedureDefinition activeProtocol;
     public static string deviceId;
-    public static WorkspaceFrame workspace;
-    public static float lastFrameTime;
-    public Vector3 mainPanelPosition;
-    public Vector3 mainPanelRotation;
+    public static UserProfileData currentUserProfile;
 
     private static bool _connected = false;
     private static bool _recording;
-    private static Mode mode;
 
     public static UnityEvent onCalibrationUpdated = new UnityEvent();
 
@@ -38,7 +27,11 @@ public class SessionState : MonoBehaviour
     public static Subject<bool> recordingStream = new Subject<bool>();
     public static ReactiveProperty<ArucoSettings> ArucoSettings = new ReactiveProperty<ArucoSettings>();
     public static ReactiveCollection<TrackedObject> TrackedObjects = new ReactiveCollection<TrackedObject>();
+
+    public static ReactiveProperty<bool> SpatialNoteEditMode = new ReactiveProperty<bool>();
+    public static ReactiveCollection<AnchoredObjectController> SpatialNotes = new ReactiveCollection<AnchoredObjectController>();
     
+
     /// <summary>
     /// Keep track of the last settings that where last used for detection so we can detect if Lighthouse changed settings in the meantime 
     /// </summary>

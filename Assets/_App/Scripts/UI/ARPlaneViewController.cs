@@ -24,44 +24,50 @@ public class ARPlaneViewController : MonoBehaviour
             DestroyImmediate(gameObject);
         }
         planeManager = this.transform.parent.GetComponent<ARPlaneManager>();
-        Debug.Log("ar plane view controller awake " + planeManager);
         if(planeManager != null)
         {
-            planeManager.planesChanged += OnPlanesChanged;
+            Debug.Log("ar plane view controller awake " + planeManager);
+            planeManager.trackablesChanged.AddListener(OnTrackablesChanged);
         }
     }
 
-
-    void OnPlanesChanged(ARPlanesChangedEventArgs args)
+    void OnTrackablesChanged(ARTrackablesChangedEventArgs<ARPlane> changes)
     {
-        foreach(var plane in args.added)
+        // Handle added planes
+        foreach(var plane in changes.added)
         {
+            Debug.Log("added plane " + plane);
             planes.Add(plane);
         }
 
-        foreach(var plane in args.updated)      //planes should only be disabled once when added, otherwise up to other components disgression
+        // Handle updated planes
+        foreach(var plane in changes.updated)
         {
             if(!planes.Contains(plane))
             {
+                Debug.Log("updated plane " + plane);
                 planes.Add(plane);
             }
         }
 
-        foreach(var plane in args.removed)
+        // Handle removed planes
+        foreach(var removedPlane in changes.removed)
         {
+            var plane = removedPlane.Value;
             if(planes.Contains(plane))
             {
+                Debug.Log("removed plane " + plane);
                 planes.Remove(plane);
             }
         }
     }
 
-    public List<ARPlane> GetPlanesByClassification(List<PlaneClassification> classifications)
+    public List<ARPlane> GetPlanesByClassification(PlaneClassifications classifications)
     {
         List<ARPlane> returnList = new List<ARPlane>();
         foreach(var plane in planes)
         {
-            if(classifications.Contains(plane.classification))
+            if((plane.classifications & classifications) != 0)
             {
                 returnList.Add(plane);
             }
@@ -69,14 +75,14 @@ public class ARPlaneViewController : MonoBehaviour
         return returnList;
     }
 
-    public List<ARPlane> GetPlanesWithinDistanceAndClassification(float distance, List<PlaneClassification> classifications = null) //user can pass in a list of classifications optionally that they would like to get
+    public List<ARPlane> GetPlanesWithinDistanceAndClassification(float distance, PlaneClassifications? classifications = null)
     {
         List<ARPlane> returnList = new List<ARPlane>();
         foreach(var plane in planes)
         {
             if(Vector3.Distance(plane.transform.position, Camera.main.transform.position) < distance)
             {
-                if(classifications == null || classifications.Contains(plane.classification))
+                if(!classifications.HasValue || (plane.classifications & classifications.Value) != 0)
                 {
                     returnList.Add(plane);
                 }

@@ -1,16 +1,17 @@
 ﻿using TMPro;
+using System;
 
 /// <summary>
 /// Text contentitem
 /// </summary>
-public class CheckboxTextController : ContentController<TextItem>
+public class CheckboxTextController : ContentController<ContentItem>
 {
     public TextMeshProUGUI Text;
 
-    public override TextItem ContentItem 
-    { 
-        get => base.ContentItem; 
-        set 
+    public override ContentItem ContentItem
+    {
+        get => base.ContentItem;
+        set
         {
             base.ContentItem = value;
             UpdateView();
@@ -19,9 +20,14 @@ public class CheckboxTextController : ContentController<TextItem>
 
     private void UpdateView()
     {
-        Text.text = ContentItem.text;
+        // Get text from properties dictionary with fallback to empty string
+        Text.text = ContentItem.properties.TryGetValue("text", out object textValue) 
+            ? textValue.ToString() 
+            : string.Empty;
 
-        // Can be updated with more types and type specific styling
-        Text.fontSize = (ContentItem.textType == TextType.Header) ? 8 : 6;
+        // Get text type from properties with fallback to normal text
+        bool isHeader = ContentItem.properties.TryGetValue("textType", out object typeValue) 
+            && typeValue.ToString().Equals("Header", StringComparison.OrdinalIgnoreCase);
+        Text.fontSize = isHeader ? 8 : 6;
     }
 }

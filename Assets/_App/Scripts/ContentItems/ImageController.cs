@@ -6,12 +6,12 @@ using System;
 /// <summary>
 /// Image content item 
 /// </summary>
-public class ImageController : ContentController<ImageItem>
+public class ImageController : ContentController<ContentItem>
 {
     public Image Image;
     private IDisposable downloadSubscription;
 
-    public override ImageItem ContentItem
+    public override ContentItem ContentItem
     {
         get => base.ContentItem;
         set
@@ -30,12 +30,16 @@ public class ImageController : ContentController<ImageItem>
 
     private void UpdateView()
     {
-        var imagePath = ProtocolState.procedureDef.mediaBasePath + "/" + ContentItem.url;
+        if (ContentItem == null || !ContentItem.properties.TryGetValue("url", out object urlValue)) 
+        {
+            Debug.LogError("ImageController: No URL found in properties");
+            return;
+        }
 
-        // Cancel previous download
+        var imagePath = urlValue.ToString();
+
         downloadSubscription?.Dispose();
         downloadSubscription = null;
-
         Image.enabled = false;
 
         // Start new download
@@ -58,7 +62,8 @@ public class ImageController : ContentController<ImageItem>
             }
         }, (e) =>
         {
-            ServiceRegistry.Logger.LogError("Could not load image " + imagePath + ". " + e.ToString());
+            Debug.Log("######LABLIGHT Could not load image " + imagePath + ". " + e.ToString());
+            //ServiceRegistry.Logger.LogError("Could not load image " + imagePath + ". " + e.ToString());
         });
     }
 }

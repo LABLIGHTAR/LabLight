@@ -6,7 +6,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 public class RelockModelButton : MonoBehaviour
 {
     [SerializeField]
-    public PlaneInteractionManagerScriptableObject planeInteractionManagerSO;
+    public HeadPlacementEventChannel headPlacementEventChannel;
     private XRSimpleInteractable interactable;
 
     public GameObject parentModel;
@@ -25,6 +25,6 @@ public class RelockModelButton : MonoBehaviour
     public void RelockModel()
     {
         Debug.Log("Relocking model");
-        planeInteractionManagerSO.SetHeadtrackedObject.Invoke(parentModel);
+        headPlacementEventChannel.SetHeadtrackedObject.Invoke(parentModel);
     }
 }

@@ -256,7 +256,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311feaf6a99314dcba3c8991eabf2a35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  planeInteractionManager: {fileID: 11400000, guid: 0e4c22905642e492a9c661e3e6ed89b8, type: 2}
+  headPlacementEventChannel: {fileID: 11400000, guid: 2e9cc040273c143bd9bb9c3be51cd7e6, type: 2}
 --- !u!114 &3100132456532249414
 MonoBehaviour:
   m_ObjectHideFlags: 0

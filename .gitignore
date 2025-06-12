@@ -70,3 +70,8 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+Assets/_App/Meshes/miltenny_scan.obj
+/[Aa]ssets/Firebase/
+/[Aa]ssets/[Ee]ditor [Dd]efault [Rr]esources/Firebase/
+/[Aa]ssets/[Pp]lugins/[iI][oO][sS]/Firebase/
+/[Aa]ssets/[Pp]lugins/[tT][vV][oO][sS]/Firebase/

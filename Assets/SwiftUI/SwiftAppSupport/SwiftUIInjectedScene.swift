@@ -12,6 +12,17 @@ struct SwiftUIInjectedScene {
         // You can create multiple WindowGroups here for different wnidows;
         // they need a distinct id. If you include multiple items,
         // the scene property must be decorated with "@SceneBuilder" as above.
+
+        WindowGroup(id: "UserProfiles") {
+            UserSelectionContentView()
+        }
+        .defaultSize(width: 400, height: 600)
+
+        WindowGroup(id: "ProtocolMenu") {
+            ProtocolMenuContentView()
+        }
+        .defaultSize(width: 800, height: 600)
+
         WindowGroup(id: "PDF", for: String.self) { $pdfUrl in
             PDFContentView(pdfUrl!)
         }
@@ -27,7 +38,21 @@ struct SwiftUIInjectedScene {
         }
         .defaultSize(width: 900.0, height: 700.0)
 
-        
+        WindowGroup(id: "LLMChat") {
+            LLMChatContentView()
+        }
+        .defaultSize(width: 400, height: 600)
+
+        WindowGroup(id: "Timer", for: Int.self) { $duration in
+            TimerContentView(duration)
+        }
+        .defaultSize(width: 300, height: 400)
+
+        WindowGroup(id: "Calculator") {
+            CalculatorContentView()
+        }
+        .defaultSize(width: 400, height: 750)
+
         WindowGroup(id: "SimpleText") {
             Text("PDF Window")
         }

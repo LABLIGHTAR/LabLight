@@ -25,7 +25,7 @@ public class TimerViewController : LLBasePanel
     private double TimeLeft;
     private bool timerRunning = false;
 
-    void Awake()
+    protected override void Awake()
     {
         base.Awake();
         
@@ -35,16 +35,23 @@ public class TimerViewController : LLBasePanel
     // Start is called before the first frame update
     void Start()
     {
-        if(ProtocolState.Steps[ProtocolState.Step].Checklist != null)
+        if (ProtocolState.Instance.HasCurrentChecklist())
         {
-            var currentCheckItem = ProtocolState.procedureDef.steps[ProtocolState.Step].checklist[ProtocolState.CheckItem];
-            if(currentCheckItem.activateTimer)
+            var currentCheckItem = ProtocolState.Instance.CurrentCheckItemDefinition;
+            // Look for timer action in the checklist item's arActions
+            var timerAction = currentCheckItem.arActions?.Find(action => action.actionType == "timer");
+            
+            if (timerAction != null && timerAction.properties.ContainsKey("duration"))
             {
-                int timeSeconds = (currentCheckItem.hours * 60 * 60) + (currentCheckItem.minutes * 60) + currentCheckItem.seconds;
-                TimeLeft = timeSeconds;
-                TimeDisplay.text = GetTimeString();
+                // Get duration from properties and convert to double
+                if (timerAction.properties["duration"] is long || timerAction.properties["duration"] is int || timerAction.properties["duration"] is double)
+                {
+                    TimeLeft = Convert.ToDouble(timerAction.properties["duration"]);
+                    TimeDisplay.text = GetTimeString();
+                }
             }
-        }else
+        }
+        else
         {
             TimeLeft = StartingTime;
             TimeDisplay.text = GetTimeString();
@@ -146,6 +153,12 @@ public class TimerViewController : LLBasePanel
         {
             StopButton.SetActive(false);
         }
+    }
+
+    public void SetTimer(int timeSeconds)
+    {
+        TimeLeft = timeSeconds;
+        TimeDisplay.text = GetTimeString();
     }
 
     public void ResetTimer()

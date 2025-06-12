@@ -17,8 +17,6 @@ public class HandCalibrationViewController : MonoBehaviour
 
     [SerializeField] Material fillMaterial;
 
-    [SerializeField] GameObject tapToPlacePrefab;
-
     [SerializeField] public CalibrationManagerScriptableObject calibrationManager;
 
 
@@ -37,11 +35,9 @@ public class HandCalibrationViewController : MonoBehaviour
         XRHandJointID.LittleProximal
     };
 
-    public static List<PlaneClassification> calibrationPlanesClassification = new List<PlaneClassification>()
-    {
-        PlaneClassification.Table,
-        PlaneClassification.None
-    }; 
+    public static PlaneClassifications calibrationPlanesClassifications = 
+        PlaneClassifications.Table | 
+        PlaneClassifications.None;
 
     List<ARPlane> availableCalibrationPlanes;
 
@@ -56,9 +52,6 @@ public class HandCalibrationViewController : MonoBehaviour
     public float distanceToPlaneThreshold = 0.05f;
 
     public float calibrationDistanceThreshold = 0.03f;
-
-    private float progress = -0.4f;
-    private float lerpDuration = 3f;
 
     private bool inCalibration = false;
 
@@ -81,7 +74,7 @@ public class HandCalibrationViewController : MonoBehaviour
             }
         }
     }
-
+ 
     private void OnEnable() 
     {
         RequestCalibration();
@@ -108,7 +101,7 @@ public class HandCalibrationViewController : MonoBehaviour
         }
         //start calibration
         calibrationManager.UpdateCalibrationStatus("Looking for planes");
-        availableCalibrationPlanes = ARPlaneViewController.instance.GetPlanesByClassification(calibrationPlanesClassification);
+        availableCalibrationPlanes = ARPlaneViewController.instance.GetPlanesByClassification(calibrationPlanesClassifications);
         //if calibration completed successfully, send calibration data to lighthouse and exit calibration mode
         //store started lighthouse origin and current plane in session manager
     }
@@ -150,7 +143,7 @@ public class HandCalibrationViewController : MonoBehaviour
                         {
                             if(hit.collider.TryGetComponent<ARPlane>(out ARPlane hitPlane))
                             {
-                                if(availableCalibrationPlanes.Contains(hitPlane))
+                                if((hitPlane.classifications & calibrationPlanesClassifications) != 0)
                                 {
                                     if(planeSelected == null)
                                     {
@@ -334,39 +327,3 @@ public class HandCalibrationViewController : MonoBehaviour
     }
 
 }
-
-    // private IEnumerator CalibrationAnimation()
-    // {
-    //     progress += 0.14f;
-    //     fillMaterial.SetFloat("_FillRate", progress);
-    //     yield return new WaitForSeconds(1f);
-    //     progress += 0.14f;
-    //     fillMaterial.SetFloat("_FillRate", progress);
-    //     yield return new WaitForSeconds(1f);
-    //     progress += 0.14f;
-    //     fillMaterial.SetFloat("_FillRate", progress);
-    //     yield return new WaitForSeconds(1f);
-    //     progress += 0.14f;
-    //     fillMaterial.SetFloat("_FillRate", progress);
-    //     yield return new WaitForSeconds(1f);
-    //     progress += 0.14f;
-    //     fillMaterial.SetFloat("_FillRate", progress);
-    //     StartCoroutine(LerpRingScale());
-    // }
-
-    // private IEnumerator LerpRingScale()
-    // {
-    //     float timeElapsed = 0;
-    //     while (timeElapsed < lerpDuration)
-    //     {
-    //         progressRing.transform.localScale = progressRing.transform.localScale * Mathf.Lerp(1f, 0f, timeElapsed / lerpDuration);
-    //         if(progressRing.transform.localScale.x < 0.22f)
-    //         {
-    //             StartCoroutine(DeactivateFingerPoints());
-    //         }
-    //         timeElapsed += Time.deltaTime;
-    //         yield return null;
-    //     }
-    //     progressRing.transform.localScale = new Vector3(0,0,0);
-    //     yield return new WaitForSeconds(3f);
-    // }

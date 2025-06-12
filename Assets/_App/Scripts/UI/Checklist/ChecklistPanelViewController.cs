@@ -9,13 +9,13 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using TMPro;
+using Unity.VisualScripting;
 
 public class ChecklistPanelViewController : LLBasePanel
 {
+    UnityUIDriver UIDriver;
     [SerializeField] GameObject noChecklistText;
     [SerializeField] AudioSource audioPlayer;
-
-    private List<ProtocolState.CheckItemState> prevChecklist;
 
     [Header("Checkitem Views")]
     [SerializeField] List<Transform> checkItemSlots;
@@ -46,11 +46,18 @@ public class ChecklistPanelViewController : LLBasePanel
     [Header("HUD Event SO")]
     [SerializeField] HudEventSO hudEventSO;
 
-    private void Awake()
+    // Add new fields for optimization
+    private readonly WaitForSeconds standardDelay = new WaitForSeconds(0.2f);
+    private readonly WaitForSeconds buttonDelay = new WaitForSeconds(0.5f);
+    private const float COOLDOWN_DURATION = 1f;
+
+    protected override void Awake()
     {
         base.Awake();
-        checkItemPool = GetComponent<CheckItemPool>();
-        ProtocolState.stepStream.Subscribe(_ => StartCoroutine(LoadChecklist())).AddTo(this);
+        if (!TryGetComponent(out checkItemPool))
+        {
+            Debug.LogError($"[{nameof(ChecklistPanelViewController)}] Missing CheckItemPool component!");
+        }
     }
 
     void OnEnable()
@@ -65,14 +72,32 @@ public class ChecklistPanelViewController : LLBasePanel
         RemoveButtonEvents();
         RemovePopupEvents();
         DisposeVoice?.Invoke();
+        
+        // Clean up all slots
+        foreach(var slot in checkItemSlots)
+        {
+            CleanupSlot(slot);
+        }
     }
 
     void Start()
     {
-        checkItemPool.CreatePooledObjects();
+        checkItemPool?.CreatePooledObjects();
+        UIDriver = ServiceRegistry.GetService<IUIDriver>() as UnityUIDriver;
+        
+        if (UIDriver == null)
+        {
+            Debug.LogError($"[{nameof(ChecklistPanelViewController)}] Failed to get UIDriver!");
+            return;
+        }
+
         StartCoroutine(LoadChecklist());
 
-        popupPanelViewController = GameObject.FindFirstObjectByType<PopupPanelViewController>(FindObjectsInactive.Include);
+        popupPanelViewController = FindFirstObjectByType<PopupPanelViewController>(FindObjectsInactive.Include);
+        if (popupPanelViewController == null)
+        {
+            Debug.LogWarning($"[{nameof(ChecklistPanelViewController)}] PopupPanelViewController not found!");
+        }
     }
 
     /// <summary>
@@ -80,52 +105,33 @@ public class ChecklistPanelViewController : LLBasePanel
     /// </summary>
     public void CheckItem()
     {
-        if(checkOnCooldown == true)
-        {
-            Debug.LogWarning("Check on cooldown! Pressing too fast!");
+        if (!ValidateChecklistOperation("check"))
             return;
-        }
 
-        if (ProtocolState.Steps[ProtocolState.Step].Checklist == null || ProtocolState.Steps[ProtocolState.Step].SignedOff)
+        var checklist = ProtocolState.Instance.CurrentStepState.Value.Checklist;
+        var firstUncheckedItem = checklist?.FirstOrDefault(item => !item.IsChecked.Value);
+
+        if (firstUncheckedItem == null)
         {
-            Debug.LogWarning("Already signed off or no item to check");
-            hudEventSO.DisplayHudWarning("Checklist already signed off.");
-            return;
-        }
-
-        var firstUncheckedItem = (from item in ProtocolState.Steps[ProtocolState.Step].Checklist
-                                  where !item.IsChecked.Value
-                                  select item).FirstOrDefault();
-
-        if (firstUncheckedItem == null || ProtocolState.LockingTriggered.Value)
-        {
-            Debug.LogWarning("No item to check or locking triggered");
             hudEventSO.DisplayHudWarning("No item to check.");
             return;
         }
 
-        // Check the item and log timestamp
-        firstUncheckedItem.IsChecked.Value = true;
-        firstUncheckedItem.CompletionTime = DateTime.Now;
-
-        // Increment checkItem if this is not the last check item
-        if (ProtocolState.CheckItem < ProtocolState.Steps[ProtocolState.Step].Checklist.Count - 1)
+        int itemIndex = checklist.IndexOf(firstUncheckedItem);
+        
+        // Scroll handling with bounds checking
+        if (ProtocolState.Instance.CurrentCheckNum < checklist.Count - 1)
         {
-            //if there are more items to display scroll the checklist up
-            if(ProtocolState.Steps[ProtocolState.Step].Checklist.Count > 5 && ProtocolState.CheckItem > 0 && ProtocolState.CheckItem + 4 < ProtocolState.Steps[ProtocolState.Step].Checklist.Count)
+            if (checklist.Count > 5 && 
+                ProtocolState.Instance.CurrentCheckNum > 0 && 
+                ProtocolState.Instance.CurrentCheckNum + 4 < checklist.Count)
             {
                 StartCoroutine(ScrollChecklistUp());
             }
-            
-            ProtocolState.SetCheckItem(ProtocolState.CheckItem + 1);
-        }
-        else
-        {
-            ProtocolState.SetCheckItem(ProtocolState.CheckItem);
         }
 
-        Invoke("ResetCooldown", 1f);
-        checkOnCooldown = true;
+        UIDriver.CheckItemCallback(itemIndex);
+        StartCooldown();
     }
 
     /// <summary>
@@ -139,33 +145,29 @@ public class ChecklistPanelViewController : LLBasePanel
             return;
         }
 
-        if (ProtocolState.Steps[ProtocolState.Step].Checklist == null || ProtocolState.Steps[ProtocolState.Step].SignedOff)
+        if (!ProtocolState.Instance.HasCurrentChecklist() || ProtocolState.Instance.CurrentStepState.Value.SignedOff.Value)
         {
             Debug.LogWarning("Already signed off or no item to uncheck");
             hudEventSO.DisplayHudWarning("Checklist already signed off.");
             return;
         }
 
-        var lastCheckedItem = (from item in ProtocolState.Steps[ProtocolState.Step].Checklist
-                               where item.IsChecked.Value
-                               select item).LastOrDefault();
+        var lastCheckedItem = ProtocolState.Instance.CurrentStepState.Value.Checklist.LastOrDefault(item => item.IsChecked.Value);
 
-        if (lastCheckedItem == null || ProtocolState.LockingTriggered.Value)
+        if (lastCheckedItem == null || ProtocolState.Instance.LockingTriggered.Value)
         {
             Debug.LogWarning("No item to uncheck or locking triggered");
             hudEventSO.DisplayHudWarning("No item to uncheck.");
             return;
         }
 
-        // Uncheck the item
-        lastCheckedItem.IsChecked.Value = false;
-
-        if(ProtocolState.CheckItem > 1 && ProtocolState.Steps[ProtocolState.Step].Checklist.Count > 5 && ProtocolState.CheckItem + 3 < ProtocolState.Steps[ProtocolState.Step].Checklist.Count)
+        if(ProtocolState.Instance.CurrentCheckNum > 1 && ProtocolState.Instance.CurrentStepState.Value.Checklist.Count > 5 && ProtocolState.Instance.CurrentCheckNum + 3 < ProtocolState.Instance.CurrentStepState.Value.Checklist.Count)
         {
             StartCoroutine(ScrollChecklistDown());
         }
 
-        ProtocolState.SetCheckItem(ProtocolState.Steps[ProtocolState.Step].Checklist.IndexOf(lastCheckedItem));
+        // Uncheck the item
+        UIDriver.UncheckItemCallback(ProtocolState.Instance.CurrentStepState.Value.Checklist.IndexOf(lastCheckedItem));
 
         Invoke("ResetCooldown", 1f);
         checkOnCooldown = true;
@@ -176,16 +178,14 @@ public class ChecklistPanelViewController : LLBasePanel
     /// </summary>
     public void SignOff()
     {
-        if (ProtocolState.Steps[ProtocolState.Step].Checklist == null || ProtocolState.Steps[ProtocolState.Step].SignedOff)
+        if (!ProtocolState.Instance.HasCurrentChecklist() || ProtocolState.Instance.CurrentStepState.Value.SignedOff.Value)
         {
             Debug.LogWarning("Already signed off or no checklist for this step");
             hudEventSO.DisplayHudWarning("Checklist already signed off.");
             return;
         }
 
-        var uncheckedItemsCount = (from item in ProtocolState.Steps[ProtocolState.Step].Checklist
-                                   where !item.IsChecked.Value
-                                   select item).Count();
+        var uncheckedItemsCount = ProtocolState.Instance.CurrentStepState.Value.Checklist.Count(item => !item.IsChecked.Value);
 
         if (uncheckedItemsCount != 0)
         {
@@ -195,13 +195,12 @@ public class ChecklistPanelViewController : LLBasePanel
         }
 
         audioPlayer.Play();
-        //update protocol state
-        ProtocolState.SignOff();
+        UIDriver.SignOffChecklistCallback();
+        //UIDriver.WriteChecklistToCSV(ProtocolState.Instance.CurrentStepState.Value.Checklist);
+        
         //lock sign off indicator in UI
         lockedIcon.SetActive(true);
         unlockedIcon.SetActive(false);
-        //write checklist for this step to CSV
-        WriteChecklistToCSV(ProtocolState.Steps[ProtocolState.Step].Checklist);
     }
 
     /// <summary>
@@ -209,16 +208,7 @@ public class ChecklistPanelViewController : LLBasePanel
     /// </summary>
     public void PreviousStep()
     {
-        if (ProtocolState.LockingTriggered.Value)
-        {
-            Debug.LogWarning("cannot navigate to previous step: locking in progress");
-            return;
-        }
-        if(ProtocolState.Step == 0)
-        {
-            return;
-        }
-        ProtocolState.SetStep(ProtocolState.Step - 1);
+        UIDriver.StepNavigationCallback(ProtocolState.Instance.CurrentStep.Value - 1);
     }
 
     /// <summary>
@@ -226,52 +216,35 @@ public class ChecklistPanelViewController : LLBasePanel
     /// </summary>
     public void NextStep()
     {
-        // If there is no checklist or the checklist is already signed off, proceed to the next step
-        if (ProtocolState.Steps[ProtocolState.Step].Checklist == null || ProtocolState.Steps[ProtocolState.Step].SignedOff)
-        {
-            if (ProtocolState.LockingTriggered.Value)
-            {
-                Debug.LogWarning("cannot navigate to next step: locking in progress");
-                return;
-            }
-            ProtocolState.SetStep(ProtocolState.Step + 1);
-            return;
-        }
-
-        // If all items are checked but the checklist is not signed off, show sign off confirmation panel
-        if (ProtocolState.CheckItem == ProtocolState.Steps[ProtocolState.Step].Checklist.Count - 1 &&
-            ProtocolState.Steps[ProtocolState.Step].Checklist[ProtocolState.CheckItem].IsChecked.Value)
-        {
-            // Update confirmation panel UI and button controls
-            Debug.LogWarning("trying to go to next step without signing off");
-            popupPanelViewController.DisplayPopup(signOffPopupEventSO);
-            return;
-        }
-
-        // If not all items are checked, show checklist incomplete confirmation panel
-        Debug.LogWarning("trying to go to the next step without checking all items");
-        popupPanelViewController.DisplayPopup(checklistIncompletePopupEventSO);
+        UIDriver.StepNavigationCallback(ProtocolState.Instance.CurrentStep.Value + 1);
     }
 
     void LoadStepText()
     {
-        stepText.text = (ProtocolState.Step + 1) + " / " + ProtocolState.Steps.Count;
+        stepText.text = (ProtocolState.Instance.CurrentStep.Value + 1) + " / " + ProtocolState.Instance.Steps.Count;
     }
     
     /// <summary>
     /// Loads the checklist for the current step, displays 5 most relevant items, updates the signoff icon
     /// </summary>
-    IEnumerator LoadChecklist()
+    public IEnumerator LoadChecklist()
     {
         LoadStepText();
 
-        foreach(var item in checkItemPool.pooledObjects)
+        if(checkItemPool == null)
         {
-            item.SetActive(false);
+            TryGetComponent(out checkItemPool);
+            checkItemPool.CreatePooledObjects();
+        }
+
+        // Clean up all slots before loading new items
+        foreach(var slot in checkItemSlots)
+        {
+            CleanupSlot(slot);
         }
 
         //display proper signoff icon
-        if (ProtocolState.Steps[ProtocolState.Step].SignedOff)
+        if (ProtocolState.Instance.CurrentStepState.Value.SignedOff.Value)
         {
             lockedIcon.SetActive(true);
             unlockedIcon.SetActive(false);
@@ -282,7 +255,7 @@ public class ChecklistPanelViewController : LLBasePanel
             unlockedIcon.SetActive(true);
         }
 
-        if(ProtocolState.Steps[ProtocolState.Step].Checklist != null)
+        if(ProtocolState.Instance.HasCurrentChecklist())
         {
             noChecklistText.SetActive(false);
             
@@ -290,27 +263,27 @@ public class ChecklistPanelViewController : LLBasePanel
 
             //get relevant check items
             //case for loading checklist from the start
-            if(ProtocolState.CheckItem == 0)
+            if(ProtocolState.Instance.CurrentCheckNum == 0)
             {
                 for(int i = 0; i < 5; i++)
                 {
-                    if(i >= ProtocolState.Steps[ProtocolState.Step].Checklist.Count)
+                    if(i >= ProtocolState.Instance.CurrentStepState.Value.Checklist.Count)
                     {
                         break;
                     }
-                    relevantCheckItems.Add(ProtocolState.Steps[ProtocolState.Step].Checklist[i]);
+                    relevantCheckItems.Add(ProtocolState.Instance.CurrentStepState.Value.Checklist[i]);
                 }
             }
             //case for loading checklist from the middle
             else
             {
-                for(int i = ProtocolState.CheckItem - 1; i < ProtocolState.CheckItem + 4; i++)
+                for(int i = ProtocolState.Instance.CurrentCheckNum - 1; i < ProtocolState.Instance.CurrentCheckNum + 4; i++)
                 {
-                    if(i >= ProtocolState.Steps[ProtocolState.Step].Checklist.Count)
+                    if(i >= ProtocolState.Instance.CurrentStepState.Value.Checklist.Count)
                     {
                         break;
                     }
-                    relevantCheckItems.Add(ProtocolState.Steps[ProtocolState.Step].Checklist[i]);
+                    relevantCheckItems.Add(ProtocolState.Instance.CurrentStepState.Value.Checklist[i]);
                 }
             }
 
@@ -332,16 +305,26 @@ public class ChecklistPanelViewController : LLBasePanel
     /// </summary>
     void LoadCheckItem(ProtocolState.CheckItemState checkItemData, int slotIndex)
     {
-        //grab a view from the pool and initalize it with the proper data
-        var checkItemView = checkItemPool.GetPooledObject().GetComponent<CheckitemView>();
-        checkItemView.InitalizeCheckItem(checkItemData);
+        if (checkItemData == null || slotIndex < 0 || slotIndex >= checkItemSlots.Count)
+        {
+            Debug.LogError($"Invalid LoadCheckItem parameters: data={checkItemData != null}, slot={slotIndex}");
+            return;
+        }
 
-        //child the view to the proper slot and reset its position and rotation
-        checkItemView.transform.SetParent(checkItemSlots[slotIndex]);
+        // Clean the target slot first
+        CleanupSlot(checkItemSlots[slotIndex]);
+
+        var checkItemView = checkItemPool.GetPooledObject()?.GetComponent<CheckitemView>();
+        if (checkItemView == null)
+        {
+            Debug.LogError("Failed to get pooled CheckitemView!");
+            return;
+        }
+
+        checkItemView.InitalizeCheckItem(checkItemData);
+        checkItemView.transform.SetParent(checkItemSlots[slotIndex], false);
         checkItemView.transform.localPosition = Vector3.zero;
         checkItemView.transform.localRotation = Quaternion.identity;
-
-        //activate the view and play the scale up animation
         checkItemView.gameObject.SetActive(true);
         checkItemView.PlayScaleUpAnimation();
     }
@@ -351,26 +334,50 @@ public class ChecklistPanelViewController : LLBasePanel
     /// </summary>
     IEnumerator ScrollChecklistUp()
     {
-        //scale down the first item
-        checkItemSlots[0].GetChild(0).GetComponent<CheckitemView>().PlayScaleDownAnimation();
+        if (checkItemSlots == null || checkItemSlots.Count < 5)
+        {
+            Debug.LogError("Invalid checkItemSlots configuration!");
+            yield break;
+        }
 
-        yield return new WaitForSeconds(0.2f);
+        // Clean up first slot and play animation for its primary item
+        if (checkItemSlots[0].childCount > 0)
+        {
+            var firstItem = checkItemSlots[0].GetChild(0)?.GetComponent<CheckitemView>();
+            if (firstItem != null)
+            {
+                firstItem.PlayScaleDownAnimation();
+                yield return standardDelay;
+            }
+            CleanupSlot(checkItemSlots[0]);
+        }
 
+        // Move items up
         for(int i = 1; i < 5; i++)
         {
-            //move the items up
-            checkItemSlots[i].GetChild(0).GetComponent<CheckitemView>().PlayMoveUpAnimation(checkItemSlots[i].position, checkItemSlots[i - 1].position);
-            checkItemSlots[i].GetChild(0).SetParent(checkItemSlots[i - 1]);
-            checkItemSlots[i-1].GetChild(0).localPosition = Vector3.zero;
-            checkItemSlots[i-1].GetChild(0).localRotation = Quaternion.identity;
+            if (checkItemSlots[i].childCount > 0)
+            {
+                var itemTransform = checkItemSlots[i].GetChild(0);
+                var itemView = itemTransform.GetComponent<CheckitemView>();
+                
+                // Clean target slot before moving
+                CleanupSlot(checkItemSlots[i - 1]);
+                
+                itemView.PlayMoveUpAnimation(checkItemSlots[i].position, checkItemSlots[i - 1].position);
+                itemTransform.SetParent(checkItemSlots[i - 1]);
+                itemTransform.localPosition = Vector3.zero;
+                itemTransform.localRotation = Quaternion.identity;
+            }
 
             if(i != 4)
             {
-                yield return new WaitForSeconds(0.2f);
+                yield return standardDelay;
             }
         }
-        //load the next item
-        LoadCheckItem(ProtocolState.Steps[ProtocolState.Step].Checklist[ProtocolState.CheckItem + 3], 4);
+
+        // Clean last slot before loading new item
+        CleanupSlot(checkItemSlots[4]);
+        LoadCheckItem(ProtocolState.Instance.CurrentStepState.Value.Checklist[ProtocolState.Instance.CurrentCheckNum + 3], 4);
     }
 
     /// <summary>
@@ -378,27 +385,43 @@ public class ChecklistPanelViewController : LLBasePanel
     /// </summary>
     IEnumerator ScrollChecklistDown()
     {
-        //scale down the last item
-        checkItemSlots[4].GetChild(0).GetComponent<CheckitemView>().PlayScaleDownAnimation();
-
-        yield return new WaitForSeconds(0.2f);
+        // Clean up last slot and play animation for its primary item
+        if (checkItemSlots[4].childCount > 0)
+        {
+            var lastItem = checkItemSlots[4].GetChild(0)?.GetComponent<CheckitemView>();
+            if (lastItem != null)
+            {
+                lastItem.PlayScaleDownAnimation();
+                yield return standardDelay;
+            }
+            CleanupSlot(checkItemSlots[4]);
+        }
 
         for(int i = 3; i >= 0; i--)
         {
-            //move the items down
-            checkItemSlots[i].GetChild(0).GetComponent<CheckitemView>().PlayMoveDownAnimation(checkItemSlots[i].position, checkItemSlots[i + 1].position);
-            checkItemSlots[i].GetChild(0).SetParent(checkItemSlots[i + 1]);
-            checkItemSlots[i+1].GetChild(0).localPosition = Vector3.zero;
-            checkItemSlots[i+1].GetChild(0).localRotation = Quaternion.identity;
+            if (checkItemSlots[i].childCount > 0)
+            {
+                var itemTransform = checkItemSlots[i].GetChild(0);
+                var itemView = itemTransform.GetComponent<CheckitemView>();
+                
+                // Clean target slot before moving
+                CleanupSlot(checkItemSlots[i + 1]);
+                
+                itemView.PlayMoveDownAnimation(checkItemSlots[i].position, checkItemSlots[i + 1].position);
+                itemTransform.SetParent(checkItemSlots[i + 1]);
+                itemTransform.localPosition = Vector3.zero;
+                itemTransform.localRotation = Quaternion.identity;
+            }
 
             if(i != 0)
             {
-                yield return new WaitForSeconds(0.2f);
+                yield return standardDelay;
             }
         }
-        
-        //load the previous item
-        LoadCheckItem(ProtocolState.Steps[ProtocolState.Step].Checklist[ProtocolState.CheckItem - 1], 0);
+
+        // Clean first slot before loading new item
+        CleanupSlot(checkItemSlots[0]);
+        LoadCheckItem(ProtocolState.Instance.CurrentStepState.Value.Checklist[ProtocolState.Instance.CurrentCheckNum - 1], 0);
     }
 
     /// <summary>
@@ -406,41 +429,28 @@ public class ChecklistPanelViewController : LLBasePanel
     /// </summary>
     void CloseProtocol()
     {
-        var lastStepWithChecklist = ProtocolState.Steps.Where(step => step.Checklist != null).LastOrDefault();
-            
-        //if we are on the last step and the last checklist has been signed off close the protocol
-        if(ProtocolState.Step == (ProtocolState.Steps.Count - 1) && lastStepWithChecklist != null && lastStepWithChecklist.SignedOff)
-        {
-            SessionState.Instance.activeProtocol = null;
-            ProtocolState.procedureDef = null;
-            SceneLoader.Instance.LoadSceneClean("ProtocolMenu");   
-        }
-        //open a popup to confirm closing the protocol
-        else
-        {
-            popupPanelViewController.DisplayPopup(closeProtocolPopupEventSO);
-        }
+        UIDriver.CloseProtocolCallback();
     }
 
     /// <summary>
     /// Writes the checklist to a CSV file for export
     /// </summary>
-    public void WriteChecklistToCSV(List<ProtocolState.CheckItemState> CheckList)
+    public void WriteChecklistToCSV(ReactiveCollection<ProtocolState.CheckItemState> CheckList)
     {
-        if (ProtocolState.CsvPath == null)
+        if (ProtocolState.Instance.CsvPath.Value == null)
         {
             Debug.LogWarning("no CSV file initalized");
             return;
         }
 
         // Initalize text writer to specified file and append
-        var tw = new StreamWriter(ProtocolState.CsvPath, true);
+        var tw = new StreamWriter(ProtocolState.Instance.CsvPath.Value, true);
         string line;
 
         // Write checklist items to CSV
         if (CheckList != null)
         {
-            Debug.Log("######LABLIGHT Writing checklist to CSV " + ProtocolState.CsvPath);
+            Debug.Log("######LABLIGHT Writing checklist to CSV " + ProtocolState.Instance.CsvPath.Value);
             foreach (var item in CheckList)
             {
                 line = item.Text;
@@ -449,7 +459,7 @@ public class ChecklistPanelViewController : LLBasePanel
                     line = line.Replace(",", "");
                 }
 
-                tw.WriteLine(line + ',' + "Completed, " + item.CompletionTime);
+                tw.WriteLine(line + ',' + "Completed, " + item.CompletionTime.Value);
             }
             tw.Close();
         }
@@ -485,12 +495,11 @@ public class ChecklistPanelViewController : LLBasePanel
 
         checklistIncompletePopupEventSO.OnYesButtonPressed.AddListener(() =>
         {
-            ProtocolState.SetStep(ProtocolState.Step + 1);
+            UIDriver.StepNavigationCallback(ProtocolState.Instance.CurrentStep.Value + 1);
         });
 
         closeProtocolPopupEventSO.OnYesButtonPressed.AddListener(() =>
         {
-            SessionState.Instance.activeProtocol = null;
             SceneLoader.Instance.LoadSceneClean("ProtocolMenu");
         });
     }
@@ -555,5 +564,56 @@ public class ChecklistPanelViewController : LLBasePanel
     private IEnumerator Wait()
     {
         yield return new WaitForSeconds(0.5f);
+    }
+
+    // Add validation helper
+    private bool ValidateChecklistOperation(string operation)
+    {
+        if (checkOnCooldown)
+        {
+            Debug.LogWarning($"{operation} on cooldown! Pressing too fast!");
+            return false;
+        }
+
+        if (!ProtocolState.Instance?.HasCurrentChecklist() ?? true)
+        {
+            hudEventSO.DisplayHudWarning("No checklist available.");
+            return false;
+        }
+
+        if (ProtocolState.Instance.CurrentStepState.Value.SignedOff.Value)
+        {
+            hudEventSO.DisplayHudWarning("Checklist already signed off.");
+            return false;
+        }
+
+        if (ProtocolState.Instance.LockingTriggered.Value)
+        {
+            hudEventSO.DisplayHudWarning($"Cannot {operation} - checklist is locked.");
+            return false;
+        }
+
+        return true;
+    }
+
+    // Improved cooldown handling
+    private void StartCooldown()
+    {
+        checkOnCooldown = true;
+        CancelInvoke(nameof(ResetCooldown));
+        Invoke(nameof(ResetCooldown), COOLDOWN_DURATION);
+    }
+
+    // Add this helper method to clean a single slot
+    private void CleanupSlot(Transform slot)
+    {
+        // Deactivate all children in the slot
+        for (int i = slot.childCount - 1; i >= 0; i--)
+        {
+            var child = slot.GetChild(i);
+            child.gameObject.SetActive(false);
+            // Optionally return to original parent if needed
+            child.SetParent(checkItemPool.Content);
+        }
     }
 }

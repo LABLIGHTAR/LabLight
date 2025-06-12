@@ -12,10 +12,6 @@ public class SessionManager : MonoBehaviour
 
     private ARAnchorManager anchorManager;
 
-    //audio manager
-
-    //public bool loadProcedure = true;
-
     private static Transform workspaceTransform;
 
     public Transform WorkspaceTransform
@@ -71,15 +67,30 @@ public class SessionManager : MonoBehaviour
 
         //anchorManager.enabled = false;
 
+        var congintoAuthProvider = new CognitoAuthProvider();
+        ServiceRegistry.RegisterService<IUserAuthProvider>(congintoAuthProvider);
+
         var localFileDataProvider = new LocalFileDataProvider();
         ServiceRegistry.RegisterService<ITextDataProvider>(localFileDataProvider);
+        ServiceRegistry.RegisterService<IAnchorDataProvider>(localFileDataProvider);
+        ServiceRegistry.RegisterService<IUserProfileDataProvider>(localFileDataProvider);
 
         var resourceFileDataProvider = new ResourceFileDataProvider();
-        ServiceRegistry.RegisterService<IProcedureDataProvider>(resourceFileDataProvider);
+        ServiceRegistry.RegisterService<IProtocolDataProvider>(resourceFileDataProvider);
         ServiceRegistry.RegisterService<IMediaProvider>(resourceFileDataProvider);
 
-        var webpageProvider = new LLSwiftWebPageProviderPlugin();
-        ServiceRegistry.RegisterService<IWebPageProvider>(webpageProvider);
+        var llmChatProvider = new ClaudeChatProvider();
+        ServiceRegistry.RegisterService<ILLMChatProvider>(llmChatProvider);
+
+        #if UNITY_VISIONOS && !UNITY_EDITOR
+        var UIDriver = new SwiftUIDriver();
+        ServiceRegistry.RegisterService<IUIDriver>(UIDriver);
+        Destroy(GetComponent<UnityUIDriver>());
+        #elif UNITY_EDITOR
+        var UIDriver = GetComponent<UnityUIDriver>();
+        ServiceRegistry.RegisterService<IUIDriver>(UIDriver);
+        #endif
+        UIDriver.DisplayUserSelection();
 
         //Set up default state
         SessionState.deviceId = SystemInfo.deviceName;
@@ -100,50 +111,10 @@ public class SessionManager : MonoBehaviour
          * file upload handler
          */
     }
-
-    // public void OnEnable()
-    // {
-    //     if (loadProcedure)
-    //     {
-    //         LoadProcedure();
-    //     }
-    // }
-
-    // public void LoadProcedure()
-    // {
-    //     var procedureDataProvider = ServiceRegistry.GetService<IProcedureDataProvider>();
-    //     if(procedureDataProvider != null)
-    //     {
-    //         procedureDataProvider.GetOrCreateProcedureDefinition("piplight_H551").Subscribe(procedure => 
-    //         {
-    //             Debug.Log(procedure.title + " loaded");
-    //             ProtocolState.SetProcedureDefinition(procedure);
-    //         }, (e) =>
-    //         {
-    //             Debug.Log("Error fetching procedure");
-    //         });
-    //     }
-    //     else
-    //     {
-    //         Debug.Log("Procedure Data provider null");
-    //     }
-    // }
-
     public void Update()
     {
         TrackedObjectsDebug = SessionState.TrackedObjects.ToList();
     }
-
-    /* used for charuco calibration, reimplement with hand tracking
-    public void Update()
-    {
-        //NetworkTick();
-    }
-
-    void NetworkTick()
-    {
-
-    }*/
 
     public void UpdateCalibration(Matrix4x4 pose)
     {
@@ -159,10 +130,5 @@ public class SessionManager : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(0f, 90f, 0f);
         CharucoTransform.rotation *= rotation;
         SessionState.onCalibrationUpdated.Invoke();
-
-        // TODO: World lock the charuco transform
-
-        //TODO: Show origin?
     }
-
 }

@@ -3,11 +3,11 @@
 /// <summary>
 /// Text contentitem
 /// </summary>
-public class TextController : ContentController<TextItem>
+public class TextController : ContentController<ContentItem>
 {
     public TextMeshProUGUI Text;
 
-    public override TextItem ContentItem 
+    public override ContentItem ContentItem 
     { 
         get => base.ContentItem; 
         set 
@@ -19,9 +19,14 @@ public class TextController : ContentController<TextItem>
 
     private void UpdateView()
     {
-        Text.text = ContentItem.text.Replace("\r", "");
+        if (ContentItem.properties.TryGetValue("text", out object text))
+        {
+            Text.text = text.ToString().Replace("\r", "");
+        }
 
-        // Can be updated with more types and type specific styling
-        Text.fontSize = (ContentItem.textType == TextType.Header) ? 0.4f : 0.2f;
+        if (ContentItem.properties.TryGetValue("textType", out object textType))
+        {
+            Text.fontSize = textType.ToString().ToLower() == "header" ? 0.4f : 0.2f;
+        }
     }
 }

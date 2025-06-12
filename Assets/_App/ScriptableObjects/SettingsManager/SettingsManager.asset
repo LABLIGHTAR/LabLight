@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ef3a5784979f47cb907b1d884674555, type: 3}
   m_Name: SettingsManager
   m_EditorClassIdentifier: 
+  defaultSettingValue: 0
   settingChanged:
     m_PersistentCalls:
       m_Calls: []

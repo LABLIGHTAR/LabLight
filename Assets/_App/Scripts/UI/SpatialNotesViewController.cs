@@ -7,8 +7,18 @@ using UnityEngine.UI;
 
 public class SpatialNotesViewController : LLBasePanel
 {
+    public void OnEnable()
+    {
+        SessionState.SpatialNoteEditMode.Value = true;
+    }
+
+    public void OnDisable()
+    {
+        SessionState.SpatialNoteEditMode.Value = false;
+    }
+
     public void CloseSpatialNotesMenu()
     {
-        SceneLoader.Instance.UnloadScene("SpatialNotesEditor");
+        SceneLoader.Instance.LoadSceneClean("ProtocolMenu");
     }
 }

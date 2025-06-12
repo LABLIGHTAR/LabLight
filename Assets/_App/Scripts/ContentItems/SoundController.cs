@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Sound content item
 /// </summary>
-public class SoundController : ContentController<SoundItem>
+public class SoundController : ContentController<ContentItem>
 {
     public AudioSource audioSource;
     public GameObject playerUI;
@@ -16,7 +16,7 @@ public class SoundController : ContentController<SoundItem>
     public TextMeshProUGUI Text;
     public Slider progressIndicator;
 
-    public override SoundItem ContentItem
+    public override ContentItem ContentItem
     {
         get => base.ContentItem;
         set
@@ -28,9 +28,13 @@ public class SoundController : ContentController<SoundItem>
 
     private void UpdateView()
     {
-        var soundPath = ProtocolState.procedureDef.mediaBasePath + "/" + ContentItem.url;
+        if (ContentItem == null || !ContentItem.properties.TryGetValue("url", out object urlValue)) 
+        {
+            return;
+        }
 
-        // Cancel previous download
+        var soundPath = ProtocolState.Instance.ActiveProtocol.Value.mediaBasePath + "/" + urlValue.ToString();
+
         downloadSubscription?.Dispose();
         downloadSubscription = null;
 
@@ -46,7 +50,7 @@ public class SoundController : ContentController<SoundItem>
                 return;
             }
 
-            Text.text = ContentItem.url;
+            Text.text = soundPath;
             audioSource.clip = clip;
             audioSource.Play();
 

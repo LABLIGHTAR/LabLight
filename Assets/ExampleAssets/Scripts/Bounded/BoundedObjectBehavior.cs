@@ -5,11 +5,20 @@ namespace PolySpatial.Template
 {
     public class BoundedObjectBehavior : MonoBehaviour
     {
-        const float k_ToVel = 7.5f;
-        const float k_MaxVel = 15.0f;
-        const float k_MaxForce = 40.0f;
-        const float k_Gain = 5f;
-        const float k_StartingTorque = 0.15f;
+        [SerializeField]
+        float k_ToVel = 10f;
+
+        [SerializeField]
+        float k_MaxVel = 20f;
+
+        [SerializeField]
+        float k_MaxForce = 40.0f;
+
+        [SerializeField]
+        float k_Gain = 5f;
+
+        [SerializeField]
+        float k_StartingTorque = 0.15f;
 
         [SerializeField]
         float m_LerpReturnTime = 1.0f;
@@ -32,6 +41,9 @@ namespace PolySpatial.Template
         bool m_Return;
         float m_CurrentTime;
         float m_DelayTime;
+
+        const float k_LerpBaseValue = 2.0f;
+        const float k_LerpExponentValue = -10.0f;
 
         void Start()
         {
@@ -65,7 +77,7 @@ namespace PolySpatial.Template
 
                 var time = m_CurrentTime / m_LerpReturnTime;
                 // exponential ease out
-                time = 1.0f - Mathf.Pow(2.0f, -10.0f * time);
+                time = 1.0f - Mathf.Pow(k_LerpBaseValue, k_LerpExponentValue * time);
 
                 m_Transform.position = Vector3.Lerp(m_StartingLerpPosition, m_StartingPosition, time);
             }
@@ -75,7 +87,7 @@ namespace PolySpatial.Template
         {
             m_Return = false;
             m_Selected = selected;
-            m_Rigidbody.velocity = Vector3.zero;
+            m_Rigidbody.linearVelocity = Vector3.zero;
 
             m_MeshRenderer.material = selected ? m_SelectedMaterial : m_DefaultMaterial;
 
@@ -89,7 +101,7 @@ namespace PolySpatial.Template
         {
             var distance = worldPosition - m_Transform.position;
             var targetVelocity = Vector3.ClampMagnitude(k_ToVel * distance, k_MaxVel);
-            var error = targetVelocity - m_Rigidbody.velocity;
+            var error = targetVelocity - m_Rigidbody.linearVelocity;
             var force = Vector3.ClampMagnitude(k_Gain * error, k_MaxForce);
             m_Rigidbody.AddForce(force);
         }
