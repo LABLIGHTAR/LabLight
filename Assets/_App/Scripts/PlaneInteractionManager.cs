@@ -76,7 +76,7 @@ public class PlaneInteractionManager : MonoBehaviour
         headPlacementEventChannel.SetHeadtrackedObject.RemoveListener(SetPrefab);
         headPlacementEventChannel.PlanePlacementRequested.RemoveListener(OnPlanePlacementRequested);
         headPlacementEventChannel.RequestDisablePlaneInteractionManager.RemoveListener(ResetObjects);
-        ProtocolState.Instance.ProtocolStream.Subscribe(_ => OnProtocolExit()).Dispose();   
+        //ProtocolState.Instance.ProtocolStream.Subscribe(_ => OnProtocolExit()).Dispose();   
         //ProtocolState.Instance.ChecklistStream.Subscribe(_ => OnNextCheckItem()).Dispose();
     }
     

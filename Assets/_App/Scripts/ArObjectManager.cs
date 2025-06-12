@@ -8,7 +8,6 @@ using Newtonsoft.Json.Linq;
 
 public class ArObjectManager : MonoBehaviour
 {
-    public ProtocolItemLockingManager lockingManager;
     public HeadPlacementEventChannel headPlacementEventChannel;
 
     private readonly Dictionary<ArObject, ArObjectViewController> arViews = new Dictionary<ArObject, ArObjectViewController>();
@@ -20,6 +19,11 @@ public class ArObjectManager : MonoBehaviour
     private bool isInitialized;
     private int pendingArViewInitializations = 0;
     private IFileManager fileManager;
+    
+    // Locking system
+    private readonly Queue<GameObject> lockingQueue = new Queue<GameObject>();
+    private readonly Dictionary<LockingType, ILockingService> lockingServices = new Dictionary<LockingType, ILockingService>();
+    private bool isLockingSessionActive = false;
 
     private void Awake()
     {
@@ -28,7 +32,7 @@ public class ArObjectManager : MonoBehaviour
 
     private void Start()
     {
-        lockingManager = GetComponent<ProtocolItemLockingManager>();
+        InitializeLockingServices();
     }
 
     private void OnDisable()
@@ -52,6 +56,46 @@ public class ArObjectManager : MonoBehaviour
             .Subscribe(_ => UpdateArActions())
             .AddTo(this);
         HandleProtocolChange(ProtocolState.Instance.ActiveProtocol.Value);
+    }
+
+    private void InitializeLockingServices()
+    {
+        // Get locking services from service registry
+        var availableServices = ServiceRegistry.GetServices<ILockingService>();
+        
+        // Register services by their locking type
+        foreach (var service in availableServices)
+        {
+            if (!lockingServices.ContainsKey(service.LockingType))
+            {
+                lockingServices[service.LockingType] = service;
+                service.OnObjectLocked += OnObjectLocked;
+                Debug.Log($"ArObjectManager: Registered {service.LockingType} locking service");
+            }
+        }
+        
+        // Alternative: Find services by component if not in registry
+        if (lockingServices.Count == 0)
+        {
+            var planeService = FindObjectOfType<PlaneLockingService>();
+            var imageService = FindObjectOfType<ImageLockingService>();
+            
+            if (planeService != null)
+            {
+                lockingServices[LockingType.Plane] = planeService;
+                planeService.OnObjectLocked += OnObjectLocked;
+                Debug.Log("ArObjectManager: Found PlaneLockingService component");
+            }
+            
+            if (imageService != null)
+            {
+                lockingServices[LockingType.Image] = imageService;
+                imageService.OnObjectLocked += OnObjectLocked;
+                Debug.Log("ArObjectManager: Found ImageLockingService component");
+            }
+        }
+        
+        Debug.Log($"ArObjectManager: Initialized {lockingServices.Count} locking services");
     }
 
     private void HandleProtocolChange(ProtocolDefinition protocol)
@@ -260,7 +304,7 @@ public class ArObjectManager : MonoBehaviour
 
         if (objectsToLock.Count > 0)
         {
-            lockingManager.EnqueueObjects(objectsToLock);
+            EnqueueObjectsForLocking(objectsToLock);
         }
     }
 
@@ -348,6 +392,9 @@ public class ArObjectManager : MonoBehaviour
 
     private void ClearScene(bool clearLockedObjects = false)
     {
+        // Cancel any active locking operations
+        CancelLockingSession();
+        
         foreach (var view in arViews.Values)
         {
             if (view != null)
@@ -400,4 +447,137 @@ public class ArObjectManager : MonoBehaviour
             }
         }
     }
+
+    #region Locking System Methods
+
+    /// <summary>
+    /// Enqueues objects for locking and starts the locking session
+    /// </summary>
+    /// <param name="objectsToLock">List of GameObjects to lock</param>
+    private void EnqueueObjectsForLocking(List<GameObject> objectsToLock)
+    {
+        if (objectsToLock == null || objectsToLock.Count == 0) return;
+
+        Debug.Log($"ArObjectManager: Enqueuing {objectsToLock.Count} objects for locking");
+
+        // Clear existing queue and cancel any active locking
+        CancelLockingSession();
+
+        // Add objects to queue
+        foreach (var obj in objectsToLock)
+        {
+            lockingQueue.Enqueue(obj);
+        }
+
+        // Start locking session
+        isLockingSessionActive = true;
+        ProtocolState.Instance.LockingTriggered.Value = true;
+
+        // Begin locking the first object
+        ProcessNextObjectInQueue();
+    }
+
+    /// <summary>
+    /// Processes the next object in the locking queue
+    /// </summary>
+    private void ProcessNextObjectInQueue()
+    {
+        if (lockingQueue.Count == 0)
+        {
+            EndLockingSession();
+            return;
+        }
+
+        var nextObject = lockingQueue.Dequeue();
+        var arObjectViewController = nextObject.GetComponent<ArObjectViewController>();
+        
+        if (arObjectViewController == null)
+        {
+            Debug.LogWarning($"ArObjectManager: Object {nextObject.name} missing ArObjectViewController, skipping");
+            ProcessNextObjectInQueue();
+            return;
+        }
+
+        var lockingType = arObjectViewController.LockingType;
+        
+        if (lockingServices.TryGetValue(lockingType, out var lockingService))
+        {
+            Debug.Log($"ArObjectManager: Starting {lockingType} locking for {nextObject.name}");
+            lockingService.BeginLocking(nextObject);
+        }
+        else
+        {
+            Debug.LogError($"ArObjectManager: No locking service found for type {lockingType}");
+            ProcessNextObjectInQueue();
+        }
+    }
+
+    /// <summary>
+    /// Called when a locking service successfully locks an object
+    /// </summary>
+    /// <param name="lockedObject">The object that was locked</param>
+    private void OnObjectLocked(GameObject lockedObject)
+    {
+        Debug.Log($"ArObjectManager: Object {lockedObject.name} successfully locked. {lockingQueue.Count} objects remaining.");
+        
+        // Process next object in queue
+        ProcessNextObjectInQueue();
+    }
+
+    /// <summary>
+    /// Ends the current locking session
+    /// </summary>
+    private void EndLockingSession()
+    {
+        Debug.Log("ArObjectManager: Ending locking session");
+        
+        isLockingSessionActive = false;
+        ProtocolState.Instance.LockingTriggered.Value = false;
+        
+        // Cancel any active locking operations
+        foreach (var service in lockingServices.Values)
+        {
+            if (service.IsLocking)
+            {
+                service.CancelLocking();
+            }
+        }
+        
+        lockingQueue.Clear();
+    }
+
+    /// <summary>
+    /// Cancels the current locking session and clears the queue
+    /// </summary>
+    private void CancelLockingSession()
+    {
+        if (!isLockingSessionActive) return;
+        
+        Debug.Log("ArObjectManager: Cancelling locking session");
+        
+        // Cancel all active locking operations
+        foreach (var service in lockingServices.Values)
+        {
+            if (service.IsLocking)
+            {
+                service.CancelLocking();
+            }
+        }
+        
+        lockingQueue.Clear();
+        isLockingSessionActive = false;
+        ProtocolState.Instance.LockingTriggered.Value = false;
+    }
+
+    /// <summary>
+    /// Gets the current status of the locking system
+    /// </summary>
+    public bool IsLockingSessionActive => isLockingSessionActive;
+
+    /// <summary>
+    /// Gets the number of objects remaining in the locking queue
+    /// </summary>
+    public int RemainingObjectsToLock => lockingQueue.Count;
+
+    #endregion
 }

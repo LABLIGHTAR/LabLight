@@ -57,6 +57,19 @@ public class SessionManager : MonoBehaviour
 
         AudioService = GetComponent<AudioService>();
         ServiceRegistry.RegisterService<IAudioService>(AudioService);
+        
+        // Register locking services
+        var planeLockingService = FindFirstObjectByType<PlaneLockingService>();
+        if (planeLockingService != null)
+        {
+            ServiceRegistry.RegisterMultiService<ILockingService>(planeLockingService);
+        }
+
+        var imageLockingService = FindFirstObjectByType<ImageLockingService>();
+        if (imageLockingService != null)
+        {
+            ServiceRegistry.RegisterMultiService<ILockingService>(imageLockingService);
+        }
 
         #if UNITY_VISIONOS && !UNITY_EDITOR
         UIDriver = new SwiftUIDriver();
@@ -70,7 +83,6 @@ public class SessionManager : MonoBehaviour
         ServiceRegistry.RegisterService<IUIDriver>(UIDriver);
         UIDriver?.Initialize();
         #endif
-        
         if (UIDriver == null) Debug.LogError("SessionManager: UIDriver failed to obtain a reference or initialize!");
         else UIDriver.DisplayUserSelectionMenu();
 
