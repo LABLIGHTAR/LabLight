@@ -1,0 +1,576 @@
+TITLE: Adding UI Toolkit Assembly References in .asmdef (JSON)
+DESCRIPTION: This JSON snippet demonstrates how to configure a Unity assembly definition file (.asmdef) to explicitly reference the UnityEngine.UIElementsModule and UnityEditor.UIElementsModule assemblies. This is required when using features exclusive to the UI Toolkit package to ensure correct compilation order and avoid missing API errors.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/README.md#_snippet_0
+
+LANGUAGE: JSON
+CODE:
+```
+{
+  "name": "AssemblyConsumingNewAPI",
+  "references": [
+     "UnityEngine.UIElementsModule",
+     "UnityEditor.UIElementsModule"
+     ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
+```
+
+----------------------------------------
+
+TITLE: USS Property: display
+DESCRIPTION: Defines how an element is displayed in the layout. Can be flex (participates in flex layout) or none (element is hidden and does not affect layout).
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_23
+
+LANGUAGE: USS Syntax
+CODE:
+```
+flex \| none
+```
+
+----------------------------------------
+
+TITLE: Values for visibility USS
+DESCRIPTION: Specifies whether or not an element is visible.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_42
+
+LANGUAGE: USS
+CODE:
+```
+visible | hidden
+```
+
+----------------------------------------
+
+TITLE: USS Property: background-color
+DESCRIPTION: Sets the background color to paint in the element's box.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_3
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;color&gt;
+```
+
+----------------------------------------
+
+TITLE: Values for width USS
+DESCRIPTION: Sets the fixed width of an element for the layout. Accepts a length, percentage, or auto.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_44
+
+LANGUAGE: USS
+CODE:
+```
+<length> | <percentage> | auto
+```
+
+----------------------------------------
+
+TITLE: USS Property: color
+DESCRIPTION: Sets the color to use when drawing the text of an element. This property is inherited by child elements.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_21
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;color&gt;
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-text-align USS
+DESCRIPTION: Specifies the horizontal and vertical text alignment within the element's box.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_37
+
+LANGUAGE: USS
+CODE:
+```
+upper-left | middle-left | lower-left | upper-center | middle-center | lower-center | upper-right | middle-right | lower-right
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-font USS
+DESCRIPTION: Defines the font used to draw the element's text. Accepts a resource path or a URL.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_28
+
+LANGUAGE: USS
+CODE:
+```
+<resource> | <url>
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-font-definition USS
+DESCRIPTION: Defines the font used to draw the element's text. Accepts a resource path or a URL.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_29
+
+LANGUAGE: USS
+CODE:
+```
+<resource> | <url>
+```
+
+----------------------------------------
+
+TITLE: USS Property: flex-direction
+DESCRIPTION: Sets the direction of the main axis to layout children in a container. Determines the orientation (row or column) and direction (normal or reversed) of flex items.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_26
+
+LANGUAGE: USS Syntax
+CODE:
+```
+column \| row \| column-reverse \| row-reverse
+```
+
+----------------------------------------
+
+TITLE: USS Property: align-items
+DESCRIPTION: Defines the default alignment for items within a container along the cross axis. This property applies to the container and affects all its direct children.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_1
+
+LANGUAGE: USS Syntax
+CODE:
+```
+flex-start \| flex-end \| center \| stretch \| auto
+```
+
+----------------------------------------
+
+TITLE: USS Property: bottom
+DESCRIPTION: Sets the bottom distance from the element's box during layout. Can be a length, a percentage, or auto.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_20
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt; \| &lt;percentage&gt; \| auto
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-font-style USS
+DESCRIPTION: Specifies the font style and weight (normal, bold, italic) to draw the element's text.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_30
+
+LANGUAGE: USS
+CODE:
+```
+normal | italic | bold | bold-and-italic
+```
+
+----------------------------------------
+
+TITLE: USS Property: background-image
+DESCRIPTION: Sets the background image to paint in the element's box. It can be a resource path, a URL, or none.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_4
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;resource&gt; \| &lt;url&gt; \| none
+```
+
+----------------------------------------
+
+TITLE: USS Property: flex
+DESCRIPTION: A shorthand property for setting flex-grow, flex-shrink, and flex-basis simultaneously.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_24
+
+LANGUAGE: USS Syntax
+CODE:
+```
+none \| [ &lt;'flex-grow'&gt; &lt;'flex-shrink'&gt;? \|\| &lt;'flex-basis'&gt; ]
+```
+
+----------------------------------------
+
+TITLE: USS Property: align-content
+DESCRIPTION: Describes how the whole area of children is aligned on the cross axis within a container when they span over multiple lines. This property applies to the container itself.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_0
+
+LANGUAGE: USS Syntax
+CODE:
+```
+flex-start \| flex-end \| center \| stretch \| auto
+```
+
+----------------------------------------
+
+TITLE: USS Property: align-self
+DESCRIPTION: Overrides the align-items value for a specific flex item. It defines the alignment of that single item along the cross axis, independent of its siblings.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_2
+
+LANGUAGE: USS Syntax
+CODE:
+```
+flex-start \| flex-end \| center \| stretch \| auto
+```
+
+----------------------------------------
+
+TITLE: USS Property: flex-basis
+DESCRIPTION: Sets the initial main size of a flex item on the main flex axis. The final size may be adjusted by flex shrinking and growing.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_25
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;'width'&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-radius
+DESCRIPTION: A shorthand property for setting border-top-left-radius, border-top-right-radius, border-bottom-right-radius, and border-bottom-left-radius simultaneously. Accepts one to four length or percentage values.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_12
+
+LANGUAGE: USS Syntax
+CODE:
+```
+[ &lt;length&gt; \| &lt;percentage&gt; ]{1,4}
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-width
+DESCRIPTION: A shorthand property for setting border-top-width, border-right-width, border-bottom-width, and border-left-width simultaneously. Accepts one to four length values.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_19
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt;{1,4}
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-color
+DESCRIPTION: A shorthand property for setting border-top-color, border-right-color, border-bottom-color, and border-left-color simultaneously. Accepts one to four color values.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_9
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;color&gt;{1,4}
+```
+
+----------------------------------------
+
+TITLE: USS Property: cursor
+DESCRIPTION: Sets the mouse cursor to display when the mouse pointer is over an element. Can be a resource, a URL with optional hotspot coordinates, or a predefined keyword.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_22
+
+LANGUAGE: USS Syntax
+CODE:
+```
+[ [ &lt;resource&gt; \| &lt;url&gt; ] [ &lt;integer&gt; &lt;integer&gt; ]? ] \| [ arrow \| text \| resize-vertical \| resize-horizontal \| link \| slide-arrow \| resize-up-right \| resize-up-left \| move-arrow \| rotate-arrow \| scale-arrow \| arrow-plus \| arrow-minus \| pan \| orbit \| zoom \| fps \| split-resize-up-down \| split-resize-left-right ]
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-background-scale-mode USS
+DESCRIPTION: Specifies how a background image is scaled within the element's box. Possible values are stretch-to-fill, scale-and-crop, or scale-to-fit.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_27
+
+LANGUAGE: USS
+CODE:
+```
+stretch-to-fill | scale-and-crop | scale-to-fit
+```
+
+----------------------------------------
+
+TITLE: Values for white-space USS
+DESCRIPTION: Controls word wrapping over multiple lines if there is not enough space available to draw the text of an element.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_43
+
+LANGUAGE: USS
+CODE:
+```
+normal | nowrap
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-top-left-radius
+DESCRIPTION: Sets the radius of the top-left corner when a rounded rectangle is drawn in the element's box. Can be a length or a percentage.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_16
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt; \| &lt;percentage&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-bottom-left-radius
+DESCRIPTION: Sets the radius of the bottom-left corner when a rounded rectangle is drawn in the element's box. Can be a length or a percentage.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_6
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt; \| &lt;percentage&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-bottom-right-radius
+DESCRIPTION: Sets the radius of the bottom-right corner when a rounded rectangle is drawn in the element's box. Can be a length or a percentage.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_7
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt; \| &lt;percentage&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-top-right-radius
+DESCRIPTION: Sets the radius of the top-right corner when a rounded rectangle is drawn in the element's box. Can be a length or a percentage.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_17
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt; \| &lt;percentage&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-left-width
+DESCRIPTION: Sets the space reserved for the left edge of the border during the layout phase. Specified as a length.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_11
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-top-width
+DESCRIPTION: Sets the space reserved for the top edge of the border during the layout phase. Specified as a length.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_18
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-right-width
+DESCRIPTION: Sets the space reserved for the right edge of the border during the layout phase. Specified as a length.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_14
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-bottom-width
+DESCRIPTION: Sets the space reserved for the bottom edge of the border during the layout phase. Specified as a length.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_8
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;length&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-right-color
+DESCRIPTION: Sets the color of the element's right border.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_13
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;color&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-left-color
+DESCRIPTION: Sets the color of the element's left border.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_10
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;color&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-top-color
+DESCRIPTION: Sets the color of the element's top border.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_15
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;color&gt;
+```
+
+----------------------------------------
+
+TITLE: USS Property: border-bottom-color
+DESCRIPTION: Sets the color of the element's bottom border.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_5
+
+LANGUAGE: USS Syntax
+CODE:
+```
+&lt;color&gt;
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-paragraph-spacing USS
+DESCRIPTION: Increases or decreases the space between paragraphs using a length value.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_32
+
+LANGUAGE: USS
+CODE:
+```
+<length>
+```
+
+----------------------------------------
+
+TITLE: Values for word-spacing USS
+DESCRIPTION: Increases or decreases the space between words using a length value.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_45
+
+LANGUAGE: USS
+CODE:
+```
+<length>
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-text-overflow-position USS
+DESCRIPTION: Specifies the position where the element's text overflow is indicated.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_41
+
+LANGUAGE: USS
+CODE:
+```
+start | middle | end
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-text-outline USS
+DESCRIPTION: A shorthand property for setting both -unity-text-outline-color and -unity-text-outline-width.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_38
+
+LANGUAGE: USS
+CODE:
+```
+<length> || <color>
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-overflow-clip-box USS
+DESCRIPTION: Specifies which box the element content is clipped against, either the padding box or the content box.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_31
+
+LANGUAGE: USS
+CODE:
+```
+padding-box | content-box
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-text-outline-color USS
+DESCRIPTION: Sets the outline color of the text using a color value.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_39
+
+LANGUAGE: USS
+CODE:
+```
+<color>
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-text-outline-width USS
+DESCRIPTION: Sets the outline width of the text using a length value.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_40
+
+LANGUAGE: USS
+CODE:
+```
+<length>
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-slice-top USS
+DESCRIPTION: Sets the size of the 9-slice's top edge when painting an element's background image, using an integer value.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_36
+
+LANGUAGE: USS
+CODE:
+```
+<integer>
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-slice-left USS
+DESCRIPTION: Sets the size of the 9-slice's left edge when painting an element's background image, using an integer value.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_34
+
+LANGUAGE: USS
+CODE:
+```
+<integer>
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-slice-bottom USS
+DESCRIPTION: Sets the size of the 9-slice's bottom edge when painting an element's background image, using an integer value.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_33
+
+LANGUAGE: USS
+CODE:
+```
+<integer>
+```
+
+----------------------------------------
+
+TITLE: Values for -unity-slice-right USS
+DESCRIPTION: Sets the size of the 9-slice's right edge when painting an element's background image, using an integer value.
+SOURCE: https://github.com/needle-mirror/com.unity.ui/blob/master/Documentation~/include-uss-properties.md#_snippet_35
+
+LANGUAGE: USS
+CODE:
+```
+<integer>
+```

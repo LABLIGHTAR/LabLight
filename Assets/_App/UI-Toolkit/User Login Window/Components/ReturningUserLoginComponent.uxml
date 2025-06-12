@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <ui:VisualElement class="view-container">
+        <ui:VisualElement name="main-content">
+            <ui:VisualElement class="profile-image-area">
+                <ui:VisualElement name="profile-image" class="profile-image" />
+            </ui:VisualElement>
+            <ui:Label text="Welcome Back, [User]!" name="welcome-label" class="h2 text-block-centered-spacious" />
+            <ui:TextField name="password-field" label="Password" class="form-field" password="true"/>
+            <ui:VisualElement name="error-label-container" class="error-message-area">
+                <ui:Label name="error-label" class="error-message-label hidden" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="button-container" class="button-container-column">
+            <ui:Button name="login-button" text="Login" class="button button-primary" />
+            <ui:Button name="back-button" text="Switch User" class="button button-secondary" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 

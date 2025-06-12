@@ -1,0 +1,84 @@
+/* CalculatorWindow.uss */
+
+.calculator-container {
+    width: 450px;
+    min-height: 550px;
+    padding: 20px;
+}
+
+.calculator-display {
+    font-size: 48px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-right;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    min-height: 70px;
+    white-space: normal;
+}
+
+.calculator-button-grid {
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+.button-row {
+    flex-grow: 1;
+    flex-direction: row;
+    margin-bottom: 5px;
+}
+
+.button-row > .button {
+    flex-grow: 1;
+    margin: 3px;
+    font-size: 18px;
+    -unity-font-style: bold;
+    padding: 0; /* Remove default padding to fit grid */
+}
+
+/* Specific button styling */
+.button-number {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.button-number:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.button-operator {
+    background-color: rgba(100, 100, 100, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.button-operator:hover {
+    background-color: rgba(100, 100, 100, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.button-utility {
+    background-color: rgba(255, 165, 0, 0.3); /* Orange tint */
+    border-color: rgba(255, 165, 0, 0.5);
+}
+
+.button-utility:hover {
+    background-color: rgba(255, 165, 0, 0.5);
+    border-color: rgba(255, 165, 0, 0.7);
+}
+
+.button-equals {
+    background-color: rgba(100, 150, 255, 0.4); /* Blue tint */
+    border-color: rgba(100, 150, 255, 0.6);
+}
+
+.button-equals:hover {
+    background-color: rgba(100, 150, 255, 0.6);
+    border-color: rgba(100, 150, 255, 0.8);
+}
+
+/* Special case for the zero button to span two columns */
+.button-zero {
+    flex-grow: 2.1; /* Approx double width + margin */
+} 

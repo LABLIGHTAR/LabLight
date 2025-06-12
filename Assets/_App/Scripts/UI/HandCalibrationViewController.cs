@@ -119,7 +119,7 @@ public class HandCalibrationViewController : MonoBehaviour
             -0.6789629f, 0.827593f, 0.7930077f
         );
         SessionManager.instance.UpdateCalibration(calibrationMatrix);
-        var originInstance = Instantiate(originPrefab, SessionManager.instance.CharucoTransform.position, SessionManager.instance.CharucoTransform.rotation);
+        var originInstance = Instantiate(originPrefab, SessionState.CharucoTransform.position, SessionState.CharucoTransform.rotation);
         Debug.Log("Lablight: origin position " + originInstance.transform.position);
     }
 
@@ -299,7 +299,7 @@ public class HandCalibrationViewController : MonoBehaviour
         calibrationManager.UpdateCalibrationStatus("Calibration complete");
         calibrationManager.CalibrationStarted(inCalibration);
         //ARAnchor anchor = anchorManager.AttachAnchor(planeSelected, calibrationPose);
-        var originInstance = Instantiate(originPrefab, SessionManager.instance.CharucoTransform.position, SessionManager.instance.CharucoTransform.rotation);
+        var originInstance = Instantiate(originPrefab, SessionState.CharucoTransform.position, SessionState.CharucoTransform.rotation);
 
         Debug.Log("Lablight: origin position " + originInstance.transform.position);
 

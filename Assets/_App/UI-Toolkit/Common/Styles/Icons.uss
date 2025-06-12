@@ -1,0 +1,137 @@
+/* === Iconography === */
+/* Defines reusable classes for SVG icons. */
+
+/* Navigation & General UI */
+.icon-home {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/home_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-home-filled {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/home_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-settings {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/settings_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-account {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/account_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-group {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/groups_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-delete {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-add {
+    -unity-background-image-tint-color: rgb(227, 227, 227); 
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/add_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-star {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/star_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-refresh {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/refresh_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+/* Actions & Content Types */
+.icon-camera {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/photo_camera_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-pdf {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/picture_as_pdf_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-calculator {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/calculate_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-chat {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/chat_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-timer {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/alarm_add_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-notifications {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/notifications_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-logout {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/logout_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+}
+
+/* Status Indicators */
+.icon-check-circle {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/check_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-error {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/error_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-warning {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/warning_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+/* Arrows & Direction */
+.icon-arrow-left {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/arrow_circle_left_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-arrow-right {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/arrow_circle_right_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-arrow-split {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/arrow_split_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+/* Specialized Icons */
+.icon-radio-unchecked {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/radio_button_unchecked_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-change-circle {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/change_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-signature {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/signature_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-chat-unread {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/mark_unread_chat_alt_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+} 

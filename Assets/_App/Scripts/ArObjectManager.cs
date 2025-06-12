@@ -19,6 +19,7 @@ public class ArObjectManager : MonoBehaviour
     private Coroutine placementCoroutine;
     private bool isInitialized;
     private int pendingArViewInitializations = 0;
+    private IFileManager fileManager;
 
     private void Awake()
     {
@@ -79,7 +80,7 @@ public class ArObjectManager : MonoBehaviour
 
     private bool TryGetWorkspaceTransform()
     {
-        workspaceTransform = SessionManager.instance?.CharucoTransform;
+        workspaceTransform = SessionState.WorkspaceTransform;
         if (workspaceTransform == null)
         {
             Debug.LogError("WorkspaceTransform not found");
@@ -100,12 +101,41 @@ public class ArObjectManager : MonoBehaviour
 
     private void CreateArView(ArObject arObject)
     {
-        var prefabPath = $"Models/{arObject.rootPrefabName}.prefab";
+        var prefabPath = $"Models/{arObject.rootPrefabName}";
         
-        ServiceRegistry.GetService<IMediaProvider>()?.GetPrefab(prefabPath)
+        if (fileManager == null)
+        {
+            fileManager = ServiceRegistry.GetService<IFileManager>();
+            if (fileManager == null)
+            {
+                Debug.LogError("[ArObjectManager] IFileManager service not found!");
+                pendingArViewInitializations--;
+                CheckInitializationComplete();
+                return;
+            }
+        }
+
+        fileManager.GetPrefabAsync(prefabPath)
+            .ToObservable()
+            .ObserveOnMainThread()
             .Subscribe(
-                prefab => InstantiateArView(prefab, arObject),
-                error => Debug.LogError($"[ArObjectManager] Failed to load prefab {prefabPath}: {error}")
+                result => {
+                    if (result.Success && result.Data != null)
+                    {
+                        InstantiateArView(result.Data, arObject);
+                    }
+                    else
+                    {
+                        Debug.LogError($"[ArObjectManager] Failed to load prefab {prefabPath}. Error: {result.Error?.Code} - {result.Error?.Message}");
+                        pendingArViewInitializations--;
+                        CheckInitializationComplete();
+                    }
+                },
+                error => {
+                    Debug.LogError($"[ArObjectManager] Exception during prefab loading observable for {prefabPath}: {error}");
+                    pendingArViewInitializations--;
+                    CheckInitializationComplete();
+                }
             )
             .AddTo(this);
     }

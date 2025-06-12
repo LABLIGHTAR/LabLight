@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using UniRx;
 using System;
+using System.Threading.Tasks;
 
 /// <summary>
 /// Image content item 
@@ -10,6 +11,7 @@ public class ImageController : ContentController<ContentItem>
 {
     public Image Image;
     private IDisposable downloadSubscription;
+    private IFileManager fileManager;
 
     public override ContentItem ContentItem
     {
@@ -28,42 +30,73 @@ public class ImageController : ContentController<ContentItem>
         downloadSubscription = null;
     }
 
-    private void UpdateView()
+    private async void UpdateView()
     {
-        if (ContentItem == null || !ContentItem.properties.TryGetValue("url", out object urlValue)) 
+        if (ContentItem == null || !ContentItem.properties.TryGetValue("url", out object urlValue))
         {
-            Debug.LogError("ImageController: No URL found in properties");
+            Debug.LogError("ImageController: No URL/objectKey found in properties");
             return;
         }
 
-        var imagePath = urlValue.ToString();
+        var objectKey = urlValue.ToString();
+        if (string.IsNullOrEmpty(objectKey))
+        {
+            Debug.LogError("ImageController: URL/objectKey is null or empty.");
+            return;
+        }
 
         downloadSubscription?.Dispose();
         downloadSubscription = null;
         Image.enabled = false;
 
-        // Start new download
-        downloadSubscription = ServiceRegistry.GetService<IMediaProvider>().GetSprite(imagePath).Subscribe(sprite =>
+        if (fileManager == null)
         {
-            if (sprite == null)
+            fileManager = ServiceRegistry.GetService<IFileManager>();
+            if (fileManager == null)
             {
+                Debug.LogError("ImageController: IFileManager service not found!");
                 return;
             }
+        }
 
-            Image.sprite = sprite;
-            Image.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, transform.parent.GetComponent<RectTransform>().rect.width);
-            Image.enabled = true;
-
-            var fitter = this.GetComponent<AspectRatioFitter>();
-            if (fitter != null)
+        // Start new download using FileManager
+        // Convert Task<Result<byte[]>> to IObservable<Result<byte[]>> for UniRx subscription
+        downloadSubscription = fileManager.GetMediaFileAsync(objectKey)
+            .ToObservable()
+            .ObserveOnMainThread() // Ensure UI and texture operations are on the main thread
+            .Subscribe(result =>
             {
-               var ratio = (float)Image.sprite.rect.width / (float)Image.sprite.rect.height;
-               fitter.aspectRatio = ratio;
-            }
-        }, (e) =>
-        {
-            Debug.Log("######LABLIGHT Could not load image " + imagePath + ". " + e.ToString());
-            //ServiceRegistry.Logger.LogError("Could not load image " + imagePath + ". " + e.ToString());
-        });
+                if (result.Success && result.Data != null && result.Data.Length > 0)
+                {
+                    // Convert byte[] to Texture2D, then to Sprite
+                    Texture2D texture = new Texture2D(2, 2); // Dimensions will be overwritten by LoadImage
+                    if (texture.LoadImage(result.Data)) // LoadImage auto-resizes the texture
+                    {
+                        Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                        Image.sprite = newSprite;
+                        Image.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, transform.parent.GetComponent<RectTransform>().rect.width);
+                        Image.enabled = true;
+
+                        var fitter = this.GetComponent<AspectRatioFitter>();
+                        if (fitter != null)
+                        {
+                            var ratio = (float)texture.width / (float)texture.height;
+                            fitter.aspectRatio = ratio;
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError("ImageController: Failed to load image data into texture for " + objectKey);
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"ImageController: Could not load image '{objectKey}'. Error: {result.Error?.Code} - {result.Error?.Message}");
+                }
+            }, ex =>
+            {
+                Debug.LogError($"ImageController: Exception while loading image '{objectKey}'. {ex.ToString()}");
+            })
+            .AddTo(this); // Add to manage subscription lifecycle
     }
 }

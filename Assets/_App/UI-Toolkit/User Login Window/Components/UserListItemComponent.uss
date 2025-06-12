@@ -1,0 +1,41 @@
+.user-item {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 100%;
+    transition: scale 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
+}
+
+.user-item:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    scale: 1.02 1.02;
+}
+
+.user-item:active {
+    scale: 0.99 0.99;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.user-item-selected {
+    background-color: rgba(100, 150, 255, 0.3);
+    border-color: rgba(100, 150, 255, 0.5);
+}
+
+.user-item-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    margin-right: 15px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-item-name-label {
+    font-size: 18px;
+    color: white;
+} 

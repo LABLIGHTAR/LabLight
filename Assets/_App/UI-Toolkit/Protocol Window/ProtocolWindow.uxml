@@ -1,0 +1,46 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="ProtocolWindow.uss" />
+    <Style src="/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss" />
+    <Style src="/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss" />
+    <ui:VisualElement name="protocol-view-root" class="protocol-view-root">
+        <ui:VisualElement name="checklist-panel" class="content-column-panel protocol-view-left-panel">
+            <ui:Label name="checklist-step-title-label" text="Step Title Placeholder" class="checklist-step-title" />
+            <ui:VisualElement name="checklist-header" class="protocol-view-header">
+                <ui:Button name="previous-step-button" class="icon-button nav-icon-button icon-arrow-left" />
+                <ui:Label name="step-indicator-label" text="Step 1 / X" class="step-indicator" />
+                <ui:Button name="next-step-button" class="icon-button nav-icon-button icon-arrow-right" />
+            </ui:VisualElement>
+            <ui:ScrollView name="checklist-scroll-view" class="protocol-scroll-view">
+                <ui:VisualElement name="checklist-container" />
+            </ui:ScrollView>
+            <ui:VisualElement name="checklist-footer" class="protocol-view-footer checklist-signoff-footer">
+                <ui:VisualElement class="horizontal-separator" />
+                <ui:VisualElement name="sign-off-area" class="sign-off-area-container">
+                    <ui:Button name="sign-off-action-button" class="icon-button icon-signature sign-off-icon-button" />
+                    <ui:Label name="signature-line-label" class="signature-line" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="content-panel" class="content-column-panel protocol-view-right-panel">
+            <ui:Label name="protocol-title-label" text="Protocol Title" class="h1 protocol-content-title" />
+            <ui:ScrollView name="protocol-content-scroll-view" class="protocol-scroll-view">
+                <ui:VisualElement name="protocol-content-container">
+                    <ui:Label name="protocol-description-top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." class="text-block" />
+                    <ui:Image name="protocol-image" class="protocol-main-image" />
+                    <ui:Label name="protocol-description-bottom" text="Sagittis hendrerit nunc tristique porta in sed faucibus. Ut nec fermentum velit id sit cras nulla eu. Sed id ac sed ornare elit nisi. Consequat in posuere mollis purus. Nunc sagittis ultrices mauris nisl in." class="text-block" />
+                </ui:VisualElement>
+            </ui:ScrollView>
+            <ui:VisualElement name="content-footer" class="protocol-view-footer">
+                <ui:VisualElement class="horizontal-separator" />
+                <ui:VisualElement name="action-buttons-container" class="button-group-row-spaced">
+                    <ui:Button name="camera-button" class="icon-button icon-camera" />
+                    <ui:Button name="pdf-button" class="icon-button icon-pdf" />
+                    <ui:Button name="calculator-button" class="icon-button icon-calculator" />
+                    <ui:Button name="timer-button" class="icon-button icon-timer" />
+                    <ui:Button name="comments-button" class="icon-button icon-chat" />
+                    <ui:Button name="ar-view-button" class="icon-button icon-change-circle" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 

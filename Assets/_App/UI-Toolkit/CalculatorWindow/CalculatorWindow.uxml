@@ -1,0 +1,75 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <Style src="CalculatorWindow.uss" />
+    <ui:VisualElement name="calculator-window" class="glassmorphic-panel calculator-container">
+        <!-- Display -->
+        <ui:Label text="0" name="display-label" class="calculator-display" />
+
+        <!-- Button Grid -->
+        <ui:VisualElement name="button-grid" class="calculator-button-grid">
+            <!-- Row 1: Mode and Memory -->
+            <ui:VisualElement class="button-row">
+                <ui:Button text="Deg" name="mode-button" class="button button-utility" />
+                <ui:Button text="M+" name="mem-add-button" class="button button-utility" />
+                <ui:Button text="MR" name="mem-recall-button" class="button button-utility" />
+                <ui:Button text="MC" name="mem-clear-button" class="button button-utility" />
+                <ui:Button text="x!" name="factorial-button" class="button button-operator" />
+            </ui:VisualElement>
+            <!-- Row 2: Inverse Trig -->
+            <ui:VisualElement class="button-row">
+                <ui:Button text="sin⁻¹" name="asin-button" class="button button-operator" />
+                <ui:Button text="cos⁻¹" name="acos-button" class="button button-operator" />
+                <ui:Button text="tan⁻¹" name="atan-button" class="button button-operator" />
+                <ui:Button text="log" name="log-button" class="button button-operator" />
+                <ui:Button text="ln" name="ln-button" class="button button-operator" />
+            </ui:VisualElement>
+            <!-- Row 3: Standard Trig and Functions -->
+            <ui:VisualElement class="button-row">
+                <ui:Button text="sin" name="sin-button" class="button button-operator" />
+                <ui:Button text="cos" name="cos-button" class="button button-operator" />
+                <ui:Button text="tan" name="tan-button" class="button button-operator" />
+                <ui:Button text="√" name="sqrt-button" class="button button-operator" />
+                <ui:Button text="x²" name="sqr-button" class="button button-operator" />
+            </ui:VisualElement>
+            <!-- Row 4: Parens, Constants, and Power -->
+            <ui:VisualElement class="button-row">
+                <ui:Button text="(" name="left-paren-button" class="button button-operator" />
+                <ui:Button text=")" name="right-paren-button" class="button button-operator" />
+                <ui:Button text="π" name="pi-button" class="button button-number" />
+                <ui:Button text="e" name="e-button" class="button button-number" />
+                <ui:Button text="^" name="power-button" class="button button-operator" />
+            </ui:VisualElement>
+            <!-- Row 5: Standard -->
+            <ui:VisualElement class="button-row">
+                <ui:Button text="7" name="button-7" class="button button-number" />
+                <ui:Button text="8" name="button-8" class="button button-number" />
+                <ui:Button text="9" name="button-9" class="button button-number" />
+                <ui:Button text="÷" name="divide-button" class="button button-operator" />
+                <ui:Button text="C" name="clear-button" class="button button-utility" />
+            </ui:VisualElement>
+            <!-- Row 6: Standard -->
+            <ui:VisualElement class="button-row">
+                <ui:Button text="4" name="button-4" class="button button-number" />
+                <ui:Button text="5" name="button-5" class="button button-number" />
+                <ui:Button text="6" name="button-6" class="button button-number" />
+                <ui:Button text="×" name="multiply-button" class="button button-operator" />
+                <ui:Button text="CE" name="clear-entry-button" class="button button-utility" />
+            </ui:VisualElement>
+            <!-- Row 7: Standard -->
+            <ui:VisualElement class="button-row">
+                <ui:Button text="1" name="button-1" class="button button-number" />
+                <ui:Button text="2" name="button-2" class="button button-number" />
+                <ui:Button text="3" name="button-3" class="button button-number" />
+                <ui:Button text="-" name="subtract-button" class="button button-operator" />
+                <ui:Button text="=" name="equals-button" class="button button-equals" />
+            </ui:VisualElement>
+            <!-- Row 8: Standard -->
+            <ui:VisualElement class="button-row">
+                <ui:Button text="±" name="negate-button" class="button button-operator" />
+                <ui:Button text="0" name="button-0" class="button button-number button-zero" />
+                <ui:Button text="." name="decimal-button" class="button button-number" />
+                <ui:Button text="+" name="add-button" class="button button-operator" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 

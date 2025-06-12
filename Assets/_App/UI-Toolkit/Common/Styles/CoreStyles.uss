@@ -1,0 +1,366 @@
+/* CoreStyles.uss - Reorganized */
+
+/* === Global Styles === */
+* {
+    color: white;
+}
+
+/* === Layout - Panels & Containers === */
+.glassmorphic-panel {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    margin-bottom: auto;
+    min-width: 400px;
+    padding: 25px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    width: 100%; /* Ensure it takes available width to space items */
+}
+
+.view-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.content-column-panel {
+    height: 100%;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 15px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.form-layout-stretched {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-grow: 1;
+}
+
+.profile-image-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.profile-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.error-message-area {
+    min-height: 20px; 
+    margin-top: 10px;
+    margin-bottom: 5px;
+    display: flex; 
+    align-items: center;
+}
+
+/* === Layout - Flex Utilities === */
+.flex-row-center-items {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.flex-grow-column {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+/* === Layout - Button Groups === */
+.button-group-row-spaced {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%; /* Ensure it takes available width to space items */
+}
+
+.button-container-column {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+}
+
+/* === Typography === */
+.title-label {
+    font-size: 12px;
+    -unity-font-style: bold;
+    margin-bottom: 20px;
+    -unity-text-align: upper-center;
+}
+
+.h1 { 
+    font-size: 24px;
+}
+
+.h2 { 
+    font-size: 18px; 
+    color: rgb(220, 220, 220); 
+}
+
+.h3 { 
+    font-size: 16px; 
+    color: rgb(200, 200, 200); 
+    margin-bottom: 5px; 
+}
+
+.text-block-centered-spacious {
+    -unity-text-align: middle-center;
+    align-self: center;
+    margin-bottom: 20px;
+}
+
+.text-wrap-normal {
+    white-space: normal;
+}
+
+.font-size-large {
+    font-size: 18px;
+}
+
+/* === Buttons === */
+.button {
+    border-radius: 15px;
+    padding: 12px 25px;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    border-width: 1px;
+    -unity-font-style: bold;
+    transition: scale 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
+}
+
+.button-primary {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.button-primary:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    scale: 1.05 1.05;
+}
+
+.button-primary:active {
+    background-color: rgba(255, 255, 255, 0.1);
+    scale: 0.98 0.98;
+}
+
+.button-secondary {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.button-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+    scale: 1.05 1.05;
+}
+
+.button-secondary:active {
+    background-color: rgba(255, 255, 255, 0.02);
+    scale: 0.98 0.98;
+}
+
+/* === Input Fields === */
+.form-field {
+    width: 100%; 
+    margin-bottom: 15px;
+    /* Stack label on top of input */
+    flex-direction: column;
+    align-items: stretch;
+    --unity-cursor-color: white;
+    --unity-selection-color: rgba(100, 150, 255, 0.5);
+}
+
+.form-field > .unity-label {
+    font-size: 16px;
+    margin-bottom: 5px;
+    -unity-font-style: bold;
+    /* Remove default width constraints and align left */
+    max-width: 100%;
+    min-width: 0;
+    margin-left: 0;
+    -unity-text-align: middle-left;
+}
+
+.form-field > .unity-text-input,
+.form-field > .unity-base-text-field__input {
+    background-color: rgba(0, 0, 0, 0.25);
+    border-color: rgba(255, 255, 255, 0.2);
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 10px 12px;
+    min-height: 40px;
+    flex-grow: 0; /* Prevent vertical stretching */
+    width: 100%;
+    min-width: 0;
+    transition: scale 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
+}
+
+.form-field > .unity-text-input:hover,
+.form-field > .unity-base-text-field__input:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.form-field > .unity-text-input:focus,
+.form-field > .unity-base-text-field__input:focus {
+    border-color: rgba(100, 150, 255, 0.8);
+    background-color: rgba(0, 0, 0, 0.4);
+    scale: 1.01 1.01;
+}
+
+/* === Component-Specific: Scroll Views === */
+.content-scroll-view {
+    width: 100%;
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    flex-grow: 1;
+}
+
+.scroll-view-fixed-height {
+    min-height: 300px;
+    max-height: 500px;
+    flex-grow: 0;
+}
+
+/* === Utility - Spacing === */
+.margin-top-medium {
+    margin-top: 20px;
+}
+
+.margin-left-small {
+    margin-left: 10px;
+}
+
+.margin-bottom-small {
+    margin-bottom: 10px;
+}
+
+/* === Utility - Visibility === */
+.hidden {
+    display: none;
+}
+
+/* === Utility - Placeholders & Sizing === */
+.placeholder-box-base {
+    background-color: rgba(128, 128, 128, 0.3); /* Common placeholder background */
+}
+
+.height-50px {
+    height: 50px;
+}
+
+.height-100px {
+    height: 100px;
+}
+
+/* === Utility - Separators === */
+.horizontal-separator {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin-top: 5px; /* Optional: provide some default spacing */
+    margin-bottom: 5px; /* Optional: provide some default spacing */
+}
+
+/* === Utility - Text === */
+.text-block {
+    white-space: normal;
+    color: rgb(220, 220, 220); /* Default color, can be overridden */
+    font-size: 14px; /* Default size, can be overridden */
+    margin-bottom: 10px; /* Default spacing */
+}
+
+/* === Utility - Icon Buttons === */
+.icon-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.2);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 4px 5px;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 16px;
+    background-size: 60% 60%; /* Scale icon to 60% of the button's size */
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: scale 0.15s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
+}
+
+.icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    scale: 1.1 1.1;
+}
+
+.icon-button:active {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    scale: 0.95 0.95;
+}
+
+/* Styles for the main clickable area (protocol name/owner) */
+/* This class is on the select-protocol-area-button */
+.protocol-select-area {
+    flex-grow: 1; /* Allow this area to take up available horizontal space */
+    background-color: transparent !important; /* Ensure transparency, overriding other button styles */
+    border-width: 0 !important; /* Ensure no border, overriding other button styles */
+    padding: 0; /* Remove default button padding for this specific area */
+    margin-right: 10px; /* Space between the select area and the action buttons group */
+    /* Ensure text alignment is to the left if default button styles center it */
+    /* The content within (info-container) should align itself */
+    justify-content: flex-start; /* Aligns the info-container to the left within the button area */
+    /* Remove any specific width constraints from .protocol-item-button that might conflict */
+    min-width: 0; 
+    max-width: none;
+    margin-left: 0; /* Override margin-left: auto from .protocol-item-button */
+}
+
+/* Ensure the info container within the select area fills it and aligns text correctly */
+.protocol-select-area > .protocol-item-info-container {
+    width: 100%; /* Make info container take full width of the select-area button */
+    /* Text alignment for labels within is handled by .protocol-name and .owner-name */
+}
+
+/* Style for the group of action buttons (Save, Delete) */
+.protocol-item-actions-group {
+    display: flex; /* Make it a flex container */
+    flex-direction: column; /* Stack Save and Delete vertically */
+    flex-shrink: 0; /* Prevent this group from shrinking */
+    justify-content: flex-start; /* Align buttons to the top of the group */
+}
+
+/* Override margins for action buttons within the vertical group */
+.protocol-item-actions-group > .action-button {
+    margin-top: 0;    /* Remove top margin for the first button if it's from .action-button default */
+    margin-bottom: 8px; /* Space between buttons */
+    margin-left: 0;   /* Ensure no unintended horizontal margins */
+    margin-right: 0;
+    width: 100%; /* Make buttons in the group take the width of the group */
+} 

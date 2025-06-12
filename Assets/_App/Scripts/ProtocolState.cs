@@ -15,7 +15,6 @@ public class ProtocolState : MonoBehaviour
     public ReactiveProperty<DateTime> StartTime { get; } = new ReactiveProperty<DateTime>();
     public ReactiveCollection<StepState> Steps { get; } = new ReactiveCollection<StepState>();
     public ReactiveProperty<int> CurrentStep { get; } = new ReactiveProperty<int>();
-    public ReactiveProperty<string> CsvPath { get; } = new ReactiveProperty<string>();
 
     // Data streams
     public Subject<ProtocolDefinition> ProtocolStream { get; } = new Subject<ProtocolDefinition>();
@@ -76,7 +75,6 @@ public class ProtocolState : MonoBehaviour
         ProtocolTitle.Value = protocolDefinition.title;
 
         InitializeSteps(protocolDefinition);
-        InitCSV();
 
         ServiceRegistry.GetService<ILighthouseControl>()?.SetProtocolStatus();
         ProtocolStream.OnNext(protocolDefinition);
@@ -85,15 +83,6 @@ public class ProtocolState : MonoBehaviour
 
     private void InitializeSteps(ProtocolDefinition protocolDefinition)
     {
-        // var arModels = protocolDefinition.globalArObjects
-        //     .Where(x => x.arDefinitionType == ArDefinitionType.Model)
-        //     .Cast<ModelArDefinition>()
-        //     .ToList();
-
-        // if (arModels.Count > 0)
-        // {
-        //     protocolDefinition.steps.Insert(0, CreateLockingStep(arModels));
-        // }
 
         foreach (var step in protocolDefinition.steps)
         {
@@ -108,27 +97,6 @@ public class ProtocolState : MonoBehaviour
         }
         SetStep(0);
     }
-
-    //TODO: move this to a protocol definition class
-    // private StepDefinition CreateLockingStep(List<ModelArDefinition> arModels) remake
-    // {
-    //     var checkList = new List<CheckItemDefinition>
-    //     {
-    //         new CheckItemDefinition { Text = "Place the items listed below on your workspace" }
-    //     };
-
-    //     checkList.AddRange(arModels.Select(arModel => new CheckItemDefinition
-    //     {
-    //         Text = arModel.name,
-    //         operations = new List<ArOperation> { new AnchorArOperation { arDefinition = arModel } }
-    //     }));
-
-    //     return new StepDefinition
-    //     {
-    //         checklist = checkList
-    //     };
-    // }
-
     public void SetStep(int step)
     {
         if (step < 0 || ActiveProtocol.Value == null || Steps == null || step >= Steps.Count)
@@ -189,18 +157,6 @@ public class ProtocolState : MonoBehaviour
 
         currentStep.SignedOff.Value = true;
         ServiceRegistry.GetService<ILighthouseControl>()?.SetProtocolStatus();
-    }
-
-    //TODO: move this to another class
-    private void InitCSV()
-    {
-        string fileName = $"{ProtocolTitle.Value}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.csv";
-        string csvPath = Path.Combine(Application.persistentDataPath, fileName);
-        if (!File.Exists(csvPath))
-        {
-            File.WriteAllText(csvPath, "Action,Result,Completion Time\n");
-        }
-        CsvPath.Value = csvPath;
     }
 
     public class StepState

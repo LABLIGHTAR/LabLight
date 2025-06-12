@@ -1,0 +1,102 @@
+/* TimerWindow.uss */
+.timer-container {
+    width: 450px;
+    padding: 20px;
+    justify-content: space-between;
+}
+
+.display-container {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin: 20px 0;
+}
+
+.display-label {
+    font-size: 72px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-right;
+    /* A more "digital" looking font would be ideal here if available */
+}
+
+.button-row-presets,
+.button-row-controls {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.button-pair {
+    flex-direction: row;
+    border-radius: 30px; /* This creates the peanut shape */
+    overflow: hidden; /* Clips the corners of the inner buttons */
+    border-width: 2px;
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
+.button-pair > .button {
+    border-width: 0;
+    margin: 0;
+    padding: 10px 20px;
+    border-radius: 0;
+}
+
+.button-pair > .button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Specific styles for each button type */
+.preset-button {
+    background-color: #8A2BE2; /* BlueViolet */
+    color: white;
+}
+
+.preset-button:hover {
+    background-color: #9932CC; /* MediumOrchid */
+}
+
+.clock-button,
+.start-stop-button,
+.control-button {
+    background-color: #333;
+    color: white;
+    border-radius: 30px;
+    padding: 15px 20px;
+}
+
+.clock-button:hover,
+.start-stop-button:hover,
+.control-button:hover {
+    background-color: #555;
+}
+
+.start-stop-button {
+    background-color: #222;
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.start-stop-button:hover {
+    background-color: #444;
+}
+
+.start-stop-button.running {
+    background-color: #C70039; /* A red color */
+}
+
+.start-stop-button.running:hover {
+    background-color: #FF5733;
+}
+
+.timer-container.timer-alert {
+    background-color: rgba(255, 140, 0, 0.6) !important;
+    transition-property: background-color;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-in-out;
+}
+
+.component-container {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+} 

@@ -1,0 +1,95 @@
+/* Styles for the protocol list item component */
+
+.protocol-list-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    margin: 5px 0;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    transition: scale 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
+}
+
+.protocol-list-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    scale: 1.02 1.02;
+}
+
+.protocol-list-item:active {
+    scale: 0.99 0.99;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.protocol-item-info-container {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin-right: 10px;
+    -unity-text-align: middle-left;
+}
+
+.protocol-name {
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: white;
+    margin-bottom: 3px;
+}
+
+.owner-name {
+    font-size: 14px;
+    color: #cccccc;
+    margin-bottom: 5px;
+}
+
+.protocol-description {
+    font-size: 13px;
+    color: #bbbbbb;
+    white-space: normal;
+    margin-top: 5px;
+}
+
+.protocol-item-button {
+    min-width: 80px;
+    max-width: 100px;
+    padding: 5px 10px;
+    font-size: 14px;
+    margin-left: auto;
+}
+
+.protocol-select-area {
+    flex-grow: 1;
+    background-color: transparent !important;
+    border-width: 0 !important;
+    padding: 0;
+    margin-right: 10px;
+    justify-content: flex-start;
+    min-width: 0;
+    max-width: none;
+    margin-left: 0;
+}
+
+.protocol-select-area > .protocol-item-info-container {
+    width: 100%;
+}
+
+.protocol-item-actions-group {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    justify-content: flex-start;
+}
+
+.protocol-item-actions-group > .action-button {
+    margin-top: 0;
+    margin-bottom: 8px;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+}
+
+.protocol-list-item.saved .icon-star {
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/star_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+    -unity-background-image-tint-color: rgb(255, 193, 7); /* A gold/yellow color */
+} 

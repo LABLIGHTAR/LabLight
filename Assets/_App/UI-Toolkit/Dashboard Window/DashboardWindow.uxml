@@ -1,0 +1,51 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss?fileID=7433441132597879392&amp;guid=b24467c9ab0b0a34c8e7b3a2a912b59a&amp;type=3#Icons" />
+    <Style src="DashboardWindow.uss" />
+    <ui:VisualElement name="dashboard-container" class="glassmorphic-panel">
+        <!-- Navigation Column -->
+        <ui:VisualElement name="nav-bar" class="nav-bar-column content-column-panel">
+            <ui:Button name="nav-home" class="button button-primary nav-button">
+                <ui:VisualElement class="nav-button-icon icon-home-filled" />
+                <ui:Label text="Home" class="nav-button-label" />
+            </ui:Button>
+            <ui:Button name="nav-messages" class="button button-primary nav-button">
+                <ui:VisualElement class="nav-button-icon icon-chat" />
+                <ui:Label text="Messages" class="nav-button-label" />
+            </ui:Button>
+            <ui:Button name="nav-notifications" class="button button-primary nav-button">
+                <ui:VisualElement class="nav-button-icon icon-notifications" />
+                <ui:Label text="Notifications" class="nav-button-label" />
+            </ui:Button>
+            <ui:Button name="nav-saved-protocols" class="button button-primary nav-button">
+                <ui:VisualElement class="nav-button-icon icon-star" />
+                <ui:Label text="Saved Protocols" class="nav-button-label" />
+            </ui:Button>
+            <ui:Button name="nav-browse-protocols" class="button button-primary nav-button">
+                <ui:VisualElement class="nav-button-icon icon-group" />
+                <ui:Label text="Browse Protocols" class="nav-button-label" />
+            </ui:Button>
+            <ui:Button name="nav-settings" class="button button-primary nav-button">
+                <ui:VisualElement class="nav-button-icon icon-settings" />
+                <ui:Label text="Settings" class="nav-button-label" />
+            </ui:Button>
+            <ui:Button name="nav-logout" class="button button-secondary nav-button">
+                <ui:VisualElement class="nav-button-icon icon-logout" />
+                <ui:Label text="Log Out" class="nav-button-label" />
+            </ui:Button>
+        </ui:VisualElement>
+        
+        <!-- Main Content (Component Swapping Area) -->
+        <ui:VisualElement name="main-content-container" class="main-content-column" />
+
+        <!-- Notices Column -->
+        <ui:VisualElement name="notices-panel" class="notices-column content-column-panel">
+            <ui:VisualElement name="notices-inner-content" class="flex-grow-column">
+                <ui:Label text="Notices:" class="h2 notice-title" />
+                <ui:ScrollView name="notices-scroll-view">
+                    <ui:Label name="notices-content-label" text="Running low on Skittles Protocol reagent, order more? (Placeholder)" class="text-wrap-normal" />
+                </ui:ScrollView>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 

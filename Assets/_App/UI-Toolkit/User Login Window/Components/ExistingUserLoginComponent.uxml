@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <ui:VisualElement name="main-content">
+        <ui:Label text="Login" class="title-label font-size-large" />
+        <ui:VisualElement name="form-container" class="form-layout-stretched">
+            <ui:Label text="Enter Your Credentials" class="h2 text-block-centered-spacious" />
+            <ui:TextField name="email-input" label="Email" class="form-field" />
+            <ui:TextField name="password-field" label="Password" password="true" class="form-field" />
+        </ui:VisualElement>
+        <ui:VisualElement name="error-label-container" class="error-message-area">
+            <ui:Label name="error-label" class="error-message-label hidden" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="button-container" class="button-container-column">
+        <ui:Button text="Login" name="login-button" class="button button-primary" />
+        <ui:Button text="Back" name="back-button" class="button button-secondary" />
+    </ui:VisualElement>
+</ui:UXML>
