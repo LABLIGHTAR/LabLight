@@ -2910,11 +2910,11 @@ GameObject:
   - component: {fileID: 973196473}
   - component: {fileID: 973196472}
   - component: {fileID: 973196471}
-  - component: {fileID: 973196470}
   - component: {fileID: 973196469}
   - component: {fileID: 973196468}
   - component: {fileID: 973196467}
   - component: {fileID: 973196475}
+  - component: {fileID: 973196476}
   m_Layer: 0
   m_Name: App Session
   m_TagString: Untagged
@@ -2964,18 +2964,6 @@ MonoBehaviour:
   protocolWindow: {fileID: 574808744}
   calculatorWindow: {fileID: 2099661257}
   timerWindow: {fileID: 1294963353}
---- !u!114 &973196470
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 973196466}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 550ba3e6adaf3fb4ca38c43efcdd7d72, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &973196471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3048,6 +3036,18 @@ MonoBehaviour:
   buttonPressClip: {fileID: 8300000, guid: 449d6153bca2c44a283b4cbd7c192f3f, type: 3}
   alarmClip: {fileID: 8300000, guid: eabde91bf2267e54b84e7a6611edc5e3, type: 3}
   beepClip: {fileID: 8300000, guid: 369a9e819fd8f3846a836cf322e12bee, type: 3}
+--- !u!114 &973196476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 973196466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa62dd14bf70acc42a2427cf0e1e3c11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnityAuthProvider
 --- !u!1 &974636988
 GameObject:
   m_ObjectHideFlags: 0

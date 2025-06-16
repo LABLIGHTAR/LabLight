@@ -58,6 +58,18 @@ public interface IAuthProvider
     /// </summary>
     System.Threading.Tasks.Task SignOut();
 
+    /// <summary>
+    /// Initiates the sign-in process with Google.
+    /// Results are communicated via events (OnSignInSuccess, OnAuthError, OnAuthStatusChanged).
+    /// </summary>
+    System.Threading.Tasks.Task SignInWithGoogle(string idToken);
+
+    /// <summary>
+    /// Initiates the sign-in process with Apple.
+    /// Results are communicated via events (OnSignInSuccess, OnAuthError, OnAuthStatusChanged).
+    /// </summary>
+    System.Threading.Tasks.Task SignInWithApple(string idToken);
+
     // Optional: Property to check current state easily
     /// <summary>
     /// Gets a value indicating whether the user is currently signed in.

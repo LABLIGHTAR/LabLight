@@ -9,6 +9,12 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 
+public enum AuthProviderType
+{
+    Firebase,
+    Unity
+}
+
 /// <summary>
 /// The SessionManager is the app entry point.
 /// Responsible for:
@@ -21,6 +27,11 @@ using System.Collections.Generic;
 /// </summary>
 public class SessionManager : MonoBehaviour
 {
+    [Header("Configuration")]
+    [Tooltip("Select the authentication provider to use. This is managed by the SessionManagerEditor script.")]
+    [HideInInspector]
+    public AuthProviderType SelectedAuthProvider;
+
     #region Singleton and Core Lifecycle
     public static SessionManager instance;
 
@@ -37,9 +48,36 @@ public class SessionManager : MonoBehaviour
             return; // Return to prevent further initialization if this is a duplicate
         }
 
-        // Initialize services
-        AuthProvider = GetComponent<FirebaseAuthProvider>();
-        ServiceRegistry.RegisterService<IAuthProvider>(AuthProvider);
+        // --- Auth Provider Setup ---
+        // At runtime, we ensure only the selected provider exists by destroying any
+        // existing providers and then adding the one specified by `SelectedAuthProvider`.
+        foreach (var provider in GetComponents<IAuthProvider>())
+        {
+            if (provider is MonoBehaviour component)
+            {
+                Destroy(component);
+            }
+        }
+
+        switch (SelectedAuthProvider)
+        {
+            case AuthProviderType.Firebase:
+                AuthProvider = gameObject.AddComponent<FirebaseAuthProvider>();
+                break;
+            case AuthProviderType.Unity:
+                AuthProvider = gameObject.AddComponent<UnityAuthProvider>();
+                break;
+            default:
+                Debug.LogError($"SessionManager: Unhandled AuthProviderType '{SelectedAuthProvider}'. Auth provider will be null.", this);
+                break;
+        }
+        
+        if (AuthProvider != null)
+        {
+            Debug.Log($"SessionManager: {AuthProvider.GetType().Name} created and set as the active authentication provider.");
+            ServiceRegistry.RegisterService<IAuthProvider>(AuthProvider);
+        }
+        // --- End Auth Provider Setup ---
 
         Database = GetComponent<SpacetimeDBImpl>();
         ServiceRegistry.RegisterService<IDatabase>(Database);

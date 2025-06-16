@@ -203,6 +203,16 @@ public class FirebaseAuthProvider : MonoBehaviour, IAuthProvider
         }
     }
 
+    public Task SignInWithGoogle(string idToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SignInWithApple(string idToken)
+    {
+        throw new NotImplementedException();
+    }
+
     // Handle Auth State Changes
     async void AuthStateChanged(object sender, EventArgs eventArgs)
     {
