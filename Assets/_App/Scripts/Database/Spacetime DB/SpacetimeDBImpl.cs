@@ -120,34 +120,61 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
     public void Connect(string oidcToken)
     {
         if (_isConnectedState) { Debug.LogWarning("SpacetimeDB: Already connected or connecting."); return; }
-        if (string.IsNullOrEmpty(oidcToken)) { LogErrorAndInvoke("OIDC Token missing for SpacetimeDB connection.", true); return; }
+        if (string.IsNullOrEmpty(oidcToken)) { LogErrorAndInvoke("SpacetimeDB: OIDC token is null or empty. Cannot connect.", true); return; }
 
-        Debug.Log($"SpacetimeDB: Attempting connection to {host}/{dbName}...");
-        OnConnecting?.Invoke();
+        SetDBStatus(DBConnectionStatus.Connecting, "Authenticating with token...");
+        
+        Debug.Log($"SpacetimeDB: Attempting connection to {host}/{dbName} with OIDC token.");
 
         try
         {
-            _isConnectedState = false;
             _connection = DbConnection.Builder()
                 .WithUri(host).WithModuleName(dbName).WithToken(oidcToken)
                 .OnConnect(HandleSpacetimeConnect)
-                .OnConnectError(HandleSpacetimeConnectError)
                 .OnDisconnect(HandleSpacetimeDisconnect)
+                .OnConnectError(HandleSpacetimeConnectError)
                 .Build();
-
+            
             CancelInvoke(nameof(FrameTick));
             InvokeRepeating(nameof(FrameTick), 1f / frameTickRateHz, 1f / frameTickRateHz);
-             Debug.Log($"SpacetimeDB: Connection process initiated. FrameTick scheduled @{frameTickRateHz}Hz.");
+            Debug.Log($"SpacetimeDB: Connection process initiated. FrameTick scheduled @{frameTickRateHz}Hz.");
         }
-        catch (Exception ex) { HandleSpacetimeConnectError(ex); }
+        catch (Exception ex)
+        {
+            HandleSpacetimeConnectError(ex);
+        }
+    }
+    
+    public void Connect()
+    {
+        if (_isConnectedState) { Debug.LogWarning("SpacetimeDB: Already connected or connecting."); return; }
+
+        SetDBStatus(DBConnectionStatus.Connecting, "Connecting anonymously...");
+        
+        Debug.Log($"SpacetimeDB: Attempting anonymous connection to {host}/{dbName}.");
+
+        try
+        {
+            _connection = DbConnection.Builder()
+                .WithUri(host).WithModuleName(dbName)
+                .OnConnect(HandleSpacetimeConnect)
+                .OnDisconnect(HandleSpacetimeDisconnect)
+                .OnConnectError(HandleSpacetimeConnectError)
+                .Build();
+            
+            CancelInvoke(nameof(FrameTick));
+            InvokeRepeating(nameof(FrameTick), 1f / frameTickRateHz, 1f / frameTickRateHz);
+            Debug.Log($"SpacetimeDB: Connection process initiated. FrameTick scheduled @{frameTickRateHz}Hz.");
+        }
+        catch (Exception ex)
+        {
+            HandleSpacetimeConnectError(ex);
+        }
     }
 
     public void Disconnect()
     {
-        if (!_isConnectedState && _connection == null) {
-             Debug.Log("SpacetimeDB: Already disconnected.");
-            return;
-         }
+        if (!_isConnectedState && _connection == null) { Debug.LogWarning("SpacetimeDB: Already disconnected."); return; }
          Debug.Log("SpacetimeDB: Disconnect requested.");
         CancelInvoke(nameof(FrameTick));
         var connToDisconnect = _connection;

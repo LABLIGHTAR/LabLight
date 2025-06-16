@@ -30,6 +30,7 @@ public interface IDatabase
     
     // Methods
     void Connect(string oidcToken);
+    void Connect();
     void Disconnect();
 
     // === User Profile ===

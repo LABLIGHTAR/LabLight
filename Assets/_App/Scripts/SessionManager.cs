@@ -49,16 +49,6 @@ public class SessionManager : MonoBehaviour
         }
 
         // --- Auth Provider Setup ---
-        // At runtime, we ensure only the selected provider exists by destroying any
-        // existing providers and then adding the one specified by `SelectedAuthProvider`.
-        foreach (var provider in GetComponents<IAuthProvider>())
-        {
-            if (provider is MonoBehaviour component)
-            {
-                Destroy(component);
-            }
-        }
-
         switch (SelectedAuthProvider)
         {
             case AuthProviderType.Firebase:
@@ -340,6 +330,25 @@ public class SessionManager : MonoBehaviour
         Debug.Log($"SessionManager: Database Connected with SpacetimeDB Identity: {spacetimeIdentity}");
         SessionState.SpacetimeIdentity = spacetimeIdentity;
 
+        // Handle Guest/Anonymous login
+        if (AuthProvider == null || !AuthProvider.IsSignedIn)
+        {
+            Debug.Log("SessionManager: Anonymous/Guest user connected to database. Creating temporary session profile.");
+            var guestProfile = new LocalUserProfileData
+            {
+                Id = $"guest_{spacetimeIdentity}",
+                Name = "Guest",
+                Email = string.Empty,
+                CreatedAtUtc = DateTime.UtcNow,
+                LastOnlineUtc = DateTime.UtcNow,
+                IsOnline = true
+            };
+            SessionState.currentUserProfile = guestProfile;
+            OnSessionUserChanged?.Invoke(guestProfile);
+            UIDriver?.DisplayDashboard();
+            return; // Exit after handling guest user
+        }
+
         if (!string.IsNullOrEmpty(SessionState.PendingDisplayName) && !string.IsNullOrEmpty(SessionState.PendingEmail) && !string.IsNullOrEmpty(SessionState.FirebaseUserId))
         {
             Debug.Log($"SessionManager: DB Connected. Registering profile for new user: {SessionState.PendingDisplayName}, Email: {SessionState.PendingEmail}");
@@ -396,7 +405,7 @@ public class SessionManager : MonoBehaviour
         }
         else
         {
-             Debug.LogError("SessionManager: HandleDatabaseConnectedIdentity called but FirebaseUserID is missing.");
+             Debug.LogError("SessionManager: HandleDatabaseConnectedIdentity called for an authenticated user but FirebaseUserID is missing.");
         }
     }
 

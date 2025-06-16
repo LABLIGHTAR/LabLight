@@ -3003,6 +3003,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5b7db0f748a34ff7a6915da77d01382, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SelectedAuthProvider: 1
   MussBaseURL: ws://localhost:3000
   TrackedObjectsDebug: []
 --- !u!4 &973196474
