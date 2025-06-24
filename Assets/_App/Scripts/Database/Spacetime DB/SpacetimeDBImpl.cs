@@ -278,7 +278,10 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
             "SELECT * FROM scheduled_protocol_task",
             "SELECT * FROM scheduled_task_assignee",
             "SELECT * FROM saved_protocol",
-            "SELECT * FROM organization_member_request"
+            "SELECT * FROM organization_member_request",
+            "SELECT * FROM conversation",
+            "SELECT * FROM message",
+            "SELECT * FROM conversation_participant"
         };
         Debug.Log($"SpacetimeDB: Subscribing to public tables: {string.Join(", ", publicTables)}");
         try { _connection.SubscriptionBuilder().OnApplied((ctx) => Debug.Log("SpacetimeDB: Subscription applied successfully.")).OnError((errCtx, err) => LogErrorAndInvoke($"Subscription failed: {err.Message}")).Subscribe(publicTables); }
@@ -329,6 +332,42 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
             } catch (Exception ex) { Debug.LogError($"Error registering OrganizationMemberRequest callbacks: {ex.Message}"); }
         }
         else { Debug.LogWarning("OrganizationMemberRequest table handle is null. Cannot register callbacks."); }
+
+        // Messaging Callbacks
+        if (_connection.Db.Conversation != null)
+        {
+            try
+            {
+                _connection.Db.Conversation.OnInsert += HandleConversationInsert;
+                _connection.Db.Conversation.OnUpdate += HandleConversationUpdate;
+                _connection.Db.Conversation.OnDelete += HandleConversationDelete;
+                Debug.Log("Registered Conversation table callbacks.");
+            } catch (Exception ex) { Debug.LogError($"Error registering Conversation callbacks: {ex.Message}"); }
+        }
+        else { Debug.LogWarning("Conversation table handle is null. Cannot register callbacks."); }
+
+        if (_connection.Db.Message != null)
+        {
+            try
+            {
+                _connection.Db.Message.OnInsert += HandleMessageInsert;
+                _connection.Db.Message.OnUpdate += HandleMessageUpdate;
+                Debug.Log("Registered Message table callbacks.");
+            } catch (Exception ex) { Debug.LogError($"Error registering Message callbacks: {ex.Message}"); }
+        }
+        else { Debug.LogWarning("Message table handle is null. Cannot register callbacks."); }
+
+        if (_connection.Db.ConversationParticipant != null)
+        {
+            try
+            {
+                _connection.Db.ConversationParticipant.OnInsert += HandleConversationParticipantInsert;
+                _connection.Db.ConversationParticipant.OnUpdate += HandleConversationParticipantUpdate;
+                _connection.Db.ConversationParticipant.OnDelete += HandleConversationParticipantDelete;
+                Debug.Log("Registered ConversationParticipant table callbacks.");
+            } catch (Exception ex) { Debug.LogError($"Error registering ConversationParticipant callbacks: {ex.Message}"); }
+        }
+        else { Debug.LogWarning("ConversationParticipant table handle is null. Cannot register callbacks."); }
     }
 
     private void RegisterReducerCallbacks()
@@ -369,6 +408,16 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
         // Media Reducers (New Pattern)
         _connection.Reducers.OnRequestMediaUploadSlot += OnRequestMediaUploadSlotReducerEvent;
         _connection.Reducers.OnConfirmMediaUploadComplete += OnConfirmMediaUploadCompleteReducerEvent;
+
+        // Messaging Reducers
+        _connection.Reducers.OnSendDirectMessage += OnSendDirectMessageReducerEvent;
+        _connection.Reducers.OnSendConversationMessage += OnSendConversationMessageReducerEvent;
+        _connection.Reducers.OnAddUserToConversation += OnAddUserToConversationReducerEvent;
+        _connection.Reducers.OnLeaveConversation += OnLeaveConversationReducerEvent;
+        _connection.Reducers.OnRenameConversation += OnRenameConversationReducerEvent;
+        _connection.Reducers.OnEditMessage += OnEditMessageReducerEvent;
+        _connection.Reducers.OnDeleteMessage += OnDeleteMessageReducerEvent;
+        _connection.Reducers.OnMarkConversationAsRead += OnMarkConversationAsReadReducerEvent;
     }
 
     private void UnregisterCallbacks(DbConnection conn)
@@ -392,6 +441,25 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
         }
         // OrganizationMemberRequest
         if (conn.Db?.OrganizationMemberRequest != null) { conn.Db.OrganizationMemberRequest.OnInsert -= HandleOrganizationMemberRequestChange; conn.Db.OrganizationMemberRequest.OnDelete -= HandleOrganizationMemberRequestChange; }
+
+        // Messaging
+        if (conn.Db?.Conversation != null)
+        {
+            conn.Db.Conversation.OnInsert -= HandleConversationInsert;
+            conn.Db.Conversation.OnUpdate -= HandleConversationUpdate;
+            conn.Db.Conversation.OnDelete -= HandleConversationDelete;
+        }
+        if (conn.Db?.Message != null)
+        {
+            conn.Db.Message.OnInsert -= HandleMessageInsert;
+            conn.Db.Message.OnUpdate -= HandleMessageUpdate;
+        }
+        if (conn.Db?.ConversationParticipant != null)
+        {
+            conn.Db.ConversationParticipant.OnInsert -= HandleConversationParticipantInsert;
+            conn.Db.ConversationParticipant.OnUpdate -= HandleConversationParticipantUpdate;
+            conn.Db.ConversationParticipant.OnDelete -= HandleConversationParticipantDelete;
+        }
 
         // --- Reducer Callbacks ---
         if (conn.Reducers != null)
@@ -427,6 +495,16 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
             // Media Reducers (New Pattern)
             conn.Reducers.OnRequestMediaUploadSlot -= OnRequestMediaUploadSlotReducerEvent;
             conn.Reducers.OnConfirmMediaUploadComplete -= OnConfirmMediaUploadCompleteReducerEvent;
+
+            // Messaging Reducers
+            conn.Reducers.OnSendDirectMessage -= OnSendDirectMessageReducerEvent;
+            conn.Reducers.OnSendConversationMessage -= OnSendConversationMessageReducerEvent;
+            conn.Reducers.OnAddUserToConversation -= OnAddUserToConversationReducerEvent;
+            conn.Reducers.OnLeaveConversation -= OnLeaveConversationReducerEvent;
+            conn.Reducers.OnRenameConversation -= OnRenameConversationReducerEvent;
+            conn.Reducers.OnEditMessage -= OnEditMessageReducerEvent;
+            conn.Reducers.OnDeleteMessage -= OnDeleteMessageReducerEvent;
+            conn.Reducers.OnMarkConversationAsRead -= OnMarkConversationAsReadReducerEvent;
         }
     }
 

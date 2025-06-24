@@ -124,6 +124,30 @@ public interface IDatabase
     // Methods (Getters)
     IEnumerable<ClientDeviceData> GetAllCachedClientDevices();
 
+    // === Messaging ===
+    // Events
+    event Action<ConversationData> OnConversationAdded;
+    event Action<ConversationData> OnConversationUpdated;
+    event Action<ulong> OnConversationRemoved;
+    event Action<MessageData> OnMessageReceived;
+    event Action<MessageData> OnMessageUpdated;
+    event Action<string> OnMessagingError;
+
+    // Methods (Reducers)
+    void SendDirectMessage(List<string> recipientIdentities, string content);
+    void SendConversationMessage(ulong conversationId, string content);
+    void AddUserToConversation(ulong conversationId, string userIdentityToAdd);
+    void LeaveConversation(ulong conversationId);
+    void RenameConversation(ulong conversationId, string newName);
+    void EditMessage(ulong messageId, string newContent);
+    void DeleteMessage(ulong messageId);
+    void MarkConversationAsRead(ulong conversationId);
+
+    // Methods (Getters)
+    IEnumerable<ConversationData> GetAllConversations();
+    ConversationData GetConversation(ulong conversationId);
+    IEnumerable<MessageData> GetMessages(ulong conversationId);
+
     /// <summary>
     /// Checks if a specific protocol is marked as saved by the specified user.
     /// </summary>
