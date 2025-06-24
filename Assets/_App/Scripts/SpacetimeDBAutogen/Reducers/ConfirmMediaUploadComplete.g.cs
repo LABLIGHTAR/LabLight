@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeConfirmMediaUploadComplete(ReducerEventContext ctx, Reducer.ConfirmMediaUploadComplete args)
         {
-            if (OnConfirmMediaUploadComplete == null) return false;
+            if (OnConfirmMediaUploadComplete == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnConfirmMediaUploadComplete(
                 ctx,
                 args.ObjectKey,

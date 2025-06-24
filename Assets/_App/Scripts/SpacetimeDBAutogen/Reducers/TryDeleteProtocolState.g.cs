@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeTryDeleteProtocolState(ReducerEventContext ctx, Reducer.TryDeleteProtocolState args)
         {
-            if (OnTryDeleteProtocolState == null) return false;
+            if (OnTryDeleteProtocolState == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnTryDeleteProtocolState(
                 ctx,
                 args.ProtocolStateId

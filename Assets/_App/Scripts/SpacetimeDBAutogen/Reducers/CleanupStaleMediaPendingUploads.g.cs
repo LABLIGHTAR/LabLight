@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeCleanupStaleMediaPendingUploads(ReducerEventContext ctx, Reducer.CleanupStaleMediaPendingUploads args)
         {
-            if (OnCleanupStaleMediaPendingUploads == null) return false;
+            if (OnCleanupStaleMediaPendingUploads == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnCleanupStaleMediaPendingUploads(
                 ctx,
                 args.Timer

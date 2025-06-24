@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeTryPostOrganizationNotice(ReducerEventContext ctx, Reducer.TryPostOrganizationNotice args)
         {
-            if (OnTryPostOrganizationNotice == null) return false;
+            if (OnTryPostOrganizationNotice == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnTryPostOrganizationNotice(
                 ctx,
                 args.OrganizationId,

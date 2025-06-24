@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeTryRollbackProtocol(ReducerEventContext ctx, Reducer.TryRollbackProtocol args)
         {
-            if (OnTryRollbackProtocol == null) return false;
+            if (OnTryRollbackProtocol == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnTryRollbackProtocol(
                 ctx,
                 args.ProtocolId

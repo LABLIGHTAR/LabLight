@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeRequestMediaUploadSlot(ReducerEventContext ctx, Reducer.RequestMediaUploadSlot args)
         {
-            if (OnRequestMediaUploadSlot == null) return false;
+            if (OnRequestMediaUploadSlot == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnRequestMediaUploadSlot(
                 ctx,
                 args.ObjectKey,

@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeTryCancelScheduledTask(ReducerEventContext ctx, Reducer.TryCancelScheduledTask args)
         {
-            if (OnTryCancelScheduledTask == null) return false;
+            if (OnTryCancelScheduledTask == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnTryCancelScheduledTask(
                 ctx,
                 args.TaskId

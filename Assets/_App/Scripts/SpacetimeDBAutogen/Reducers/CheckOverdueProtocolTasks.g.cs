@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeCheckOverdueProtocolTasks(ReducerEventContext ctx, Reducer.CheckOverdueProtocolTasks args)
         {
-            if (OnCheckOverdueProtocolTasks == null) return false;
+            if (OnCheckOverdueProtocolTasks == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnCheckOverdueProtocolTasks(
                 ctx,
                 args.Timer

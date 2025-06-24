@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeTryCompleteScheduledTask(ReducerEventContext ctx, Reducer.TryCompleteScheduledTask args)
         {
-            if (OnTryCompleteScheduledTask == null) return false;
+            if (OnTryCompleteScheduledTask == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnTryCompleteScheduledTask(
                 ctx,
                 args.TaskId

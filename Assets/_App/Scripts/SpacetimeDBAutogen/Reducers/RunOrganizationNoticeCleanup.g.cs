@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeRunOrganizationNoticeCleanup(ReducerEventContext ctx, Reducer.RunOrganizationNoticeCleanup args)
         {
-            if (OnRunOrganizationNoticeCleanup == null) return false;
+            if (OnRunOrganizationNoticeCleanup == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnRunOrganizationNoticeCleanup(
                 ctx,
                 args.Timer

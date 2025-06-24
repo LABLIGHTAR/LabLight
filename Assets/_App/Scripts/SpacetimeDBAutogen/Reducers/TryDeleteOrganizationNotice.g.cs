@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeTryDeleteOrganizationNotice(ReducerEventContext ctx, Reducer.TryDeleteOrganizationNotice args)
         {
-            if (OnTryDeleteOrganizationNotice == null) return false;
+            if (OnTryDeleteOrganizationNotice == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnTryDeleteOrganizationNotice(
                 ctx,
                 args.NoticeId

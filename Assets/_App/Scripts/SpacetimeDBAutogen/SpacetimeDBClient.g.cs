@@ -14,6 +14,7 @@ namespace SpacetimeDB.Types
     {
         internal RemoteReducers(DbConnection conn, SetReducerFlags flags) : base(conn) => SetCallReducerFlags = flags;
         internal readonly SetReducerFlags SetCallReducerFlags;
+        internal event Action<ReducerEventContext, Exception>? InternalOnUnhandledReducerError;
     }
 
     public sealed partial class RemoteTables : RemoteTablesBase
@@ -21,8 +22,11 @@ namespace SpacetimeDB.Types
         public RemoteTables(DbConnection conn)
         {
             AddTable(ClientDevice = new(conn));
+            AddTable(Conversation = new(conn));
+            AddTable(ConversationParticipant = new(conn));
             AddTable(MediaMetadata = new(conn));
             AddTable(MediaPendingUploadCleanupTimer = new(conn));
+            AddTable(Message = new(conn));
             AddTable(Organization = new(conn));
             AddTable(OrganizationMember = new(conn));
             AddTable(OrganizationMemberRequest = new(conn));
@@ -45,7 +49,10 @@ namespace SpacetimeDB.Types
 
     public sealed partial class SetReducerFlags { }
 
-    public interface IRemoteDbContext : IDbContext<RemoteTables, RemoteReducers, SetReducerFlags, SubscriptionBuilder> { }
+    public interface IRemoteDbContext : IDbContext<RemoteTables, RemoteReducers, SetReducerFlags, SubscriptionBuilder>
+    {
+        public event Action<ReducerEventContext, Exception>? OnUnhandledReducerError;
+    }
 
     public sealed class EventContext : IEventContext, IRemoteDbContext
     {
@@ -107,6 +114,14 @@ namespace SpacetimeDB.Types
         /// Get this connection's <c>ConnectionId</c>.
         /// </summary>
         public ConnectionId ConnectionId => conn.ConnectionId;
+        /// <summary>
+        /// Register a callback to be called when a reducer with no handler returns an error.
+        /// </summary>
+        public event Action<ReducerEventContext, Exception>? OnUnhandledReducerError
+        {
+            add => Reducers.InternalOnUnhandledReducerError += value;
+            remove => Reducers.InternalOnUnhandledReducerError -= value;
+        }
 
         internal EventContext(DbConnection conn, Event<Reducer> Event)
         {
@@ -174,6 +189,14 @@ namespace SpacetimeDB.Types
         /// Get this connection's <c>ConnectionId</c>.
         /// </summary>
         public ConnectionId ConnectionId => conn.ConnectionId;
+        /// <summary>
+        /// Register a callback to be called when a reducer with no handler returns an error.
+        /// </summary>
+        public event Action<ReducerEventContext, Exception>? OnUnhandledReducerError
+        {
+            add => Reducers.InternalOnUnhandledReducerError += value;
+            remove => Reducers.InternalOnUnhandledReducerError -= value;
+        }
 
         internal ReducerEventContext(DbConnection conn, ReducerEvent<Reducer> reducerEvent)
         {
@@ -248,6 +271,14 @@ namespace SpacetimeDB.Types
         /// Get this connection's <c>ConnectionId</c>.
         /// </summary>
         public ConnectionId ConnectionId => conn.ConnectionId;
+        /// <summary>
+        /// Register a callback to be called when a reducer with no handler returns an error.
+        /// </summary>
+        public event Action<ReducerEventContext, Exception>? OnUnhandledReducerError
+        {
+            add => Reducers.InternalOnUnhandledReducerError += value;
+            remove => Reducers.InternalOnUnhandledReducerError -= value;
+        }
 
         internal ErrorContext(DbConnection conn, Exception error)
         {
@@ -311,6 +342,14 @@ namespace SpacetimeDB.Types
         /// Get this connection's <c>ConnectionId</c>.
         /// </summary>
         public ConnectionId ConnectionId => conn.ConnectionId;
+        /// <summary>
+        /// Register a callback to be called when a reducer with no handler returns an error.
+        /// </summary>
+        public event Action<ReducerEventContext, Exception>? OnUnhandledReducerError
+        {
+            add => Reducers.InternalOnUnhandledReducerError += value;
+            remove => Reducers.InternalOnUnhandledReducerError -= value;
+        }
 
         internal SubscriptionEventContext(DbConnection conn)
         {
@@ -448,6 +487,7 @@ namespace SpacetimeDB.Types
             var encodedArgs = update.ReducerCall.Args;
             return update.ReducerCall.ReducerName switch
             {
+                "add_user_to_conversation" => BSATNHelpers.Decode<Reducer.AddUserToConversation>(encodedArgs),
                 "check_overdue_protocol_tasks" => BSATNHelpers.Decode<Reducer.CheckOverdueProtocolTasks>(encodedArgs),
                 "cleanup_old_protocol_states" => BSATNHelpers.Decode<Reducer.CleanupOldProtocolStates>(encodedArgs),
                 "cleanup_stale_media_pending_uploads" => BSATNHelpers.Decode<Reducer.CleanupStaleMediaPendingUploads>(encodedArgs),
@@ -455,10 +495,17 @@ namespace SpacetimeDB.Types
                 "client_disconnected" => BSATNHelpers.Decode<Reducer.ClientDisconnected>(encodedArgs),
                 "confirm_media_upload_complete" => BSATNHelpers.Decode<Reducer.ConfirmMediaUploadComplete>(encodedArgs),
                 "delete_media_metadata" => BSATNHelpers.Decode<Reducer.DeleteMediaMetadata>(encodedArgs),
+                "delete_message" => BSATNHelpers.Decode<Reducer.DeleteMessage>(encodedArgs),
+                "edit_message" => BSATNHelpers.Decode<Reducer.EditMessage>(encodedArgs),
+                "leave_conversation" => BSATNHelpers.Decode<Reducer.LeaveConversation>(encodedArgs),
+                "mark_conversation_as_read" => BSATNHelpers.Decode<Reducer.MarkConversationAsRead>(encodedArgs),
                 "register_profile" => BSATNHelpers.Decode<Reducer.RegisterProfile>(encodedArgs),
+                "rename_conversation" => BSATNHelpers.Decode<Reducer.RenameConversation>(encodedArgs),
                 "request_join_organization" => BSATNHelpers.Decode<Reducer.RequestJoinOrganization>(encodedArgs),
                 "request_media_upload_slot" => BSATNHelpers.Decode<Reducer.RequestMediaUploadSlot>(encodedArgs),
                 "run_organization_notice_cleanup" => BSATNHelpers.Decode<Reducer.RunOrganizationNoticeCleanup>(encodedArgs),
+                "send_conversation_message" => BSATNHelpers.Decode<Reducer.SendConversationMessage>(encodedArgs),
+                "send_direct_message" => BSATNHelpers.Decode<Reducer.SendDirectMessage>(encodedArgs),
                 "try_approve_organization_member_request" => BSATNHelpers.Decode<Reducer.TryApproveOrganizationMemberRequest>(encodedArgs),
                 "try_cancel_scheduled_task" => BSATNHelpers.Decode<Reducer.TryCancelScheduledTask>(encodedArgs),
                 "try_complete_scheduled_task" => BSATNHelpers.Decode<Reducer.TryCompleteScheduledTask>(encodedArgs),
@@ -503,6 +550,7 @@ namespace SpacetimeDB.Types
             var eventContext = (ReducerEventContext)context;
             return reducer switch
             {
+                Reducer.AddUserToConversation args => Reducers.InvokeAddUserToConversation(eventContext, args),
                 Reducer.CheckOverdueProtocolTasks args => Reducers.InvokeCheckOverdueProtocolTasks(eventContext, args),
                 Reducer.CleanupOldProtocolStates args => Reducers.InvokeCleanupOldProtocolStates(eventContext, args),
                 Reducer.CleanupStaleMediaPendingUploads args => Reducers.InvokeCleanupStaleMediaPendingUploads(eventContext, args),
@@ -510,10 +558,17 @@ namespace SpacetimeDB.Types
                 Reducer.ClientDisconnected args => Reducers.InvokeClientDisconnected(eventContext, args),
                 Reducer.ConfirmMediaUploadComplete args => Reducers.InvokeConfirmMediaUploadComplete(eventContext, args),
                 Reducer.DeleteMediaMetadata args => Reducers.InvokeDeleteMediaMetadata(eventContext, args),
+                Reducer.DeleteMessage args => Reducers.InvokeDeleteMessage(eventContext, args),
+                Reducer.EditMessage args => Reducers.InvokeEditMessage(eventContext, args),
+                Reducer.LeaveConversation args => Reducers.InvokeLeaveConversation(eventContext, args),
+                Reducer.MarkConversationAsRead args => Reducers.InvokeMarkConversationAsRead(eventContext, args),
                 Reducer.RegisterProfile args => Reducers.InvokeRegisterProfile(eventContext, args),
+                Reducer.RenameConversation args => Reducers.InvokeRenameConversation(eventContext, args),
                 Reducer.RequestJoinOrganization args => Reducers.InvokeRequestJoinOrganization(eventContext, args),
                 Reducer.RequestMediaUploadSlot args => Reducers.InvokeRequestMediaUploadSlot(eventContext, args),
                 Reducer.RunOrganizationNoticeCleanup args => Reducers.InvokeRunOrganizationNoticeCleanup(eventContext, args),
+                Reducer.SendConversationMessage args => Reducers.InvokeSendConversationMessage(eventContext, args),
+                Reducer.SendDirectMessage args => Reducers.InvokeSendDirectMessage(eventContext, args),
                 Reducer.TryApproveOrganizationMemberRequest args => Reducers.InvokeTryApproveOrganizationMemberRequest(eventContext, args),
                 Reducer.TryCancelScheduledTask args => Reducers.InvokeTryCancelScheduledTask(eventContext, args),
                 Reducer.TryCompleteScheduledTask args => Reducers.InvokeTryCompleteScheduledTask(eventContext, args),
@@ -542,5 +597,10 @@ namespace SpacetimeDB.Types
         }
 
         public SubscriptionBuilder SubscriptionBuilder() => new(this);
+        public event Action<ReducerEventContext, Exception> OnUnhandledReducerError
+        {
+            add => Reducers.InternalOnUnhandledReducerError += value;
+            remove => Reducers.InternalOnUnhandledReducerError -= value;
+        }
     }
 }

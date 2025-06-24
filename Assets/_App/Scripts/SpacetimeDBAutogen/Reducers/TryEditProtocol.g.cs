@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeTryEditProtocol(ReducerEventContext ctx, Reducer.TryEditProtocol args)
         {
-            if (OnTryEditProtocol == null) return false;
+            if (OnTryEditProtocol == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnTryEditProtocol(
                 ctx,
                 args.ProtocolId,

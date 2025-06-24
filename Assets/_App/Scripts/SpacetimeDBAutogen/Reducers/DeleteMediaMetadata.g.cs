@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeDeleteMediaMetadata(ReducerEventContext ctx, Reducer.DeleteMediaMetadata args)
         {
-            if (OnDeleteMediaMetadata == null) return false;
+            if (OnDeleteMediaMetadata == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnDeleteMediaMetadata(
                 ctx,
                 args.ObjectKey

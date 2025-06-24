@@ -22,7 +22,18 @@ namespace SpacetimeDB.Types
 
         public bool InvokeTryUnsaveProtocol(ReducerEventContext ctx, Reducer.TryUnsaveProtocol args)
         {
-            if (OnTryUnsaveProtocol == null) return false;
+            if (OnTryUnsaveProtocol == null)
+            {
+                if (InternalOnUnhandledReducerError != null)
+                {
+                    switch (ctx.Event.Status)
+                    {
+                        case Status.Failed(var reason): InternalOnUnhandledReducerError(ctx, new Exception(reason)); break;
+                        case Status.OutOfEnergy(var _): InternalOnUnhandledReducerError(ctx, new Exception("out of energy")); break;
+                    }
+                }
+                return false;
+            }
             OnTryUnsaveProtocol(
                 ctx,
                 args.ProtocolId
