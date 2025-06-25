@@ -5,6 +5,7 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
+using Whisper;
 
 public class ArObjectManager : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class ArObjectManager : MonoBehaviour
     private Coroutine placementCoroutine;
     private bool isInitialized;
     private int pendingArViewInitializations = 0;
+    
+    // voice command disposal
+    private Action DisposeVoice;
 
     private void Awake()
     {
@@ -29,10 +33,16 @@ public class ArObjectManager : MonoBehaviour
     {
         lockingManager = GetComponent<ProtocolItemLockingManager>();
     }
+    
+    private void OnEnable()
+    {
+        SetupVoiceCommands();
+    }
 
     private void OnDisable()
     {
         ClearScene(true);
+        DisposeVoice?.Invoke();
     }
 
     private void InitializeSubscriptions()
@@ -61,6 +71,77 @@ public class ArObjectManager : MonoBehaviour
             pendingArViewInitializations = protocol.globalArObjects.Count;
             InitializeArObjects(protocol.globalArObjects);
         }
+    }
+    
+    /// <summary>
+    /// Sets up voice commands for AR object management
+    /// </summary>
+    private void SetupVoiceCommands()
+    {
+        if (SpeechRecognizer.Instance == null)
+        {
+            Debug.LogWarning("SpeechRecognizer not found");
+            return;
+        }
+        
+        DisposeVoice = SpeechRecognizer.Instance.Listen(new Dictionary<string, Action>()
+        {
+            {"relock object 1", () => RelockSpecificObject(1)},
+            {"relock object 2", () => RelockSpecificObject(2)},
+            {"relock object 3", () => RelockSpecificObject(3)},
+            {"relock object 4", () => RelockSpecificObject(4)}
+        });
+    }
+    
+    /// <summary>
+    /// Relocks a specific AR object by index
+    /// </summary>
+    private void RelockSpecificObject(int objectIndex)
+    {
+        Debug.Log($"[ArObjectManager] Relocking object {objectIndex} via voice command");
+        
+        if (arViews.Count == 0)
+        {
+            Debug.LogWarning("[ArObjectManager] No AR objects available to relock");
+            return;
+        }
+        
+        // Get objects in a consistent order (by arObjectID)
+        var orderedArViews = arViews.OrderBy(kv => kv.Key.arObjectID).ToArray();
+        
+        if (objectIndex < 1 || objectIndex > orderedArViews.Length)
+        {
+            Debug.LogWarning($"[ArObjectManager] Object index {objectIndex} out of range. Available objects: {orderedArViews.Length}");
+            return;
+        }
+        
+        var targetArView = orderedArViews[objectIndex - 1]; // Convert to 0-based index
+        var arObject = targetArView.Key;
+        var arViewController = targetArView.Value;
+        
+        if (arViewController == null || arViewController.gameObject == null)
+        {
+            Debug.LogWarning($"[ArObjectManager] AR object {arObject.arObjectID} is not available for relocking");
+            return;
+        }
+        
+        // Unlock the object if it's currently locked
+        if (arViewController.positionLocked)
+        {
+            arViewController.UnlockPosition();
+        }
+        
+        // Remove from locked objects set
+        lockedObjectIds.Remove(arObject.arObjectID);
+        
+        // Enqueue the specific object for locking
+        var objectsToLock = new List<GameObject> { arViewController.gameObject };
+        lockingManager.EnqueueObjects(objectsToLock);
+        
+        // Add back to locked objects set
+        lockedObjectIds.Add(arObject.arObjectID);
+        
+        Debug.Log($"[ArObjectManager] Successfully enqueued object {objectIndex} ({arObject.arObjectID}) for relocking");
     }
 
     private void InitializeArObjects(List<ArObject> arObjects)

@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UniRx;
 using TMPro;
+using Whisper;
 
 public enum LockingType
 {
@@ -70,6 +71,9 @@ public class ArObjectViewController : MonoBehaviour
     // stream subscriptions
     private IDisposable stepStreamSub;
     private IDisposable checklistStreamSub;
+    
+    // voice command disposal
+    private Action DisposeVoice;
 
     void Awake()
     {
@@ -83,6 +87,16 @@ public class ArObjectViewController : MonoBehaviour
         {
             AddSettingsSubscriptions();
         }
+    }
+    
+    void OnEnable()
+    {
+        SetupVoiceCommands();
+    }
+    
+    void OnDisable()
+    {
+        DisposeVoice?.Invoke();
     }
 
     public virtual void Initialize(ArObject arObject)
@@ -379,6 +393,85 @@ public class ArObjectViewController : MonoBehaviour
     {
         stepStreamSub?.Dispose();
         checklistStreamSub?.Dispose();
+        DisposeVoice?.Invoke();
+    }
+    
+    /// <summary>
+    /// Sets up voice commands for this AR object
+    /// </summary>
+    void SetupVoiceCommands()
+    {
+        if (SpeechRecognizer.Instance == null)
+        {
+            Debug.LogWarning("SpeechRecognizer not found");
+            return;
+        }
+        
+        DisposeVoice = SpeechRecognizer.Instance.Listen(new Dictionary<string, Action>()
+        {
+            {"show highlights", () => EnableAllSubIDs()},
+            {"hide highlights", () => DisableAllSubIDs()},
+            {"show outline", () => EnableOutline()},
+            {"hide outline", () => DisableOutline()}
+        });
+    }
+    
+    /// <summary>
+    /// Enables all subID highlights on this AR object
+    /// </summary>
+    public void EnableAllSubIDs()
+    {
+        if (alignmentTriggered || disableComponents) return;
+
+        if(currentActions != null)
+        {
+            foreach (var action in currentActions)
+            {
+                foreach (var subID in GetSubIDs(action))
+                {
+                    ToggleTransform(highlightPoints, true, subID);
+                }
+            }
+        }
+        
+        Debug.Log($"[{ObjectName}] All highlights enabled via voice command");
+    }
+    
+    /// <summary>
+    /// Disables all subID highlights on this AR object
+    /// </summary>
+    public void DisableAllSubIDs()
+    {
+        if (alignmentTriggered || disableComponents) return;
+
+        if(currentActions != null)
+        {
+            foreach (var action in currentActions)
+            {
+                foreach (var subID in GetSubIDs(action))
+                {
+                    ToggleTransform(highlightPoints, false, subID);
+                }
+            }
+        }
+        
+        Debug.Log($"[{ObjectName}] All highlights disabled via voice command");
+    }
+
+    public void EnableOutline()
+    {
+        if(Outline != null)
+        {
+            Outline.gameObject.SetActive(true);
+        }
+    }
+
+    public void DisableOutline()
+    {
+        if(Outline != null)
+        {
+            Outline.gameObject.SetActive(false);
+        }
     }
 
     public override string ToString()
