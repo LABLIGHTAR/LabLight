@@ -1,0 +1,783 @@
+{
+  "version": "1.0",
+  "title": "sgRNA Plate Transfer Protocol",
+  "description": "Protocol for transferring sgRNA samples from two source plates to a destination plate",
+  "estimatedDuration": "0",
+  "protocolPDFNames": [],
+  "globalArObjects": [
+    {
+      "specificObjectName": "Source Plate 1",
+      "arObjectID": "wellplate_01",
+      "rootPrefabName": "horizontalwellplate96"
+    },
+    {
+      "specificObjectName": "Source Plate 2",
+      "arObjectID": "wellplate_02",
+      "rootPrefabName": "horizontalwellplate96"
+    },
+    {
+      "specificObjectName": "Destination Plate",
+      "arObjectID": "wellplate_03",
+      "rootPrefabName": "horizontalwellplate96"
+    }
+  ],
+  "steps": [
+    {
+      "isCritical": true,
+      "title": "Initial Setup: Lock AR Objects",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Place Source Plate 1, Source Plate 2, and Destination Plate on the bench.",
+          "contentItems": [
+            {
+              "contentType": "text",
+              "properties": {
+                "text": "Lock AR objects to maintain positions during the experiment."
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "lock",
+              "arObjectID": "",
+              "properties": {
+                "arIDList": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Transfers from Plate 1 - EHMT1 Samples",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Transfer sample from Plate 1 well A04 to Destination Plate well A01 (EHMT1 X10A)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_A04.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_A01.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["A04"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["A01"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 1 well H04 to Destination Plate well B01 (EHMT1 X23)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_H04.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_B01.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["H04"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["B01"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 1 well D05 to Destination Plate well C01 (EHMT1 X26B)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_D05.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_C01.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["D05"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["C01"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 1 well E05 to Destination Plate well D01 (EHMT1 X27A)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_E05.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_D01.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["E05"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["D01"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Transfers from Plate 1 - MREIIA Samples",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Transfer sample from Plate 1 well A08 to Destination Plate well E01 (MREIIA X3A)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_A08.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_E01.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["A08"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["E01"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 1 well E08 to Destination Plate well F01 (MREIIA X5)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_E08.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_F01.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["E08"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["F01"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 1 well F08 to Destination Plate well G01 (MREIIA X6A)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_F08.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_G01.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["F08"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["G01"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 1 well E10 to Destination Plate well H01 (MREIIA X16)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_E10.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_H01.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["E10"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["H01"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 1 well G10 to Destination Plate well A02 (MREIIA X18)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_G10.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_A02.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["G10"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["A02"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 1 well H10 to Destination Plate well B02 (MREIIA X19)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "url": "platemap_source_H10.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_B02.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_01",
+              "properties": {
+                "subIDs": ["H10"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["B02"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Transfers from Plate 2 - RAD50 Samples",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Transfer sample from Plate 2 well D01 to Destination Plate well C02 (RAD50 X8B)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "url": "platemap_source_D01.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_C02.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "subIDs": ["D01"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["C02"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 2 well B02 to Destination Plate well D02 (RAD50 X11B)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "url": "platemap_source_B02.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_D02.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "subIDs": ["B02"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["D02"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 2 well G02 to Destination Plate well E02 (RAD50 X14A)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "url": "platemap_source_G02.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_E02.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "subIDs": ["G02"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["E02"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 2 well H02 to Destination Plate well F02 (RAD50 X14B)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "url": "platemap_source_H02.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_F02.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "subIDs": ["H02"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["F02"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "isCritical": true,
+      "title": "Transfers from Plate 2 - SFPQ and XRCC2 Samples",
+      "estimatedDuration": "0",
+      "checklist": [
+        {
+          "text": "Transfer sample from Plate 2 well D05 to Destination Plate well G02 (SFPQ X8)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "url": "platemap_source_D05.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_G02.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "subIDs": ["D05"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["G02"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 2 well E05 to Destination Plate well H02 (SFPQ X9)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "url": "platemap_source_E05.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_H02.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "subIDs": ["E05"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["H02"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 2 well F05 to Destination Plate well A03 (SFPQ X10)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "url": "platemap_source_F05.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_A03.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "subIDs": ["F05"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["A03"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        },
+        {
+          "text": "Transfer sample from Plate 2 well F06 to Destination Plate well B03 (XRCC2 X3G)",
+          "contentItems": [
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "url": "platemap_source_F06.png"
+              }
+            },
+            {
+              "contentType": "image",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "url": "platemap_dest_B03.png"
+              }
+            }
+          ],
+          "arActions": [
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_02",
+              "properties": {
+                "subIDs": ["F06"],
+                "colorHex": "#FF0000",
+                "colorName": "Red"
+              }
+            },
+            {
+              "actionType": "highlight",
+              "arObjectID": "wellplate_03",
+              "properties": {
+                "subIDs": ["B03"],
+                "colorHex": "#00FF00",
+                "colorName": "Green"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
