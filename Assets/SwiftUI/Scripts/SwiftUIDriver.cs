@@ -216,6 +216,13 @@ public class SwiftUIDriver : IUIDriver, IDisposable
         SendMessageToSwiftUI($"authStatus|{isAuthenticated}");
     }
     
+    public void UpdateConnectionStatus(DBConnectionStatus status, string message)
+    {
+        var statusUpdate = new { status = status.ToString(), message };
+        string jsonStatus = JsonConvert.SerializeObject(statusUpdate);
+        SendMessageToSwiftUI($"connectionStatus|{jsonStatus}");
+    }
+
     // Called from HandleMessage when SwiftUI requests user profiles
     public void OnUserProfilesChange(List<LocalUserProfileData> profiles)
     {
@@ -568,7 +575,7 @@ public class SwiftUIDriver : IUIDriver, IDisposable
                 case "requestProtocolDefinitions": LoadProtocolDefinitions(); break;
                 case "requestUserProfiles":
                     if (_fileManager == null) { Debug.LogError("SwiftUIDriver: IFileManager is null for requestUserProfiles."); break; }
-                    _fileManager.GetLocalUserProfilesAsync().ToObservable().ObserveOnMainThread()
+                    _fileManager.GetAllLocalUserProfilesAsync().ToObservable().ObserveOnMainThread()
                         .Subscribe(
                             result => OnUserProfilesChange(result.Success && result.Data != null ? result.Data : new List<LocalUserProfileData>()),
                             error => { Debug.LogError($"SwiftUIDriver: Exception fetching user profiles: {error}"); OnUserProfilesChange(new List<LocalUserProfileData>()); }

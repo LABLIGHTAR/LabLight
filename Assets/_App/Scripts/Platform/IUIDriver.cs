@@ -16,6 +16,7 @@ public interface IUIDriver
     void OnCheckItemChange(List<ProtocolState.CheckItemState> checkItemStates);
     void OnChatMessageReceived(string message);
     void SendAuthStatus(bool isAuthenticated); // Specific to SwiftUI to update its auth UI
+    void UpdateConnectionStatus(DBConnectionStatus status, string message);
     #endregion
 
     #region UI Display Methods (Platform-Specific Commands to Show UI)

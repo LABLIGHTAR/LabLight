@@ -81,7 +81,7 @@ public class UserLoginWindowController : BaseWindowController
     {
         if (_fileManager == null || _userSelectionComponent == null) return;
 
-        var result = await _fileManager.GetLocalUserProfilesAsync();
+        var result = await _fileManager.GetAllLocalUserProfilesAsync();
         if (result.Success && result.Data != null)
         {
             _userSelectionComponent.PopulateUserList(result.Data);
@@ -150,6 +150,27 @@ public class UserLoginWindowController : BaseWindowController
         else if (_registerUserComponent != null && _container.Contains(_registerUserComponent))
         {
             _registerUserComponent.ShowError(message);
+        }
+    }
+
+    public void UpdateConnectionStatus(DBConnectionStatus status, string message)
+    {
+        // Find the active component and update its status
+        if (_userSelectionComponent != null && _container.Contains(_userSelectionComponent))
+        {
+            _userSelectionComponent.UpdateStatus(message);
+        }
+        else if (_existingUserLoginComponent != null && _container.Contains(_existingUserLoginComponent))
+        {
+            _existingUserLoginComponent.UpdateStatus(message);
+        }
+        else if (_returningUserLoginComponent != null && _container.Contains(_returningUserLoginComponent))
+        {
+            _returningUserLoginComponent.UpdateStatus(message);
+        }
+        else if (_registerUserComponent != null && _container.Contains(_registerUserComponent))
+        {
+            _registerUserComponent.UpdateStatus(message);
         }
     }
 } 

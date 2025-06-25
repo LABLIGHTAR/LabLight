@@ -39,26 +39,6 @@ public class ConversationsListComponent : VisualElement
 
         _newChatButton = this.Q<Button>("new-chat-button");
         _scrollView = this.Q<ScrollView>("conversations-scroll-view");
-        
-        // --- Robustness Checks ---
-        bool initializationFailed = false;
-        if (_newChatButton == null)
-        {
-            Debug.LogError("ConversationsListComponent: The 'new-chat-button' was not found in the cloned UXML. Please ensure the correct VisualTreeAsset is assigned in the inspector and that the UXML file contains a Button with the name 'new-chat-button'.");
-            initializationFailed = true;
-        }
-        if (_scrollView == null)
-        {
-            Debug.LogError("ConversationsListComponent: The 'conversations-scroll-view' was not found in the cloned UXML. Please ensure the correct VisualTreeAsset is assigned and that the UXML file contains a ScrollView with the name 'conversations-scroll-view'.");
-            initializationFailed = true;
-        }
-
-        if (initializationFailed)
-        {
-            this.Add(new Label("Component failed to initialize. Check logs for details and verify Inspector assignments."));
-            return; // Stop execution to prevent further errors
-        }
-        // --- End of Checks ---
 
         _newChatButton.RegisterCallback<ClickEvent>(evt => {
             _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);

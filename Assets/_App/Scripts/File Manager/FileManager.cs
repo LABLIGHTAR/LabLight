@@ -2,6 +2,8 @@ using System.Threading.Tasks;
 using UnityEngine; // For Debug.Log, assuming Unity environment
 using System.Collections.Generic; // Added for List<T>
 using System; // Added for Exception
+using System.Linq; // Added for FirstOrDefault
+using Newtonsoft.Json; // Added for JsonConvert
 // TODO: Consider adding System.IO for Path.Combine if robust key sanitization/construction is needed.
 
 public class FileManager : IFileManager
@@ -521,21 +523,21 @@ public class FileManager : IFileManager
         }
     }
 
-    public async Task<Result<System.Collections.Generic.List<LocalUserProfileData>>> GetLocalUserProfilesAsync()
+    public async Task<Result<System.Collections.Generic.List<LocalUserProfileData>>> GetAllLocalUserProfilesAsync()
     {
-        Debug.Log("FileManager.GetLocalUserProfilesAsync: Attempting to get all local user profiles.");
+        Debug.Log("FileManager.GetAllLocalUserProfilesAsync: Attempting to get all local user profiles.");
         Result<System.Collections.Generic.List<string>> keysResult = await _localStorageProvider.ListKeysAsync(UserProfilePrefix);
 
         if (!keysResult.Success)
         {
-            Debug.LogError($"FileManager.GetLocalUserProfilesAsync: Failed to list user profile keys. Error: {keysResult.Error?.Code} - {keysResult.Error?.Message}");
+            Debug.LogError($"FileManager.GetAllLocalUserProfilesAsync: Failed to list user profile keys. Error: {keysResult.Error?.Code} - {keysResult.Error?.Message}");
             return Result<System.Collections.Generic.List<LocalUserProfileData>>.CreateFailure(keysResult.Error?.Code ?? "LOCAL_STORAGE_ERROR", keysResult.Error?.Message ?? "Failed to retrieve user profile keys.");
         }
 
         var profiles = new System.Collections.Generic.List<LocalUserProfileData>();
         if (keysResult.Data == null || keysResult.Data.Count == 0)
         {
-            Debug.Log("FileManager.GetLocalUserProfilesAsync: No local user profiles found.");
+            Debug.Log("FileManager.GetAllLocalUserProfilesAsync: No local user profiles found.");
             return Result<System.Collections.Generic.List<LocalUserProfileData>>.CreateSuccess(profiles); // Return empty list
         }
 
@@ -551,13 +553,12 @@ public class FileManager : IFileManager
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogWarning($"FileManager.GetLocalUserProfilesAsync: Failed to deserialize user profile from key '{key}'. Skipping. Error: {ex.Message}");
-                    // Optionally, you could collect these errors or handle them more gracefully.
+                    Debug.LogWarning($"FileManager.GetAllLocalUserProfilesAsync: Failed to deserialize user profile from key '{key}'. Skipping. Error: {ex.Message}");
                 }
             }
             else
             {
-                Debug.LogWarning($"FileManager.GetLocalUserProfilesAsync: Failed to read user profile data for key '{key}' or data was empty. Error: {readResult.Error?.Code} - {readResult.Error?.Message}");
+                Debug.LogWarning($"FileManager.GetAllLocalUserProfilesAsync: Failed to read user profile data for key '{key}' or data was empty. Error: {readResult.Error?.Code} - {readResult.Error?.Message}");
             }
         }
         return Result<System.Collections.Generic.List<LocalUserProfileData>>.CreateSuccess(profiles);
@@ -584,34 +585,81 @@ public class FileManager : IFileManager
         return ResultVoid.CreateSuccess();
     }
 
-    public async Task<Result<LocalUserProfileData>> GetLocalUserProfileAsync(string userId)
+    public async Task<Result<LocalUserProfileData>> GetUserProfileAsync(string userId)
     {
         if (string.IsNullOrEmpty(userId))
         {
-            return Result<LocalUserProfileData>.CreateFailure("ARG_NULL", "User ID cannot be null or empty.");
+            return Result<LocalUserProfileData>.CreateFailure("INVALID_ARGUMENT", "UserId cannot be null or empty.");
         }
 
-        string fileName = GetUserProfileCacheKey(userId);
-        try
-        {
-            Result<string> readResult = await _localStorageProvider.ReadTextAsync(fileName);
-            if (!readResult.Success || string.IsNullOrEmpty(readResult.Data))
-            {
-                return Result<LocalUserProfileData>.CreateFailure("NOT_FOUND", $"Local user profile not found for ID: {userId}. Error: {readResult.Error?.Message}");
-            }
+        // 1. Try to get from local storage first
+        string filePath = GetUserProfileCacheKey(userId);
+        var localResult = await _localStorageProvider.ReadTextAsync(filePath);
 
-            LocalUserProfileData userProfile = JsonUtility.FromJson<LocalUserProfileData>(readResult.Data);
-            if (userProfile == null)
-            {
-                return Result<LocalUserProfileData>.CreateFailure("DESERIALIZATION_FAILED", $"Failed to deserialize user profile for ID: {userId}.");
-            }
-            return Result<LocalUserProfileData>.CreateSuccess(userProfile);
-        }
-        catch (Exception ex) // Ensure System is imported for Exception
+        if (localResult.Success && !string.IsNullOrEmpty(localResult.Data))
         {
-            Debug.LogError($"FileManager: Exception in GetLocalUserProfileAsync for user ID {userId}: {ex.Message}");
-            return Result<LocalUserProfileData>.CreateFailure("EXCEPTION", ex.Message);
+            try
+            {
+                var profile = JsonConvert.DeserializeObject<LocalUserProfileData>(localResult.Data);
+                return Result<LocalUserProfileData>.CreateSuccess(profile);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"FileManager.GetUserProfileAsync: Failed to deserialize local profile for user {userId}. Error: {ex.Message}");
+                // Continue to try fetching from DB
+            }
         }
+        
+        // 2. If not in local storage, get from DB cache (but do NOT save it back here)
+        // This logic is flawed because the DB cache is keyed by SpacetimeIdentity, but this function is called with a FirebaseId.
+        // The link between FirebaseId and SpacetimeId only exists in the stored LocalUserProfileData file.
+        // Therefore, we should only look in the local file cache. SessionManager is responsible for handling a cache miss.
+        /*
+        var dbProfile = _database.GetAllCachedUserProfiles().FirstOrDefault(p => p.Id == userId);
+        if (dbProfile != null)
+        {
+            // IMPORTANT: We can't construct a complete LocalUserProfileData here because we don't have the email.
+            // We return a failure, signaling to the caller (SessionManager) that it needs to construct the full profile
+            // and explicitly cache it using CacheUserProfileAsync.
+            return Result<LocalUserProfileData>.CreateFailure("CACHE_MISS", $"Profile for user {userId} not in local cache, but found in DB cache. Full profile construction required.");
+        }
+        */
+
+        return Result<LocalUserProfileData>.CreateFailure("NOT_FOUND", $"User profile for user ID {userId} not found in local storage.");
+    }
+
+    public async Task<Result<List<LocalUserProfileData>>> GetAllUserProfilesAsync()
+    {
+        if (!_database.IsConnected)
+        {
+            // Offline: Return all profiles that are already stored locally.
+            return await GetAllLocalUserProfilesAsync();
+        }
+
+        // Online: Get all users from the DB and ensure they have a local profile.
+        var allDbUsers = _database.GetAllCachedUserProfiles();
+        if (allDbUsers == null)
+        {
+            return Result<List<LocalUserProfileData>>.CreateSuccess(new List<LocalUserProfileData>());
+        }
+
+        var allProfiles = new List<LocalUserProfileData>();
+        foreach (var dbUser in allDbUsers)
+        {
+            var result = await GetUserProfileAsync(dbUser.Id);
+            if (result.Success)
+            {
+                allProfiles.Add(result.Data);
+            }
+        }
+        return Result<List<LocalUserProfileData>>.CreateSuccess(allProfiles);
+    }
+
+    public Task<ResultVoid> CacheUserProfileAsync(LocalUserProfileData userProfile)
+    {
+        // This is a fire-and-forget method to update the cache without blocking the main flow.
+        _ = SaveLocalUserProfileAsync(userProfile);
+        return Task.FromResult(ResultVoid.CreateSuccess());
     }
     #endregion
 

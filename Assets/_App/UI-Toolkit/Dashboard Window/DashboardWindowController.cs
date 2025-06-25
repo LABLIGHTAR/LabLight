@@ -35,8 +35,7 @@ public partial class DashboardWindowController : BaseWindowController
     private IFileManager _fileManager;
     private IDatabase _database;
     private IAudioService _audioService;
-
-    private readonly Dictionary<string, LocalUserProfileData> _userProfileCache = new Dictionary<string, LocalUserProfileData>();
+    private IAuthProvider _authProvider;
 
     protected override void OnEnable()
     {
@@ -47,13 +46,8 @@ public partial class DashboardWindowController : BaseWindowController
         _fileManager = ServiceRegistry.GetService<IFileManager>();
         _database = ServiceRegistry.GetService<IDatabase>();
         _audioService = ServiceRegistry.GetService<IAudioService>();
+        _authProvider = ServiceRegistry.GetService<IAuthProvider>();
         _sessionManager = SessionManager.instance;
-
-        // Add current user to cache if available
-        if (SessionState.currentUserProfile != null)
-        {
-            _userProfileCache[SessionState.currentUserProfile.Id] = SessionState.currentUserProfile;
-        }
 
         // Query UI Elements
         _mainContentContainer = rootVisualElement.Q<VisualElement>("main-content-container");
@@ -124,38 +118,6 @@ public partial class DashboardWindowController : BaseWindowController
         // Future components that need cleanup can be added here
     }
 
-    private async System.Threading.Tasks.Task<LocalUserProfileData> GetUserProfileAsync(string userId)
-    {
-        if (string.IsNullOrEmpty(userId)) return null;
-
-        // 1. Check cache first
-        if (_userProfileCache.TryGetValue(userId, out var cachedProfile) && cachedProfile != null)
-        {
-            return cachedProfile;
-        }
-
-        // 2. Try to get from local file storage
-        var result = await _fileManager.GetLocalUserProfileAsync(userId);
-        if (result.Success)
-        {
-            _userProfileCache[userId] = result.Data; // Update cache
-            return result.Data;
-        }
-
-        // 3. Fallback to get basic data from DB
-        var dbUser = _database.GetCachedUserProfile(userId);
-        if (dbUser != null)
-        {
-            var newProfile = new LocalUserProfileData(dbUser, "");
-            _userProfileCache[userId] = newProfile; // Update cache
-            return newProfile;
-        }
-
-        // 4. If not found anywhere, cache a null and return it to prevent re-fetching
-        _userProfileCache[userId] = null;
-        return null;
-    }
-
     private void ShowHomeComponent()
     {
         CleanupCurrentView();
@@ -189,16 +151,16 @@ public partial class DashboardWindowController : BaseWindowController
         CleanupCurrentView();
 
         var conversations = _database.GetAllConversations().ToList();
-        var userIdentities = conversations
-            .SelectMany(c => c.Participants)
-            .Select(p => p.ParticipantIdentity)
-            .Distinct()
-            .ToList();
+        var userProfiles = new Dictionary<string, LocalUserProfileData>();
+        var userIdentities = conversations.SelectMany(c => c.Participants).Select(p => p.ParticipantIdentity).Distinct();
 
-        // Prime the cache for all participants
         foreach (var identity in userIdentities)
         {
-            await GetUserProfileAsync(identity);
+            var result = await _fileManager.GetUserProfileAsync(identity);
+            if (result.Success)
+            {
+                userProfiles[identity] = result.Data;
+            }
         }
         
         _conversationsListComponent = new ConversationsListComponent(
@@ -206,7 +168,7 @@ public partial class DashboardWindowController : BaseWindowController
             conversationListItemAsset,
             _database,
             _audioService,
-            (identity) => _userProfileCache.TryGetValue(identity, out var p) ? p : null);
+            (identity) => userProfiles.TryGetValue(identity, out var p) ? p : null);
 
         _conversationsListComponent.OnNewChatRequested += ShowNewChatComponent;
         _conversationsListComponent.OnConversationSelected += ShowChatComponent;
@@ -220,21 +182,11 @@ public partial class DashboardWindowController : BaseWindowController
     {
         CleanupCurrentView();
 
-        // Fetch all possible users
-        var allDbUsers = _database.GetAllCachedUserProfiles();
-        var localUserProfiles = new List<LocalUserProfileData>();
-        foreach (var dbUser in allDbUsers)
-        {
-            // Use GetUserProfileAsync to ensure cache is populated and we get the best version
-            var localProfile = await GetUserProfileAsync(dbUser.Id);
-            if (localProfile != null)
-            {
-                localUserProfiles.Add(localProfile);
-            }
-        }
+        var profilesResult = await _fileManager.GetAllUserProfilesAsync();
+        var potentialRecipients = profilesResult.Success ? profilesResult.Data : new List<LocalUserProfileData>();
 
         // Filter out the current user BEFORE passing the list to the component
-        var potentialRecipients = localUserProfiles
+        var filteredRecipients = potentialRecipients
             .Where(p => p.Id != SessionState.currentUserProfile?.Id)
             .ToList();
 
@@ -243,7 +195,7 @@ public partial class DashboardWindowController : BaseWindowController
             _database,
             _fileManager,
             _audioService,
-            potentialRecipients);
+            filteredRecipients);
 
         newChatComponent.OnCancel += ShowConversationsListComponent;
         newChatComponent.OnMessageSent += () =>
@@ -259,10 +211,14 @@ public partial class DashboardWindowController : BaseWindowController
     {
         CleanupCurrentView();
 
-        // Prime the cache for this conversation's participants
+        var userProfiles = new Dictionary<string, LocalUserProfileData>();
         foreach (var participant in conversation.Participants)
         {
-            await GetUserProfileAsync(participant.ParticipantIdentity);
+            var result = await _fileManager.GetUserProfileAsync(participant.ParticipantIdentity);
+            if (result.Success)
+            {
+                userProfiles[participant.ParticipantIdentity] = result.Data;
+            }
         }
 
         var chatComponent = new ChatComponent(
@@ -270,7 +226,7 @@ public partial class DashboardWindowController : BaseWindowController
             conversation,
             _database,
             _audioService,
-            (identity) => _userProfileCache.TryGetValue(identity, out var p) ? p : null);
+            (identity) => userProfiles.TryGetValue(identity, out var p) ? p : null);
 
         chatComponent.OnBack += ShowConversationsListComponent;
 
@@ -293,7 +249,6 @@ public partial class DashboardWindowController : BaseWindowController
     private void OnNavLogoutClicked(ClickEvent evt)
     {
         _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
-        Debug.Log("Log Out button clicked.");
         _uiDriver?.RequestSignOut();
     }
 

@@ -10,9 +10,11 @@ public interface IFileManager
 {
     // User Profile Management
     Task<ResultVoid> SaveLocalUserProfileAsync(LocalUserProfileData userProfile);
-    Task<Result<List<LocalUserProfileData>>> GetLocalUserProfilesAsync();
+    Task<Result<List<LocalUserProfileData>>> GetAllLocalUserProfilesAsync();
+    Task<Result<LocalUserProfileData>> GetUserProfileAsync(string userId);
     Task<ResultVoid> DeleteLocalUserProfileAsync(string userId);
-    Task<Result<LocalUserProfileData>> GetLocalUserProfileAsync(string userId);
+    Task<Result<List<LocalUserProfileData>>> GetAllUserProfilesAsync();
+    Task<ResultVoid> CacheUserProfileAsync(LocalUserProfileData userProfile);
 
     // Protocol Management
     Task<Result<string>> GetProtocolAsync(uint protocolId);

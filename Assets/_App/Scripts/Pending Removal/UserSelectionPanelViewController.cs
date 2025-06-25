@@ -105,7 +105,7 @@ public class UserSelectionPanelViewController : LLBasePanel
             return;
         }
 
-        fileManager.GetLocalUserProfilesAsync()
+        fileManager.GetAllLocalUserProfilesAsync()
             .ToObservable()
             .ObserveOnMainThread()
             .Subscribe(result =>

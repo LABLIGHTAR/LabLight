@@ -90,6 +90,15 @@ public class RegisterUserComponent : VisualElement
         }
     }
 
+    public void UpdateStatus(string message)
+    {
+        if (_errorLabel != null)
+        {
+            _errorLabel.text = message;
+            _errorLabel.style.display = DisplayStyle.Flex;
+        }
+    }
+
     public void ClearForm()
     {
         _usernameField?.SetValueWithoutNotify("");

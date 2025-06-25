@@ -91,6 +91,11 @@ public class ReturningUserLoginComponent : VisualElement
         _errorLabel.style.display = DisplayStyle.Flex;
     }
 
+    public void UpdateStatus(string message)
+    {
+        SetError(message);
+    }
+
     public void ClearError()
     {
         if (_errorLabel == null) return;

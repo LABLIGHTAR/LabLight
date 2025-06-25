@@ -96,7 +96,7 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     #region Auth Event Handlers (Local UI Reactions)
     private void HandleSignInSuccess(string oidcToken)
     {
-        DisplayDashboard();
+        return;
     }
 
     private void HandleSignOutSuccess()
@@ -141,6 +141,14 @@ public class UnityUIDriver : MonoBehaviour, IUIDriver
     public void SendAuthStatus(bool isAuthenticated)
     {
         return;
+    }
+
+    public void UpdateConnectionStatus(DBConnectionStatus status, string message)
+    {
+        if (_userLoginController != null)
+        {
+            _userLoginController.UpdateConnectionStatus(status, message);
+        }
     }
     #endregion
 

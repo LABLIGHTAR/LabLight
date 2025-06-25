@@ -134,7 +134,7 @@ public partial class SpacetimeDBImpl
      {
          if (spdbProfile == null) return null;
          return new UserData {
-             Id = spdbProfile.Identity.ToString(),
+             SpacetimeId = spdbProfile.Identity.ToString(),
              Name = spdbProfile.Name,
              IsOnline = spdbProfile.Online,
              CreatedAtUtc = TimestampToDateTime(spdbProfile.CreatedAt),
