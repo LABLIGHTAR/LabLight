@@ -28171,6 +28171,7 @@ MonoBehaviour:
   positionLocked: 0
   hasBeenLocked: 0
   ModelName: {fileID: 3093749076751995976}
+  ModelNameText: {fileID: 7161573805230134199}
   Model: {fileID: 1581647338453630097}
   highlightPoints: {fileID: 7913686499817711837}
   Outline: {fileID: 8639182206042281564}

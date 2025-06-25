@@ -56,6 +56,8 @@ public class ArObjectViewController : MonoBehaviour
     [SerializeField]
     public Transform ModelName;
 
+    public TextMeshProUGUI ModelNameText;
+
     [SerializeField]
     private Transform Model;
 
@@ -88,10 +90,9 @@ public class ArObjectViewController : MonoBehaviour
         this.arObject = arObject;
         if (ModelName != null && arObject != null && !string.IsNullOrEmpty(arObject.specificObjectName))
         {
-            var textMesh = ModelName.GetComponent<TextMeshProUGUI>();
-            if (textMesh != null)
+            if (ModelNameText != null)
             {
-                textMesh.text = arObject.specificObjectName;
+                ModelNameText.text = arObject.specificObjectName;
                 ModelName.gameObject.SetActive(true);
             }
         }
@@ -308,8 +309,7 @@ public class ArObjectViewController : MonoBehaviour
                 }
             }
         }
-        // show/hide model name
-        ToggleTransform(ModelName, value);
+        // ModelName removed - it should stay visible when model is active
     }
 
     protected virtual void AddSettingsSubscriptions()

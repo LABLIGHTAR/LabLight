@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using System;
 
@@ -20,6 +21,8 @@ public class WellPlateHighlightManager : MonoBehaviour
     
     // Indicates if the model (and thus row/col highlights) is currently active
     private bool modelActive;
+
+    private string arObjectID;
 
     private void Awake()
     {
@@ -50,6 +53,7 @@ public class WellPlateHighlightManager : MonoBehaviour
 
     private void UpdateHighlights()
     {
+
         if (!ProtocolState.Instance.HasCurrentCheckItem()) 
         {
             ClearAllHighlights();
@@ -84,9 +88,18 @@ public class WellPlateHighlightManager : MonoBehaviour
     {
         // Clear existing highlights first
         ClearAllHighlights();
-
+        
+        // Get reference to ArObjectViewController to match arObjectID
+        if(arObjectID == null)
+        {
+            var arObjectViewController = GetComponent<ArObjectViewController>();
+            if (arObjectViewController?.arObject == null) return;
+            arObjectID = arObjectViewController.arObject.arObjectID;
+        }
+        
         // Apply new highlights
-        foreach (var action in currentActions)
+        foreach (var action in currentActions.Where(a => 
+            a.arObjectID == arObjectID))
         {
             var subIDs = GetSubIDs(action);
             if (subIDs == null) continue;
@@ -159,7 +172,16 @@ public class WellPlateHighlightManager : MonoBehaviour
     {
         if (currentActions == null) return;
 
-        foreach (var action in currentActions)
+        // Get reference to ArObjectViewController to match arObjectID
+        if(arObjectID == null)
+        {
+            var arObjectViewController = GetComponent<ArObjectViewController>();
+            if (arObjectViewController?.arObject == null) return;
+            arObjectID = arObjectViewController.arObject.arObjectID;
+        }
+
+        foreach (var action in currentActions.Where(a => 
+            a.arObjectID == arObjectID))
         {
             var subIDs = GetSubIDs(action);
             if (subIDs == null) continue;

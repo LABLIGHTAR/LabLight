@@ -77,7 +77,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_01",
               "properties": {
-                "subIDs": ["A04"],
+                "subIDs": ["A4"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -86,7 +86,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["A01"],
+                "subIDs": ["A1"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -116,7 +116,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_01",
               "properties": {
-                "subIDs": ["H04"],
+                "subIDs": ["H4"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -125,7 +125,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["B01"],
+                "subIDs": ["B1"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -155,7 +155,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_01",
               "properties": {
-                "subIDs": ["D05"],
+                "subIDs": ["D5"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -164,7 +164,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["C01"],
+                "subIDs": ["C1"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -194,7 +194,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_01",
               "properties": {
-                "subIDs": ["E05"],
+                "subIDs": ["E5"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -203,7 +203,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["D01"],
+                "subIDs": ["D1"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -240,7 +240,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_01",
               "properties": {
-                "subIDs": ["A08"],
+                "subIDs": ["A8"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -249,7 +249,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["E01"],
+                "subIDs": ["E1"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -279,7 +279,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_01",
               "properties": {
-                "subIDs": ["E08"],
+                "subIDs": ["E8"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -288,7 +288,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["F01"],
+                "subIDs": ["F1"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -318,7 +318,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_01",
               "properties": {
-                "subIDs": ["F08"],
+                "subIDs": ["F8"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -327,7 +327,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["G01"],
+                "subIDs": ["G1"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -366,7 +366,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["H01"],
+                "subIDs": ["H1"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -405,7 +405,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["A02"],
+                "subIDs": ["A2"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -444,7 +444,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["B02"],
+                "subIDs": ["B2"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -481,7 +481,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_02",
               "properties": {
-                "subIDs": ["D01"],
+                "subIDs": ["D1"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -490,7 +490,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["C02"],
+                "subIDs": ["C2"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -520,7 +520,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_02",
               "properties": {
-                "subIDs": ["B02"],
+                "subIDs": ["B2"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -529,7 +529,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["D02"],
+                "subIDs": ["D2"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -559,7 +559,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_02",
               "properties": {
-                "subIDs": ["G02"],
+                "subIDs": ["G2"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -568,7 +568,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["E02"],
+                "subIDs": ["E2"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -598,7 +598,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_02",
               "properties": {
-                "subIDs": ["H02"],
+                "subIDs": ["H2"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -607,7 +607,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["F02"],
+                "subIDs": ["F2"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -644,7 +644,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_02",
               "properties": {
-                "subIDs": ["D05"],
+                "subIDs": ["D5"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -653,7 +653,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["G02"],
+                "subIDs": ["G2"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -683,7 +683,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_02",
               "properties": {
-                "subIDs": ["E05"],
+                "subIDs": ["E5"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -692,7 +692,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["H02"],
+                "subIDs": ["H2"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -722,7 +722,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_02",
               "properties": {
-                "subIDs": ["F05"],
+                "subIDs": ["F5"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -731,7 +731,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["A03"],
+                "subIDs": ["A3"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
@@ -761,7 +761,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_02",
               "properties": {
-                "subIDs": ["F06"],
+                "subIDs": ["F6"],
                 "colorHex": "#FF0000",
                 "colorName": "Red"
               }
@@ -770,7 +770,7 @@
               "actionType": "highlight",
               "arObjectID": "wellplate_03",
               "properties": {
-                "subIDs": ["B03"],
+                "subIDs": ["B3"],
                 "colorHex": "#00FF00",
                 "colorName": "Green"
               }
