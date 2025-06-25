@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <Style src="NewChatComponent.uss" />
+    <ui:VisualElement name="new-chat-container" class="new-chat-container">
+        <ui:Label text="New Message" class="h2 title-label" />
+
+        <ui:VisualElement name="recipient-section" class="recipient-section">
+            <ui:Label text="To:" class="recipient-label" />
+            <ui:ScrollView name="selected-recipients-scroll-view" class="selected-recipients-scroll-view" horizontal-scroller-visibility="Auto" mode="Horizontal">
+                <!-- Selected recipient badges will go here -->
+            </ui:ScrollView>
+        </ui:VisualElement>
+
+        <ui:TextField name="recipient-search-field" class="form-field" placeholder-text="Search for users..." />
+        <ui:ScrollView name="search-results-scroll-view" class="search-results-scroll-view" />
+
+        <ui:TextField name="message-text-field" multiline="true" class="message-text-field" />
+
+        <ui:VisualElement class="button-group-row-spaced">
+            <ui:Button name="cancel-button" text="Cancel" class="button button-secondary" />
+            <ui:Button name="send-button" text="Send" class="button button-primary" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 

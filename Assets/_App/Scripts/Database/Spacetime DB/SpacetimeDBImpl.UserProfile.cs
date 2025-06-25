@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using SpacetimeDB;
 using SpacetimeDB.Types;
+using System.Collections.Generic;
 
 public partial class SpacetimeDBImpl
 {
@@ -105,6 +106,26 @@ public partial class SpacetimeDBImpl
         }
         
         return MapToUserData(foundProfile); 
+    }
+
+    public IEnumerable<UserData> GetAllCachedUserProfiles()
+    {
+        if (!AssertConnected("get all cached user profiles"))
+        {
+            yield break;
+        }
+
+        var userProfileHandle = _connection?.Db?.UserProfile;
+        if (userProfileHandle == null)
+        {
+            Debug.LogWarning("GetAllCachedUserProfiles: UserProfile table handle is null.");
+            yield break;
+        }
+
+        foreach (var row in userProfileHandle.Iter())
+        {
+            yield return MapToUserData(row);
+        }
     }
     #endregion
 

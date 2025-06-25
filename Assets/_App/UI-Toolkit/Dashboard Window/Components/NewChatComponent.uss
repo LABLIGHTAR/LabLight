@@ -1,0 +1,78 @@
+.new-chat-container {
+    padding: 20px;
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+.title-label {
+    margin-bottom: 20px;
+}
+
+.recipient-section {
+    flex-direction: row;
+    align-items: center;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    border-color: rgba(128, 128, 128, 0.5);
+    padding: 5px 0;
+    margin-bottom: 10px;
+}
+
+.recipient-label {
+    margin-right: 10px;
+    -unity-font-style: bold;
+}
+
+.selected-recipients-scroll-view {
+    flex-grow: 1;
+    flex-direction: row;
+    min-height: 35px;
+}
+
+.search-results-scroll-view {
+    min-height: 50px;
+    max-height: 150px;
+    border-width: 1px;
+    border-color: rgba(128, 128, 128, 0.2);
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.message-text-field {
+    flex-grow: 1;
+    -unity-text-align: upper-left;
+    margin-bottom: 20px;
+}
+
+.recipient-badge {
+    flex-direction: row;
+    align-items: center;
+    background-color: #3a75c4;
+    border-radius: 12px;
+    padding: 4px 8px;
+    margin: 2px 5px 2px 0;
+    height: 24px;
+}
+
+.recipient-badge-label {
+    color: white;
+    margin-right: 5px;
+    font-size: 12px;
+}
+
+.recipient-badge-remove-button {
+    width: 16px;
+    height: 16px;
+    -unity-background-image-tint-color: white;
+}
+
+.user-search-result-item {
+    padding: 8px 12px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(128, 128, 128, 0.2);
+    cursor: pointer;
+}
+
+.user-search-result-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+} 

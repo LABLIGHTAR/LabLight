@@ -40,6 +40,7 @@ public interface IDatabase
     // Methods
     void RegisterProfile(string displayName);
     UserData GetCachedUserProfile(string userId);
+    IEnumerable<UserData> GetAllCachedUserProfiles();
 
     // === Organization ===
     // Methods (Reducers)
@@ -102,6 +103,7 @@ public interface IDatabase
     event Action<bool> OnRequestMediaUploadSlotResultReceived;
     event Action<bool> OnConfirmMediaUploadCompleteResultReceived;
     event Action OnMediaMetadataUpdate;
+    event Action<string> OnMediaMetadataDeleted;
     // Methods (Reducers)
     void RequestMediaUploadSlot(string objectKey, string originalFilename, string contentType);
     void ConfirmMediaUploadComplete(string objectKey, ulong fileSize);

@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <Style src="ChatComponent.uss" />
+    <ui:VisualElement name="chat-container" class="chat-container">
+        <!-- Header -->
+        <ui:VisualElement name="chat-header" class="chat-header">
+            <ui:Button name="back-button" class="icon-button icon-back" />
+            <ui:Label name="conversation-title" class="h2 conversation-title" />
+            <ui:VisualElement class="header-spacer" />
+        </ui:VisualElement>
+
+        <!-- Messages -->
+        <ui:ScrollView name="messages-scroll-view" class="messages-scroll-view" />
+
+        <!-- Footer -->
+        <ui:VisualElement name="chat-footer" class="chat-footer">
+            <ui:TextField name="message-input" class="message-input" placeholder-text="Type a message..." multiline="true" />
+            <ui:Button name="send-button" class="icon-button icon-send" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML> 

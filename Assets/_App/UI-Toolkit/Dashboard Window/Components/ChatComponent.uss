@@ -1,0 +1,97 @@
+.chat-container {
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+.chat-header {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom-width: 1px;
+    border-color: rgba(128, 128, 128, 0.5);
+    flex-shrink: 0;
+}
+
+.conversation-title {
+    margin: 0 15px;
+}
+
+.header-spacer {
+    flex-grow: 1;
+}
+
+.messages-scroll-view {
+    flex-grow: 1;
+    padding: 10px 15px;
+}
+
+.message-row {
+    flex-direction: row;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.message-bubble {
+    padding: 8px 12px;
+    border-radius: 18px;
+    max-width: 75%;
+}
+
+.message-content {
+    white-space: normal;
+    font-size: 14px;
+}
+
+.message-timestamp {
+    font-size: 10px;
+    -unity-font-style: italic;
+    color: #cccccc;
+    margin-top: 4px;
+    -unity-text-align: right;
+}
+
+.sender-name-label {
+    font-size: 12px;
+    -unity-font-style: bold;
+    margin-bottom: 2px;
+    color: #a0c8ff;
+}
+
+.message-row.sent {
+    justify-content: flex-end;
+}
+
+.message-bubble.sent {
+    background-color: #0b57c7;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message-bubble.sent .message-timestamp {
+    color: #e0e0e0;
+}
+
+.message-row.received {
+    justify-content: flex-start;
+}
+
+.message-bubble.received {
+    background-color: #3E3E3E;
+    color: white;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-footer {
+    flex-direction: row;
+    align-items: flex-end;
+    padding: 10px 15px;
+    border-top-width: 1px;
+    border-color: rgba(128, 128, 128, 0.5);
+    flex-shrink: 0;
+}
+
+.message-input {
+    flex-grow: 1;
+    margin-right: 10px;
+    max-height: 80px;
+} 
