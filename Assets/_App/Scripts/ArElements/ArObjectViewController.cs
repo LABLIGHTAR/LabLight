@@ -72,8 +72,7 @@ public class ArObjectViewController : MonoBehaviour
     private IDisposable stepStreamSub;
     private IDisposable checklistStreamSub;
     
-    // voice command disposal
-    private Action DisposeVoice;
+
 
     void Awake()
     {
@@ -91,12 +90,10 @@ public class ArObjectViewController : MonoBehaviour
     
     void OnEnable()
     {
-        SetupVoiceCommands();
     }
     
     void OnDisable()
     {
-        DisposeVoice?.Invoke();
     }
 
     public virtual void Initialize(ArObject arObject)
@@ -393,27 +390,6 @@ public class ArObjectViewController : MonoBehaviour
     {
         stepStreamSub?.Dispose();
         checklistStreamSub?.Dispose();
-        DisposeVoice?.Invoke();
-    }
-    
-    /// <summary>
-    /// Sets up voice commands for this AR object
-    /// </summary>
-    void SetupVoiceCommands()
-    {
-        if (SpeechRecognizer.Instance == null)
-        {
-            Debug.LogWarning("SpeechRecognizer not found");
-            return;
-        }
-        
-        DisposeVoice = SpeechRecognizer.Instance.Listen(new Dictionary<string, Action>()
-        {
-            {"show highlights", () => EnableAllSubIDs()},
-            {"hide highlights", () => DisableAllSubIDs()},
-            {"show outline", () => EnableOutline()},
-            {"hide outline", () => DisableOutline()}
-        });
     }
     
     /// <summary>

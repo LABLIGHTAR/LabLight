@@ -86,10 +86,46 @@ public class ArObjectManager : MonoBehaviour
         
         DisposeVoice = SpeechRecognizer.Instance.Listen(new Dictionary<string, Action>()
         {
-            {"relock object 1", () => RelockSpecificObject(1)},
-            {"relock object 2", () => RelockSpecificObject(2)},
-            {"relock object 3", () => RelockSpecificObject(3)},
-            {"relock object 4", () => RelockSpecificObject(4)}
+            {"lock one", async () => 
+            {
+                RelockSpecificObject(1);
+                await StartCoroutine(Wait());
+            }},
+            {"lock two", async () => 
+            {
+                RelockSpecificObject(2);
+                await StartCoroutine(Wait());
+            }},
+            {"lock three", async () => 
+            {
+                RelockSpecificObject(3);
+                await StartCoroutine(Wait());
+            }},
+            {"lock four", async () => 
+            {
+                RelockSpecificObject(4);
+                await StartCoroutine(Wait());
+            }},
+            {"show highlights", async () => 
+            {
+                ShowAllHighlights();
+                await StartCoroutine(Wait());
+            }},
+            {"hide highlights", async () => 
+            {
+                HideAllHighlights();
+                await StartCoroutine(Wait());
+            }},
+            {"show outlines", async () => 
+            {
+                ShowAllOutlines();
+                await StartCoroutine(Wait());
+            }},
+            {"hide outlines", async () => 
+            {
+                HideAllOutlines();
+                await StartCoroutine(Wait());
+            }}
         });
     }
     
@@ -142,6 +178,78 @@ public class ArObjectManager : MonoBehaviour
         lockedObjectIds.Add(arObject.arObjectID);
         
         Debug.Log($"[ArObjectManager] Successfully enqueued object {objectIndex} ({arObject.arObjectID}) for relocking");
+    }
+    
+    /// <summary>
+    /// Shows highlights on all AR objects
+    /// </summary>
+    private void ShowAllHighlights()
+    {
+        Debug.Log("[ArObjectManager] Showing all highlights via voice command");
+        
+        foreach (var arViewController in arViews.Values)
+        {
+            if (arViewController != null)
+            {
+                arViewController.EnableAllSubIDs();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Hides highlights on all AR objects
+    /// </summary>
+    private void HideAllHighlights()
+    {
+        Debug.Log("[ArObjectManager] Hiding all highlights via voice command");
+        
+        foreach (var arViewController in arViews.Values)
+        {
+            if (arViewController != null)
+            {
+                arViewController.DisableAllSubIDs();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Shows outlines on all AR objects
+    /// </summary>
+    private void ShowAllOutlines()
+    {
+        Debug.Log("[ArObjectManager] Showing all outlines via voice command");
+        
+        foreach (var arViewController in arViews.Values)
+        {
+            if (arViewController != null)
+            {
+                arViewController.EnableOutline();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Hides outlines on all AR objects
+    /// </summary>
+    private void HideAllOutlines()
+    {
+        Debug.Log("[ArObjectManager] Hiding all outlines via voice command");
+        
+        foreach (var arViewController in arViews.Values)
+        {
+            if (arViewController != null)
+            {
+                arViewController.DisableOutline();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Wait coroutine for voice command delays
+    /// </summary>
+    private IEnumerator Wait()
+    {
+        yield return new WaitForSeconds(0.5f);
     }
 
     private void InitializeArObjects(List<ArObject> arObjects)
