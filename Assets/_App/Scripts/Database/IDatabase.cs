@@ -19,6 +19,7 @@ public interface IDatabase
     
     // --- New State Management ---
     DBConnectionStatus CurrentDBStatus { get; }
+    string CurrentIdentity { get; }
     event Action<DBConnectionStatus, string> OnDBStatusChanged; // string for optional message (e.g. error)
 
     // Events (Existing - provide specific context beyond general status changes)

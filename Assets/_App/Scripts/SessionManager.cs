@@ -258,6 +258,7 @@ public class SessionManager : MonoBehaviour
         Debug.Log("SessionManager: Auth SignOut Success. State will be reset by AuthStatus.Idle.");
         SessionState.PendingDisplayName = null;
         SessionState.PendingEmail = null;
+        SessionState.currentUserProfile = null;
     }
 
     private void HandleAuthError(string errorMessage)
@@ -319,15 +320,22 @@ public class SessionManager : MonoBehaviour
         }
     }
 
-    private async void HandleDatabaseUserProfileUpdated(UserData dbPartialProfile)
+    private async void HandleDatabaseUserProfileUpdated(UserData dbProfile)
     {
-        if (dbPartialProfile == null || string.IsNullOrEmpty(dbPartialProfile.SpacetimeId))
+        if (dbProfile == null || string.IsNullOrEmpty(dbProfile.SpacetimeId))
         {
             Debug.LogWarning("SessionManager: HandleDatabaseUserProfileUpdated received null or invalid profile data (missing SpacetimeId).");
             return;
         }
+        
+        // This event now fires for ANY user profile update.
+        // We only care about the one that matches our connected identity.
+        if (dbProfile.SpacetimeId != Database.CurrentIdentity)
+        {
+            return; // Not our profile, ignore.
+        }
 
-        Debug.Log($"SessionManager: Received user profile update from DB for SpacetimeID: {dbPartialProfile.SpacetimeId}, Name: {dbPartialProfile.Name}");
+        Debug.Log($"SessionManager: Received OUR user profile update from DB for SpacetimeID: {dbProfile.SpacetimeId}, Name: {dbProfile.Name}");
 
         string firebaseId = AuthProvider.CurrentUserId;
         if (string.IsNullOrEmpty(firebaseId))
@@ -344,12 +352,12 @@ public class SessionManager : MonoBehaviour
             var newFullProfile = new LocalUserProfileData
             {
                 Id = firebaseId,
-                SpacetimeId = dbPartialProfile.SpacetimeId,
-                Name = dbPartialProfile.Name, // Use name from DB as source of truth
+                SpacetimeId = dbProfile.SpacetimeId,
+                Name = dbProfile.Name, // Use name from DB as source of truth
                 Email = SessionState.PendingEmail, // Use email from registration form
-                IsOnline = dbPartialProfile.IsOnline,
-                CreatedAtUtc = dbPartialProfile.CreatedAtUtc,
-                LastOnlineUtc = dbPartialProfile.LastOnlineUtc,
+                IsOnline = dbProfile.IsOnline,
+                CreatedAtUtc = dbProfile.CreatedAtUtc,
+                LastOnlineUtc = dbProfile.LastOnlineUtc,
             };
 
             // Save the newly constructed full profile
@@ -357,44 +365,37 @@ public class SessionManager : MonoBehaviour
             Debug.Log($"SessionManager: Successfully created and cached full profile for {newFullProfile.Name}.");
 
             // Update session state
-            SessionState.currentUserProfile = newFullProfile;
+            SetCurrentUser(newFullProfile);
 
             // Clear pending registration state
             SessionState.PendingDisplayName = null;
             SessionState.PendingEmail = null;
-
-            Debug.Log($"SessionManager: Set current session user to {newFullProfile.Name}.");
-            OnSessionUserChanged?.Invoke(newFullProfile);
+            
             UIDriver?.DisplayDashboard();
         }
         else
         {
             // RETURNING USER UPDATE
-            // A profile update for a returning user was received.
-            // Let's get their email from the local cache if possible, or from the auth provider.
             var localProfileResult = await FileManager.GetUserProfileAsync(firebaseId);
             string userEmail = localProfileResult.Success ? localProfileResult.Data.Email : AuthProvider.CurrentUserEmail;
 
             var updatedFullProfile = new LocalUserProfileData
             {
                 Id = firebaseId,
-                SpacetimeId = dbPartialProfile.SpacetimeId,
-                Name = dbPartialProfile.Name,
+                SpacetimeId = dbProfile.SpacetimeId,
+                Name = dbProfile.Name,
                 Email = userEmail,
-                IsOnline = dbPartialProfile.IsOnline,
-                CreatedAtUtc = dbPartialProfile.CreatedAtUtc, // This might overwrite, consider logic
-                LastOnlineUtc = dbPartialProfile.LastOnlineUtc,
+                IsOnline = dbProfile.IsOnline,
+                CreatedAtUtc = dbProfile.CreatedAtUtc, 
+                LastOnlineUtc = dbProfile.LastOnlineUtc,
             };
 
             await FileManager.CacheUserProfileAsync(updatedFullProfile);
             Debug.Log($"SessionManager: Successfully updated and cached profile for returning user {updatedFullProfile.Name}.");
 
-            // Check if this update is for the currently logged-in user.
             if (SessionState.currentUserProfile == null || SessionState.currentUserProfile.Id == updatedFullProfile.Id)
             {
-                SessionState.currentUserProfile = updatedFullProfile;
-                Debug.Log($"SessionManager: Set current session user to {updatedFullProfile.Name}.");
-                OnSessionUserChanged?.Invoke(updatedFullProfile);
+                SetCurrentUser(updatedFullProfile);
                 UIDriver?.DisplayDashboard(); 
             }
         }
@@ -527,4 +528,35 @@ public class SessionManager : MonoBehaviour
         SessionState.onCalibrationUpdated.Invoke();
     }
     #endregion
+
+    private void SetCurrentUser(LocalUserProfileData profile)
+    {
+        SessionState.currentUserProfile = profile;
+        Debug.Log($"SessionManager: Set current session user to {profile?.Name}.");
+        OnSessionUserChanged?.Invoke(profile);
+    }
+
+    private void OnApplicationQuit()
+    {
+        SignOut();
+    }
+
+    private async void HandleLoginRequestFromUI(string email, string password)
+    {
+        Debug.Log($"SessionManager: Received login request for {email}.");
+        await AuthProvider.SignIn(email, password);
+        // The rest of the flow is handled by AuthStateChanged events.
+    }
+
+    private async void HandleRegistrationRequestFromUI(string email, string password, string displayName)
+    {
+        Debug.Log($"SessionManager: Received registration request for {email}.");
+        // Step 1: Set pending display name, so we can use it after the user is created.
+        SessionState.PendingDisplayName = displayName;
+        SessionState.PendingEmail = email;
+
+        // Step 2: Call SignUp, which will trigger the AuthStateChanged flow.
+        await AuthProvider.SignUp(email, password);
+        // The rest of the flow (DB registration etc.) is handled by AuthStateChanged events.
+    }
 }

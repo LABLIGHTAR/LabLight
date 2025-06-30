@@ -1,6 +1,7 @@
 using UnityEngine.UIElements;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 public class ConversationListItem : VisualElement
 {
@@ -10,13 +11,16 @@ public class ConversationListItem : VisualElement
     private readonly Label _unreadCount;
     private readonly VisualElement _unreadBadge;
 
-    public ConversationData Conversation { get; private set; }
+    private ConversationData _conversation;
+    private IDatabase _database;
+    private readonly List<string> _missingParticipantIds = new List<string>();
 
     public ConversationListItem(
         VisualTreeAsset listItemAsset,
-        ConversationData conversation, 
-        Func<string, LocalUserProfileData> userProfileResolver)
+        IDatabase database)
     {
+        _database = database;
+        
         listItemAsset.CloneTree(this);
         
         _conversationName = this.Q<Label>("conversation-name");
@@ -27,26 +31,50 @@ public class ConversationListItem : VisualElement
         
         this.AddManipulator(new Clickable(() => {}));
 
-        Bind(conversation, userProfileResolver);
+        _database.OnUserProfileUpdated += HandleUserProfileUpdated;
+    }
+    
+    public void Cleanup()
+    {
+        if (_database != null)
+        {
+            _database.OnUserProfileUpdated -= HandleUserProfileUpdated;
+        }
+        _database = null;
     }
 
-    private void Bind(ConversationData conversation, Func<string, LocalUserProfileData> userProfileResolver)
+    private void HandleUserProfileUpdated(UserData updatedProfile)
     {
-        Conversation = conversation;
+        if (updatedProfile == null || string.IsNullOrEmpty(updatedProfile.SpacetimeId)) return;
 
-        _conversationName.text = GetConversationName(conversation, userProfileResolver);
+        if (_missingParticipantIds.Contains(updatedProfile.SpacetimeId))
+        {
+            Bind(_conversation);
+        }
+    }
+
+    public void Bind(ConversationData conversation)
+    {
+        _conversation = conversation;
+        _missingParticipantIds.Clear();
+
+        _conversationName.text = GetConversationName(conversation);
 
         var lastMsg = conversation.Messages?.LastOrDefault();
         if (lastMsg != null)
         {
             string senderName;
-            if (lastMsg.SenderIdentity == SessionState.currentUserProfile.Id)
+            if (lastMsg.SenderIdentity == _database.CurrentIdentity)
             {
                 senderName = "You";
             }
             else
             {
-                var senderProfile = userProfileResolver(lastMsg.SenderIdentity);
+                var senderProfile = _database.GetCachedUserProfile(lastMsg.SenderIdentity);
+                if (senderProfile == null)
+                {
+                    _missingParticipantIds.Add(lastMsg.SenderIdentity);
+                }
                 senderName = senderProfile?.Name ?? "Unknown";
             }
             
@@ -70,7 +98,7 @@ public class ConversationListItem : VisualElement
         }
     }
     
-    private string GetConversationName(ConversationData conversation, Func<string, LocalUserProfileData> userProfileResolver)
+    private string GetConversationName(ConversationData conversation)
     {
         if (!string.IsNullOrEmpty(conversation.Name))
         {
@@ -78,8 +106,17 @@ public class ConversationListItem : VisualElement
         }
 
         var otherParticipants = conversation.Participants
-            .Where(p => p.ParticipantIdentity != SessionState.currentUserProfile.Id)
-            .Select(p => userProfileResolver(p.ParticipantIdentity)?.Name ?? "Unknown")
+            .Where(p => p.ParticipantIdentity != _database.CurrentIdentity)
+            .Select(p =>
+            {
+                var user = _database.GetCachedUserProfile(p.ParticipantIdentity);
+                if (user == null)
+                {
+                    _missingParticipantIds.Add(p.ParticipantIdentity);
+                    return "Unknown";
+                }
+                return user.Name;
+            })
             .ToList();
 
         if (!otherParticipants.Any())

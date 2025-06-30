@@ -20,10 +20,10 @@ public class NewChatComponent : VisualElement
     private readonly Button _sendButton;
     private readonly Button _cancelButton;
 
-    private List<LocalUserProfileData> _allUsers;
-    private readonly List<LocalUserProfileData> _selectedRecipients = new List<LocalUserProfileData>();
+    private List<UserData> _allUsers;
+    private readonly List<UserData> _selectedRecipients = new List<UserData>();
 
-    public NewChatComponent(VisualTreeAsset componentAsset, IDatabase database, IFileManager fileManager, IAudioService audioService, List<LocalUserProfileData> potentialRecipients)
+    public NewChatComponent(VisualTreeAsset componentAsset, IDatabase database, IFileManager fileManager, IAudioService audioService, List<UserData> potentialRecipients)
     {
         componentAsset.CloneTree(this);
 
@@ -36,7 +36,7 @@ public class NewChatComponent : VisualElement
         Debug.Log($"[NewChatComponent] Initialized with {_allUsers.Count} potential recipients:");
         foreach (var user in _allUsers)
         {
-            Debug.Log($" - User: {user.Name}, ID: {user.Id}");
+            Debug.Log($" - User: {user.Name}, ID: {user.Id}, SpacetimeId: {user.SpacetimeId}");
         }
 
         _recipientSearchField = this.Q<TextField>("recipient-search-field");
@@ -81,7 +81,7 @@ public class NewChatComponent : VisualElement
 
     private void OnSearchResultClicked(ClickEvent evt)
     {
-        if ((evt.currentTarget as VisualElement)?.userData is LocalUserProfileData selectedUser)
+        if ((evt.currentTarget as VisualElement)?.userData is UserData selectedUser)
         {
             _selectedRecipients.Add(selectedUser);
             RefreshSelectedRecipients();
@@ -119,7 +119,7 @@ public class NewChatComponent : VisualElement
 
     private void OnRemoveRecipientClicked(ClickEvent evt)
     {
-        if ((evt.currentTarget as VisualElement)?.userData is LocalUserProfileData userToRemove)
+        if ((evt.currentTarget as VisualElement)?.userData is UserData userToRemove)
         {
             _selectedRecipients.Remove(userToRemove);
             RefreshSelectedRecipients();
@@ -144,7 +144,7 @@ public class NewChatComponent : VisualElement
             return;
         }
 
-        var recipientIdentities = _selectedRecipients.Select(r => r.Id).ToList();
+        var recipientIdentities = _selectedRecipients.Select(r => r.SpacetimeId).ToList();
         _database.SendDirectMessage(recipientIdentities, _messageTextField.value);
         
         OnMessageSent?.Invoke();

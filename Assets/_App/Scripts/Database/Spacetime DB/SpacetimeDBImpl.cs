@@ -35,23 +35,68 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
     #endregion
 
     #region Connection State & Public Properties
-    private DbConnection _connection;
-    private Identity? _spacetimedbIdentity = null;
+    private SpacetimeDB.Identity? _spacetimedbIdentity;
+    private SpacetimeDB.Types.DbConnection _connection;
+    private DBConnectionStatus _dbStatus;
+
     private bool _isConnectedState = false;
 
-    public UserData CurrentUserProfile { get; private set; } = null;
+    public DBConnectionStatus CurrentDBStatus
+    {
+        get => _dbStatus;
+        private set
+        {
+            if (_dbStatus != value)
+            {
+                _dbStatus = value;
+                // OnDBStatusChanged is invoked by SetDBStatus
+            }
+        }
+    }
+
+    public bool IsConnected => CurrentDBStatus == DBConnectionStatus.Connected;
+    public string CurrentUserId => _spacetimedbIdentity?.ToString();
+    public string CurrentIdentity => _spacetimedbIdentity?.ToString();
+
+    #endregion
+
+    #region Public Interface
+    public UserData CurrentUserProfile { get; private set; }
+    public string CurrentUsername => CurrentUserProfile?.Name ?? "N/A";
+    public string CurrentSpacetimeIdentity => _spacetimedbIdentity?.ToString();
+    public DBConnectionStatus DBStatus => _dbStatus;
+
+    // Public Events
+    public event Action<DBConnectionStatus, string> OnDBStatusChanged;
+    public event Action<string> OnError;
+    public event Action<UserData> OnUserProfileUpdated;
+    public event Action<string> OnSpacetimeDBLog;
+    #endregion
+
+    #region IDatabase Events
+    public event Action<string> OnConnected;
+    public event Action<string> OnDisconnected;
+    public event Action<ProtocolData> OnProtocolReceived;
+    public event Action<ProtocolData> OnSavedProtocolReceived;
+    public event Action<MediaMetadata> OnMediaMetadataReceived;
+    public event Action<ulong> OnMediaMetadataRemoved;
+    public event Action<OrganizationMemberRequestData> OnOrganizationMemberRequestReceived;
+    public event Action<ulong> OnOrganizationMemberRequestRemoved;
+    public event Action<ConversationData> OnConversationAdded;
+    public event Action<ConversationData> OnConversationUpdated;
+    public event Action<ulong> OnConversationRemoved;
+    public event Action<MessageData> OnMessageReceived;
+    public event Action<MessageData> OnMessageUpdated;
+    public event Action<string> OnMessagingError;
     #endregion
 
     #region Events
     // General Connection Events
     public event Action OnConnecting;
-    public event Action<string> OnConnected;
     public event Action<string> OnConnectionFailed;
-    public event Action<string?> OnDisconnected;
-    public event Action<string> OnError;
 
     // User Profile Events
-    public event Action<UserData> OnUserProfileUpdated;
+    public event Action<UserData> OnAnyUserProfileUpdated;
 
     // Organization Events
     public event Action<OrganizationData> OnOrganizationCreateSuccess;
@@ -69,27 +114,7 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
     public event Action<uint, string> OnProtocolEditFailure;
 
     // IDatabase required event
-    public event Action<DBConnectionStatus, string> OnDBStatusChanged;
     public event Action<string> OnMediaMetadataDeleted; // Event for when media metadata is confirmed deleted
-    #endregion
-
-    #region IDatabase Properties
-    private DBConnectionStatus _currentDBStatus = DBConnectionStatus.Disconnected;
-    public DBConnectionStatus CurrentDBStatus
-    {
-        get => _currentDBStatus;
-        private set
-        {
-            if (_currentDBStatus != value)
-            {
-                _currentDBStatus = value;
-                // OnDBStatusChanged is invoked by SetDBStatus
-            }
-        }
-    }
-
-    public bool IsConnected => _isConnectedState;
-    public string CurrentUserId => _spacetimedbIdentity?.ToString() ?? string.Empty;
     #endregion
 
     #region Unity Lifecycle Methods
@@ -105,7 +130,7 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
         DontDestroyOnLoad(gameObject);
          Debug.Log("SpacetimeDBManager Awake and Initialized.");
         // Set initial status
-        _currentDBStatus = DBConnectionStatus.Disconnected; 
+        _dbStatus = DBConnectionStatus.Disconnected; 
     }
 
      void OnDestroy()
@@ -618,16 +643,6 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
     private void ClearAllCachedData() 
     {
         Debug.Log("SpacetimeDBImpl: Clearing all cached table data.");
-        // The following methods are expected to be implemented in partial classes.
-        // Commenting out for now to allow compilation if implementations are missing.
-        // You will need to provide these implementations for full functionality.
-        // ClearUserProfileData();
-        // ClearOrganizationData();
-        // ClearProtocolData();
-        // ClearProtocolStateData();
-        // ClearMediaMetadataData();
-        // ClearScheduledTaskData();
-        // Add other cache clearing calls here
     }
     #endregion
 }

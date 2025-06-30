@@ -566,32 +566,21 @@ public class FileManager : IFileManager
 
     public async Task<ResultVoid> DeleteLocalUserProfileAsync(string userId)
     {
-        if (string.IsNullOrEmpty(userId))
-        {
-            Debug.LogError("FileManager.DeleteLocalUserProfileAsync: User ID cannot be null or empty.");
-            return ResultVoid.CreateFailure("INVALID_ARGUMENT", "User ID must be provided.");
-        }
-
+        Debug.Log($"FileManager.DeleteLocalUserProfileAsync: Attempting to delete user profile for ID {userId}.");
         string cacheKey = GetUserProfileCacheKey(userId);
-        Debug.Log($"FileManager.DeleteLocalUserProfileAsync: Attempting to delete user profile {userId}. Cache key: {cacheKey}");
-
-        ResultVoid deleteResult = await _localStorageProvider.DeleteAsync(cacheKey);
-        if (!deleteResult.Success)
+        var result = await _localStorageProvider.DeleteAsync(cacheKey);
+        if (!result.Success)
         {
-            Debug.LogError($"FileManager.DeleteLocalUserProfileAsync: Failed to delete user profile {userId} from local cache. Error: {deleteResult.Error?.Code} - {deleteResult.Error?.Message}");
-            return ResultVoid.CreateFailure(ErrorLocalCacheDeleteFailed, deleteResult.Error?.Message ?? "Failed to delete user profile locally.");
+            Debug.LogWarning($"FileManager.DeleteLocalUserProfileAsync: Failed to delete user profile {userId} from local cache. It may not have existed. Error: {result.Error?.Code} - {result.Error?.Message}");
+            return ResultVoid.CreateFailure(result.Error?.Code ?? "DELETE_FAILED", result.Error?.Message ?? "Could not delete profile.");
         }
-
+        Debug.Log($"FileManager.DeleteLocalUserProfileAsync: Successfully deleted user profile {userId} from local cache.");
         return ResultVoid.CreateSuccess();
     }
 
     public async Task<Result<LocalUserProfileData>> GetUserProfileAsync(string userId)
     {
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Result<LocalUserProfileData>.CreateFailure("INVALID_ARGUMENT", "UserId cannot be null or empty.");
-        }
-
+        Debug.Log($"FileManager.GetUserProfileAsync: Attempting to get user profile for ID {userId}.");
         // 1. Try to get from local storage first
         string filePath = GetUserProfileCacheKey(userId);
         var localResult = await _localStorageProvider.ReadTextAsync(filePath);
@@ -610,22 +599,8 @@ public class FileManager : IFileManager
             }
         }
         
-        // 2. If not in local storage, get from DB cache (but do NOT save it back here)
-        // This logic is flawed because the DB cache is keyed by SpacetimeIdentity, but this function is called with a FirebaseId.
-        // The link between FirebaseId and SpacetimeId only exists in the stored LocalUserProfileData file.
-        // Therefore, we should only look in the local file cache. SessionManager is responsible for handling a cache miss.
-        /*
-        var dbProfile = _database.GetAllCachedUserProfiles().FirstOrDefault(p => p.Id == userId);
-        if (dbProfile != null)
-        {
-            // IMPORTANT: We can't construct a complete LocalUserProfileData here because we don't have the email.
-            // We return a failure, signaling to the caller (SessionManager) that it needs to construct the full profile
-            // and explicitly cache it using CacheUserProfileAsync.
-            return Result<LocalUserProfileData>.CreateFailure("CACHE_MISS", $"Profile for user {userId} not in local cache, but found in DB cache. Full profile construction required.");
-        }
-        */
-
-        return Result<LocalUserProfileData>.CreateFailure("NOT_FOUND", $"User profile for user ID {userId} not found in local storage.");
+        Debug.Log($"FileManager.GetUserProfileAsync: No profile found for user ID {userId} in local cache.");
+        return Result<LocalUserProfileData>.CreateFailure(ErrorOfflineCacheMiss, $"User profile for ID {userId} not found in local cache.");
     }
 
     public async Task<Result<List<LocalUserProfileData>>> GetAllUserProfilesAsync()
@@ -646,6 +621,7 @@ public class FileManager : IFileManager
         var allProfiles = new List<LocalUserProfileData>();
         foreach (var dbUser in allDbUsers)
         {
+            if (string.IsNullOrEmpty(dbUser.Id)) continue;
             var result = await GetUserProfileAsync(dbUser.Id);
             if (result.Success)
             {

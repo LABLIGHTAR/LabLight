@@ -1,52 +1,49 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 public class ConversationsListComponent : VisualElement
 {
     public event Action OnNewChatRequested;
     public event Action<ConversationData> OnConversationSelected;
 
-    private readonly VisualTreeAsset _listItemAsset;
-    private readonly IDatabase _database;
-    private readonly IAudioService _audioService;
-    private readonly Func<string, LocalUserProfileData> _userProfileResolver;
-
+    private readonly VisualTreeAsset _conversationListItemAsset;
     private readonly ScrollView _scrollView;
     private readonly Button _newChatButton;
+    
+    private readonly IDatabase _database;
+    private readonly IAudioService _audioService;
 
     public ConversationsListComponent(
-        VisualTreeAsset componentAsset, 
-        VisualTreeAsset listItemAsset, 
-        IDatabase database, 
-        IAudioService audioService,
-        Func<string, LocalUserProfileData> userProfileResolver)
+        VisualTreeAsset componentAsset,
+        VisualTreeAsset conversationListItemAsset,
+        IDatabase database,
+        IAudioService audioService)
     {
-        if (componentAsset == null)
-        {
-            Debug.LogError("ConversationsListComponent: The provided component asset is null. Please assign the 'ConversationsListComponent.uxml' asset to the 'Conversations List Component Asset' field on the DashboardWindowController in the Unity Inspector.");
-            return;
-        }
-        
         componentAsset.CloneTree(this);
 
-        _listItemAsset = listItemAsset;
+        _conversationListItemAsset = conversationListItemAsset;
         _database = database;
         _audioService = audioService;
-        _userProfileResolver = userProfileResolver;
 
-        _newChatButton = this.Q<Button>("new-chat-button");
         _scrollView = this.Q<ScrollView>("conversations-scroll-view");
-
-        _newChatButton.RegisterCallback<ClickEvent>(evt => {
-            _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
-            OnNewChatRequested?.Invoke();
-        });
-
+        if (_scrollView == null)
+        {
+            Debug.LogError("[ConversationsListComponent] Could not find a ScrollView named 'conversations-scroll-view' in the UXML. The component will not function correctly.");
+        }
+        
+        _newChatButton = this.Q<Button>("new-chat-button");
+        _newChatButton.clicked += () => OnNewChatRequested?.Invoke();
+        
         SubscribeToDbEvents();
-        RefreshConversations();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeFromDbEvents();
+        ClearAllListItems();
     }
     
     private void SubscribeToDbEvents()
@@ -69,26 +66,40 @@ public class ConversationsListComponent : VisualElement
 
     private void RefreshConversations()
     {
-        _scrollView.Clear();
         if (_database == null)
         {
             _scrollView.Add(new Label("Database service not available."));
             return;
         }
+        
+        var conversations = _database.GetAllConversations().ToList();
+        RefreshConversations(conversations);
+    }
 
-        var conversations = _database.GetAllConversations().OrderByDescending(c => c.LastMessageAt).ToList();
+    public void RefreshConversations(List<ConversationData> conversations)
+    {
+        if (_scrollView == null) return;
+        
+        ClearAllListItems();
 
-        foreach (var conversation in conversations)
+        if (conversations.Count == 0)
         {
-            var listItem = new ConversationListItem(_listItemAsset, conversation, _userProfileResolver);
-            listItem.RegisterCallback<ClickEvent>(evt => OnListItemClicked(listItem.Conversation, evt));
+            _scrollView.Add(new Label("No conversations yet."));
+            return;
+        }
+
+        foreach (var conversation in conversations.OrderByDescending(c => (c.Messages != null && c.Messages.Any()) ? c.Messages.Last().SentAt : c.CreatedAt))
+        {
+            var listItem = new ConversationListItem(_conversationListItemAsset, _database);
+            listItem.Bind(conversation);
+            listItem.RegisterCallback<ClickEvent>(evt => OnListItemClicked(conversation, evt));
             _scrollView.Add(listItem);
         }
     }
 
     private void OnListItemClicked(ConversationData conversation, ClickEvent evt)
     {
-        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
+        _audioService?.PlayButtonPress((evt.target as VisualElement).worldBound.center);
         OnConversationSelected?.Invoke(conversation);
     }
 
@@ -101,9 +112,14 @@ public class ConversationsListComponent : VisualElement
     {
         RefreshConversations();
     }
-    
+
     private void HandleMessageReceived(MessageData message)
     {
         RefreshConversations();
+    }
+
+    private void ClearAllListItems()
+    {
+        _scrollView?.Clear();
     }
 } 

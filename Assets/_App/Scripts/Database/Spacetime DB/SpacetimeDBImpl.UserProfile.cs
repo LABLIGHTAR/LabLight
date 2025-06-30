@@ -16,27 +16,31 @@ public partial class SpacetimeDBImpl
                                                         // Partial methods can still invoke it.
 
     #region Profile Management (Interface Method + Internal Logic)
-    private void HandleUserProfileInsert(EventContext ctx, SpacetimeDB.Types.UserProfile spdbProfile)
+    private void HandleUserProfileInsert(EventContext ctx, UserProfile userProfile)
     {
-        // Only update the CurrentUserProfile if the incoming profile matches the currently connected identity
-        if (_spacetimedbIdentity.HasValue && spdbProfile.Identity == _spacetimedbIdentity.Value) {
-            CurrentUserProfile = MapToUserData(spdbProfile); // Assumes CurrentUserProfile setter is accessible or it's directly setting a field
+        var userData = MapToUserData(userProfile);
+        if (userData == null) return;
+        
+        Debug.Log($"Received new user profile from DB: {userData.Name} ({userData.SpacetimeId})");
+        OnUserProfileUpdated?.Invoke(userData);
+
+        if (_spacetimedbIdentity.HasValue && userProfile.Identity == _spacetimedbIdentity.Value) {
+            CurrentUserProfile = userData; 
             Debug.Log($"Local UserProfile created/updated via Insert callback for CURRENT user: {CurrentUserProfile?.Name}");
-            OnUserProfileUpdated?.Invoke(CurrentUserProfile);
-        } else {
-             Debug.Log($"Ignoring UserProfile Insert event for non-matching identity: {spdbProfile.Identity}");
         }
     }
 
     private void HandleUserProfileUpdate(EventContext ctx, SpacetimeDB.Types.UserProfile oldSpdbProfile, SpacetimeDB.Types.UserProfile newSpdbProfile)
     {
-        // Only update the CurrentUserProfile if the incoming profile matches the currently connected identity
-         if (_spacetimedbIdentity.HasValue && newSpdbProfile.Identity == _spacetimedbIdentity.Value) {
-            CurrentUserProfile = MapToUserData(newSpdbProfile); // Assumes CurrentUserProfile setter is accessible or it's directly setting a field
+        var userData = MapToUserData(newSpdbProfile);
+        if (userData == null) return;
+
+        Debug.Log($"Received updated user profile from DB: {userData.Name} ({userData.SpacetimeId})");
+        OnUserProfileUpdated?.Invoke(userData);
+
+        if (_spacetimedbIdentity.HasValue && newSpdbProfile.Identity == _spacetimedbIdentity.Value) {
+            CurrentUserProfile = userData; 
             Debug.Log($"Local UserProfile updated via Update callback for CURRENT user: {CurrentUserProfile?.Name}");
-            OnUserProfileUpdated?.Invoke(CurrentUserProfile);
-         } else {
-             Debug.Log($"Ignoring UserProfile Update event for non-matching identity: {newSpdbProfile.Identity}");
          }
     }
 
@@ -80,52 +84,33 @@ public partial class SpacetimeDBImpl
     #endregion
 
     #region Data Access (UserProfile)
-    public UserData GetCachedUserProfile(string userId)
+    public UserData GetCachedUserProfile(string spacetimeId)
     {
-        if (!AssertConnected("get cached user profile")) return null;
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(spacetimeId) || _connection?.Db == null)
         {
-            Debug.LogWarning("GetCachedUserProfile: Input userId string is null or empty.");
             return null;
         }
 
-        var userProfileHandle = _connection?.Db?.UserProfile;
-        if (userProfileHandle == null) {
-             Debug.LogWarning("GetCachedUserProfile: UserProfile table handle is null.");
-             return null;
-        }
-
-        SpacetimeDB.Types.UserProfile foundProfile = null; 
-        foreach (var row in userProfileHandle.Iter())
+        try
         {
-            if (row.Identity.ToString() == userId)
-            {
-                foundProfile = row;
-                break;
-            }
+            var identityToFind = new Identity(HexStringToByteArray(spacetimeId));
+            var dbUser = _connection.Db.UserProfile.Iter().FirstOrDefault(p => p.Identity.Equals(identityToFind));
+            return MapToUserData(dbUser);
         }
-        
-        return MapToUserData(foundProfile); 
+        catch (FormatException e)
+        {
+            Debug.LogError($"Failed to parse spacetimeId '{spacetimeId}': {e.Message}");
+            return null;
+        }
     }
 
     public IEnumerable<UserData> GetAllCachedUserProfiles()
     {
-        if (!AssertConnected("get all cached user profiles"))
+        if (_connection?.Db == null)
         {
-            yield break;
+            return Enumerable.Empty<UserData>();
         }
-
-        var userProfileHandle = _connection?.Db?.UserProfile;
-        if (userProfileHandle == null)
-        {
-            Debug.LogWarning("GetAllCachedUserProfiles: UserProfile table handle is null.");
-            yield break;
-        }
-
-        foreach (var row in userProfileHandle.Iter())
-        {
-            yield return MapToUserData(row);
-        }
+        return _connection.Db.UserProfile.Iter().Select(MapToUserData);
     }
     #endregion
 

@@ -7,10 +7,12 @@ public class ChatComponent : VisualElement
 {
     public event Action OnBack;
     
-    private readonly ConversationData _conversation;
+    public ulong ConversationId => _conversation.ConversationId;
+    
+    private ConversationData _conversation;
     private readonly IDatabase _database;
     private readonly IAudioService _audioService;
-    private readonly Func<string, LocalUserProfileData> _userProfileResolver;
+    private readonly List<string> _missingParticipantIds = new List<string>();
 
     private readonly Button _backButton;
     private readonly Label _conversationTitle;
@@ -22,15 +24,13 @@ public class ChatComponent : VisualElement
         VisualTreeAsset componentAsset,
         ConversationData conversation,
         IDatabase database,
-        IAudioService audioService,
-        Func<string, LocalUserProfileData> userProfileResolver)
+        IAudioService audioService)
     {
         componentAsset.CloneTree(this);
 
         _conversation = conversation;
         _database = database;
         _audioService = audioService;
-        _userProfileResolver = userProfileResolver;
 
         _backButton = this.Q<Button>("back-button");
         _conversationTitle = this.Q<Label>("conversation-title");
@@ -51,6 +51,18 @@ public class ChatComponent : VisualElement
         if (_database == null) return;
         _database.OnMessageReceived -= HandleMessageReceived;
         _database.OnMessageUpdated -= HandleMessageUpdated;
+        _database.OnUserProfileUpdated -= HandleUserProfileUpdated;
+    }
+
+    private void HandleUserProfileUpdated(UserData updatedProfile)
+    {
+        if (updatedProfile == null || string.IsNullOrEmpty(updatedProfile.SpacetimeId)) return;
+
+        if (_missingParticipantIds.Contains(updatedProfile.SpacetimeId))
+        {
+            SetTitle();
+            PopulateMessages(); 
+        }
     }
 
     private void SetTitle()
@@ -61,6 +73,7 @@ public class ChatComponent : VisualElement
     private void PopulateMessages()
     {
         _messagesScrollView.Clear();
+        _missingParticipantIds.Clear();
         foreach (var message in _conversation.Messages)
         {
             var messageElement = CreateMessageVisualElement(message);
@@ -106,7 +119,7 @@ public class ChatComponent : VisualElement
 
     private VisualElement CreateMessageVisualElement(MessageData message)
     {
-        var isSentByUser = message.SenderIdentity == SessionState.currentUserProfile.Id;
+        var isSentByUser = message.SenderIdentity == _database.CurrentIdentity;
         
         var row = new VisualElement();
         row.AddToClassList("message-row");
@@ -119,7 +132,12 @@ public class ChatComponent : VisualElement
         
         if (!isSentByUser && _conversation.Participants.Count > 2)
         {
-            var senderName = _userProfileResolver(message.SenderIdentity)?.Name ?? "Unknown";
+            var senderProfile = _database.GetCachedUserProfile(message.SenderIdentity);
+            if (senderProfile == null)
+            {
+                _missingParticipantIds.Add(message.SenderIdentity);
+            }
+            var senderName = senderProfile?.Name ?? "Unknown";
             var senderLabel = new Label(senderName);
             senderLabel.AddToClassList("sender-name-label");
             bubble.Add(senderLabel);
@@ -144,8 +162,17 @@ public class ChatComponent : VisualElement
         if (!string.IsNullOrEmpty(_conversation.Name)) return _conversation.Name;
         
         var otherParticipants = _conversation.Participants
-            .Where(p => p.ParticipantIdentity != SessionState.currentUserProfile.Id)
-            .Select(p => _userProfileResolver(p.ParticipantIdentity)?.Name ?? "Unknown")
+            .Where(p => p.ParticipantIdentity != _database.CurrentIdentity)
+            .Select(p =>
+            {
+                var user = _database.GetCachedUserProfile(p.ParticipantIdentity);
+                if (user == null)
+                {
+                    _missingParticipantIds.Add(p.ParticipantIdentity);
+                    return "Unknown";
+                }
+                return user.Name;
+            })
             .ToList();
 
         return !otherParticipants.Any() ? "Personal Notes" : string.Join(", ", otherParticipants);
@@ -156,6 +183,7 @@ public class ChatComponent : VisualElement
         if (_database == null) return;
         _database.OnMessageReceived += HandleMessageReceived;
         _database.OnMessageUpdated += HandleMessageUpdated;
+        _database.OnUserProfileUpdated += HandleUserProfileUpdated;
     }
 
     private void ScrollToBottom()

@@ -75,6 +75,11 @@ public partial class DashboardWindowController : BaseWindowController
 
         // Set initial state
         ShowHomeComponent();
+
+        // Subscribe to events
+        _database.OnConversationAdded += HandleConversationAdded;
+        _database.OnConversationUpdated += HandleConversationUpdated;
+        _database.OnConversationRemoved += HandleConversationRemoved;
     }
 
     protected override void OnDisable()
@@ -83,6 +88,13 @@ public partial class DashboardWindowController : BaseWindowController
         if (_sessionManager != null)
         {
             _sessionManager.OnSessionUserChanged -= HandleSessionUserChanged;
+        }
+
+        if (_database != null)
+        {
+            _database.OnConversationAdded -= HandleConversationAdded;
+            _database.OnConversationUpdated -= HandleConversationUpdated;
+            _database.OnConversationRemoved -= HandleConversationRemoved;
         }
         
         CleanupCurrentView();
@@ -146,48 +158,46 @@ public partial class DashboardWindowController : BaseWindowController
         UpdateNavButtonStyles(_navSavedProtocolsButton);
     }
 
-    private async void ShowConversationsListComponent()
+    private void ShowConversationsListComponent()
     {
         CleanupCurrentView();
 
-        var conversations = _database.GetAllConversations().ToList();
-        var userProfiles = new Dictionary<string, LocalUserProfileData>();
-        var userIdentities = conversations.SelectMany(c => c.Participants).Select(p => p.ParticipantIdentity).Distinct();
-
-        foreach (var identity in userIdentities)
+        if (conversationsListComponentAsset == null)
         {
-            var result = await _fileManager.GetUserProfileAsync(identity);
-            if (result.Success)
-            {
-                userProfiles[identity] = result.Data;
-            }
+            Debug.LogError("ConversationsListComponentAsset is not assigned in the DashboardWindowController inspector.");
+            _mainContentContainer.Clear();
+            _mainContentContainer.Add(new Label("Error: UI asset missing."));
+            return;
         }
         
         _conversationsListComponent = new ConversationsListComponent(
             conversationsListComponentAsset,
             conversationListItemAsset,
             _database,
-            _audioService,
-            (identity) => userProfiles.TryGetValue(identity, out var p) ? p : null);
+            _audioService);
 
         _conversationsListComponent.OnNewChatRequested += ShowNewChatComponent;
         _conversationsListComponent.OnConversationSelected += ShowChatComponent;
         
+        var conversations = _database.GetAllConversations().ToList();
+        _conversationsListComponent.RefreshConversations(conversations);
+
         SwapComponent(_mainContentContainer, _conversationsListComponent);
         _currentView = _conversationsListComponent;
         UpdateNavButtonStyles(_navMessagesButton);
     }
 
-    private async void ShowNewChatComponent()
+    private void ShowNewChatComponent()
     {
         CleanupCurrentView();
 
-        var profilesResult = await _fileManager.GetAllUserProfilesAsync();
-        var potentialRecipients = profilesResult.Success ? profilesResult.Data : new List<LocalUserProfileData>();
-
-        // Filter out the current user BEFORE passing the list to the component
-        var filteredRecipients = potentialRecipients
-            .Where(p => p.Id != SessionState.currentUserProfile?.Id)
+        // Fetch all users directly from the database cache.
+        var allDbUsers = _database.GetAllCachedUserProfiles().ToList();
+        
+        // Filter out the current user AFTER fetching the list
+        var currentUserSpacetimeId = SessionState.currentUserProfile?.SpacetimeId;
+        var filteredRecipients = allDbUsers
+            .Where(p => p.SpacetimeId != currentUserSpacetimeId)
             .ToList();
 
         var newChatComponent = new NewChatComponent(
@@ -205,31 +215,21 @@ public partial class DashboardWindowController : BaseWindowController
 
         SwapComponent(_mainContentContainer, newChatComponent);
         _currentView = newChatComponent;
+        UpdateNavButtonStyles(_navMessagesButton);
     }
 
-    private async void ShowChatComponent(ConversationData conversation)
+    private void ShowChatComponent(ConversationData conversation)
     {
         CleanupCurrentView();
-
-        var userProfiles = new Dictionary<string, LocalUserProfileData>();
-        foreach (var participant in conversation.Participants)
-        {
-            var result = await _fileManager.GetUserProfileAsync(participant.ParticipantIdentity);
-            if (result.Success)
-            {
-                userProfiles[participant.ParticipantIdentity] = result.Data;
-            }
-        }
-
+        
         var chatComponent = new ChatComponent(
             chatComponentAsset,
             conversation,
             _database,
-            _audioService,
-            (identity) => userProfiles.TryGetValue(identity, out var p) ? p : null);
-
+            _audioService);
+        
         chatComponent.OnBack += ShowConversationsListComponent;
-
+        
         SwapComponent(_mainContentContainer, chatComponent);
         _currentView = chatComponent;
     }
@@ -269,6 +269,34 @@ public partial class DashboardWindowController : BaseWindowController
         {
             selectedButton.RemoveFromClassList("button-primary");
             selectedButton.AddToClassList("button-primary-selected");
+        }
+    }
+
+    private void HandleConversationAdded(ConversationData conversation)
+    {
+        if (_currentView is ConversationsListComponent)
+        {
+            ShowConversationsListComponent();
+        }
+    }
+
+    private void HandleConversationUpdated(ConversationData conversation)
+    {
+        if (_currentView is ConversationsListComponent)
+        {
+            ShowConversationsListComponent();
+        }
+        else if (_currentView is ChatComponent chatComponent && chatComponent.ConversationId == conversation.ConversationId)
+        {
+            ShowChatComponent(conversation);
+        }
+    }
+
+    private void HandleConversationRemoved(ulong conversationId)
+    {
+        if (_currentView is ConversationsListComponent)
+        {
+            ShowConversationsListComponent();
         }
     }
 }
