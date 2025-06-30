@@ -13,7 +13,7 @@
 
         <!-- Footer -->
         <ui:VisualElement name="chat-footer" class="chat-footer">
-            <ui:TextField name="message-input" class="message-input" placeholder-text="Type a message..." multiline="true" />
+            <ui:TextField name="message-input" class="form-field message-input" placeholder-text="Type a message..." multiline="true" />
             <ui:Button name="send-button" class="icon-button icon-send" />
         </ui:VisualElement>
     </ui:VisualElement>

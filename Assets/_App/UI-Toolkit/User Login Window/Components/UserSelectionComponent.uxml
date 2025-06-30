@@ -8,8 +8,8 @@
         </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="button-container" class="button-group-row-spaced">
-        <ui:Button name="guest-button" text="Login as Guest" class="button button-secondary" />
-        <ui:Button name="login-button" text="New User?" class="button button-secondary" />
+        <ui:Button name="guest-button" text="Continue as Guest" class="button button-secondary" />
+        <ui:Button name="login-button" text="Login" class="button button-secondary" />
         <ui:Button name="register-button" text="Register" class="button button-primary" />
     </ui:VisualElement>
 </ui:UXML> 

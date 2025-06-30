@@ -13,7 +13,7 @@
         <ui:TextField name="recipient-search-field" class="form-field" placeholder-text="Search for users..." />
         <ui:ScrollView name="search-results-scroll-view" class="search-results-scroll-view" />
 
-        <ui:TextField name="message-text-field" multiline="true" class="message-text-field" />
+        <ui:TextField name="message-text-field" multiline="true" class="form-field message-text-field" />
 
         <ui:VisualElement class="button-group-row-spaced">
             <ui:Button name="cancel-button" text="Cancel" class="button button-secondary" />

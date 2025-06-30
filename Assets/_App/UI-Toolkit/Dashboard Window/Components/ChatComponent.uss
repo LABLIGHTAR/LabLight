@@ -47,7 +47,7 @@
     -unity-font-style: italic;
     color: #cccccc;
     margin-top: 4px;
-    -unity-text-align: right;
+    -unity-text-align: middle-right;
 }
 
 .sender-name-label {
@@ -83,7 +83,7 @@
 
 .chat-footer {
     flex-direction: row;
-    align-items: flex-end;
+    align-items: center;
     padding: 10px 15px;
     border-top-width: 1px;
     border-color: rgba(128, 128, 128, 0.5);
@@ -94,4 +94,5 @@
     flex-grow: 1;
     margin-right: 10px;
     max-height: 80px;
+    min-width: 0px;
 } 
