@@ -93,7 +93,7 @@ public partial class SpacetimeDBImpl
 
         try
         {
-            var identityToFind = new Identity(HexStringToByteArray(spacetimeId));
+            var identityToFind = Identity.FromHexString(spacetimeId);
             var dbUser = _connection.Db.UserProfile.Iter().FirstOrDefault(p => p.Identity.Equals(identityToFind));
             return MapToUserData(dbUser);
         }

@@ -119,15 +119,11 @@ public partial class DashboardWindowController : BaseWindowController
 
     private void CleanupCurrentView()
     {
-        if (_currentView is ConversationsListComponent conversationsComponent)
-        {
-            conversationsComponent.UnsubscribeFromDbEvents();
-        }
-        else if (_currentView is ChatComponent chatComponent)
+        if (_currentView is ChatComponent chatComponent)
         {
             chatComponent.UnsubscribeFromDbEvents();
         }
-        // Future components that need cleanup can be added here
+        // No cleanup needed for ConversationsListComponent as it no longer subscribes to events.
     }
 
     private void ShowHomeComponent()
@@ -170,15 +166,18 @@ public partial class DashboardWindowController : BaseWindowController
             return;
         }
         
-        _conversationsListComponent = new ConversationsListComponent(
-            conversationsListComponentAsset,
-            conversationListItemAsset,
-            _database,
-            _audioService);
+        // Create it if it doesn't exist
+        if (_conversationsListComponent == null)
+        {
+            _conversationsListComponent = new ConversationsListComponent(
+                conversationsListComponentAsset,
+                conversationListItemAsset,
+                _database,
+                _audioService);
+            _conversationsListComponent.OnNewChatRequested += ShowNewChatComponent;
+            _conversationsListComponent.OnConversationSelected += ShowChatComponent;
+        }
 
-        _conversationsListComponent.OnNewChatRequested += ShowNewChatComponent;
-        _conversationsListComponent.OnConversationSelected += ShowChatComponent;
-        
         var conversations = _database.GetAllConversations().ToList();
         _conversationsListComponent.RefreshConversations(conversations);
 
@@ -272,32 +271,34 @@ public partial class DashboardWindowController : BaseWindowController
         }
     }
 
-    private void HandleConversationAdded(ConversationData conversation)
+    private void RefreshConversationsViewIfVisible()
     {
         if (_currentView is ConversationsListComponent)
         {
-            ShowConversationsListComponent();
+            var conversations = _database.GetAllConversations().ToList();
+            _conversationsListComponent.RefreshConversations(conversations);
         }
+    }
+
+    private void HandleConversationAdded(ConversationData conversation)
+    {
+        RefreshConversationsViewIfVisible();
     }
 
     private void HandleConversationUpdated(ConversationData conversation)
     {
-        if (_currentView is ConversationsListComponent)
+        RefreshConversationsViewIfVisible();
+
+        if (_currentView is ChatComponent chatComponent && chatComponent.ConversationId == conversation.ConversationId)
         {
-            ShowConversationsListComponent();
-        }
-        else if (_currentView is ChatComponent chatComponent && chatComponent.ConversationId == conversation.ConversationId)
-        {
+            // If the user is actively viewing a conversation that gets updated, refresh that view.
             ShowChatComponent(conversation);
         }
     }
 
     private void HandleConversationRemoved(ulong conversationId)
     {
-        if (_currentView is ConversationsListComponent)
-        {
-            ShowConversationsListComponent();
-        }
+        RefreshConversationsViewIfVisible();
     }
 }
 

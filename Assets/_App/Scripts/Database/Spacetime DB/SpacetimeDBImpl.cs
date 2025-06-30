@@ -598,51 +598,27 @@ public partial class SpacetimeDBImpl : MonoBehaviour, IDatabase
     }
 
     private void LogErrorAndInvoke(string message, bool isConnectionError = false) {
-        Debug.LogError($"SpacetimeDB Error: {message}");
+        Debug.LogError(message);
         OnError?.Invoke(message);
         if (isConnectionError) OnConnectionFailed?.Invoke(message);
     }
 
-    public static byte[] HexStringToByteArray(string hex)
-    {
-        if (hex == null) throw new ArgumentNullException(nameof(hex));
-        hex = hex.StartsWith("0x") ? hex.Substring(2) : hex;
-        if (hex.Length % 2 != 0) throw new FormatException("Hex string must have an even number of digits.");
-
-        byte[] arr = new byte[hex.Length >> 1];
-        for (int i = 0; i < hex.Length >> 1; ++i)
-        {
-            arr[i] = (byte)((GetHexVal(hex[i << 1]) << 4) + (GetHexVal(hex[(i << 1) + 1])));
-        }
-        return arr;
-    }
-
-    public static int GetHexVal(char hex)
-    {
-        int val = (int)hex;
-        return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
-    }
-    #endregion
-
-    #region IDatabase Methods
     private void SetDBStatus(DBConnectionStatus newStatus, string message = null)
     {
-        if (CurrentDBStatus != newStatus || (newStatus == DBConnectionStatus.Error && !string.IsNullOrEmpty(message)))
-        {
-            string logMessage = $"DBConnectionStatus changed from {CurrentDBStatus} to {newStatus}.";
-            if (!string.IsNullOrEmpty(message))
-            {
-                logMessage += $" Message: {message}";
-            }
-            CurrentDBStatus = newStatus;
-            OnDBStatusChanged?.Invoke(newStatus, message);
-            Debug.Log($"SpacetimeDBImpl: {logMessage}");
-        }
+        var oldStatus = _dbStatus;
+        _dbStatus = newStatus;
+        
+        var logMessage = $"DBConnectionStatus changed from {oldStatus} to {newStatus}." + (string.IsNullOrEmpty(message) ? "" : $" Message: {message}");
+        Debug.Log($"SpacetimeDBImpl: {logMessage}");
+        OnDBStatusChanged?.Invoke(newStatus, message);
     }
-
+    
     private void ClearAllCachedData() 
     {
         Debug.Log("SpacetimeDBImpl: Clearing all cached table data.");
+        // We can't actually clear the tables in the generated client cache,
+        // but we can disconnect and on next connect, they will be fresh.
+        // This method serves as a placeholder for any manual cache clearing if we implement it.
     }
     #endregion
 }

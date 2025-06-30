@@ -8,64 +8,84 @@ using UnityEngine;
 public partial class SpacetimeDBImpl
 {
     #region Table Callback Handlers
-    private void NotifyConversationUpdate(ulong conversationId)
+    private void NotifyConversationAdded(ulong conversationId)
     {
-        var conversation = _connection.Db.Conversation.Iter().FirstOrDefault(c => c.ConversationId == conversationId);
-        if (conversation == null) return;
-        
-        var participants = _connection.Db.ConversationParticipant.Iter()
-            .Where(p => p.ConversationId == conversationId).ToList();
-        
-        if (!participants.Any(p => p.ParticipantIdentity == _spacetimedbIdentity)) return;
-
-        var messageEntries = _connection.Db.Message.Iter()
-            .Where(m => m.ConversationId == conversationId).ToList();
-        
-        var conversationData = MapToConversationData(conversation);
+        var conversationData = GetConversation(conversationId);
         if (conversationData != null)
         {
+            Debug.Log($"[SpacetimeDB] Notifying UI of new conversation: {conversationId}");
+            OnConversationAdded?.Invoke(conversationData);
+        }
+    }
+
+    private void NotifyConversationUpdated(ulong conversationId)
+    {
+        var conversationData = GetConversation(conversationId);
+        if (conversationData != null)
+        {
+            Debug.Log($"[SpacetimeDB] Notifying UI of updated conversation: {conversationId}");
             OnConversationUpdated?.Invoke(conversationData);
         }
     }
 
     private void HandleConversationInsert(EventContext ctx, SpacetimeDB.Types.Conversation insertedRow)
     {
-        NotifyConversationUpdate(insertedRow.ConversationId);
+        Debug.Log($"[SpacetimeDB] Received insert for ConversationId: {insertedRow.ConversationId}");
+        // Defer notification until participants and message are likely present.
+        // The message insert will trigger the final, complete update.
     }
 
     private void HandleConversationUpdate(EventContext ctx, SpacetimeDB.Types.Conversation oldRow, SpacetimeDB.Types.Conversation newRow)
     {
-        NotifyConversationUpdate(newRow.ConversationId);
+        Debug.Log($"[SpacetimeDB] Received update for ConversationId: {newRow.ConversationId}");
+        NotifyConversationUpdated(newRow.ConversationId);
     }
 
     private void HandleConversationDelete(EventContext ctx, SpacetimeDB.Types.Conversation deletedRow)
     {
+        Debug.Log($"[SpacetimeDB] Received delete for ConversationId: {deletedRow.ConversationId}");
         OnConversationRemoved?.Invoke(deletedRow.ConversationId);
     }
     
     private void HandleMessageInsert(EventContext ctx, SpacetimeDB.Types.Message insertedRow)
     {
-        NotifyConversationUpdate(insertedRow.ConversationId);
+        Debug.Log($"[SpacetimeDB] Received new message for ConversationId: {insertedRow.ConversationId}, Sender: {insertedRow.SenderIdentity}");
+
+        // The SpacetimeDB cache reflects the state *after* the insert.
+        // So, if there's only 1 message, this must be it.
+        var messagesInConversation = _connection.Db.Message.Iter()
+            .Count(m => m.ConversationId == insertedRow.ConversationId);
+
+        if (messagesInConversation == 1)
+        {
+            // This is the first message. We can now be sure the conversation is fully formed.
+            NotifyConversationAdded(insertedRow.ConversationId);
+        }
+        else
+        {
+            NotifyConversationUpdated(insertedRow.ConversationId);
+        }
     }
 
     private void HandleMessageUpdate(EventContext ctx, SpacetimeDB.Types.Message oldRow, SpacetimeDB.Types.Message newRow)
     {
-        NotifyConversationUpdate(newRow.ConversationId);
+        NotifyConversationUpdated(newRow.ConversationId);
     }
     
     private void HandleConversationParticipantInsert(EventContext ctx, SpacetimeDB.Types.ConversationParticipant newParticipant)
     {
-        NotifyConversationUpdate(newParticipant.ConversationId);
+        Debug.Log($"[SpacetimeDB] Received new participant {newParticipant.ParticipantIdentity} for ConversationId: {newParticipant.ConversationId}");
+        // Do not notify on participant insert alone. The message insert will trigger the update.
     }
 
     private void HandleConversationParticipantUpdate(EventContext ctx, SpacetimeDB.Types.ConversationParticipant oldParticipant, SpacetimeDB.Types.ConversationParticipant newParticipant)
     {
-        NotifyConversationUpdate(newParticipant.ConversationId);
+        NotifyConversationUpdated(newParticipant.ConversationId);
     }
 
     private void HandleConversationParticipantDelete(EventContext ctx, SpacetimeDB.Types.ConversationParticipant deletedParticipant)
     {
-        NotifyConversationUpdate(deletedParticipant.ConversationId);
+        NotifyConversationUpdated(deletedParticipant.ConversationId);
     }
     #endregion
 
@@ -73,20 +93,29 @@ public partial class SpacetimeDBImpl
     public void SendDirectMessage(List<string> recipientIdentities, string content)
     {
         if (!AssertConnected("send direct message")) return;
-        var recipientSpacetimeDBIdentities = recipientIdentities.Select(hex => new Identity(HexStringToByteArray(hex))).ToList();
-        _connection.Reducers.SendDirectMessage(recipientSpacetimeDBIdentities, content);
+        
+        Debug.Log($"[SpacetimeDB] SendDirectMessage called with recipients: {string.Join(", ", recipientIdentities)}");
+
+        var recipientSpacetimeDBIdentities = recipientIdentities.Select(Identity.FromHexString).ToList();
+
+        // Ensure no duplicates, just in case.
+        var distinctParticipantList = recipientSpacetimeDBIdentities.Distinct().ToList();
+        
+        Debug.Log($"[SpacetimeDB] Sending message to distinct participants: {string.Join(", ", distinctParticipantList.Select(p => p.ToString()))}");
+
+        _connection.Reducers.SendDirectMessage(distinctParticipantList, content);
     }
 
-    public void SendConversationMessage(ulong conversationId, string content)
+    public void SendConversationMessage(ulong conversationId, string message)
     {
         if (!AssertConnected("send conversation message")) return;
-        _connection.Reducers.SendConversationMessage(conversationId, content);
+        _connection.Reducers.SendConversationMessage(conversationId, message);
     }
 
     public void AddUserToConversation(ulong conversationId, string userIdentityToAdd)
     {
         if (!AssertConnected("add user to conversation")) return;
-        _connection.Reducers.AddUserToConversation(conversationId, new Identity(HexStringToByteArray(userIdentityToAdd)));
+        _connection.Reducers.AddUserToConversation(conversationId, Identity.FromHexString(userIdentityToAdd));
     }
 
     public void LeaveConversation(ulong conversationId)
@@ -174,8 +203,12 @@ public partial class SpacetimeDBImpl
     {
         if (!AssertConnected("get all conversations")) yield break;
         
+        Debug.Log($"[SpacetimeDB] GetAllConversations called for user: {_spacetimedbIdentity?.ToString() ?? "null"}");
+        
         var participantEntries = _connection.Db.ConversationParticipant.Iter()
             .Where(p => p.ParticipantIdentity == _spacetimedbIdentity.Value);
+        
+        Debug.Log($"[SpacetimeDB] Found {participantEntries.Count()} participant entries for current user.");
 
         foreach (var participantEntry in participantEntries)
         {
@@ -183,7 +216,12 @@ public partial class SpacetimeDBImpl
                 .FirstOrDefault(c => c.ConversationId == participantEntry.ConversationId);
             if (conversation != null)
             {
+                Debug.Log($"[SpacetimeDB]   - Found conversation {conversation.ConversationId}");
                 yield return MapToConversationData(conversation);
+            }
+            else
+            {
+                Debug.LogWarning($"[SpacetimeDB]   - Found participant entry for conversation {participantEntry.ConversationId}, but the conversation itself was not found in the cache.");
             }
         }
     }

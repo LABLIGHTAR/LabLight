@@ -36,44 +36,6 @@ public class ConversationsListComponent : VisualElement
         
         _newChatButton = this.Q<Button>("new-chat-button");
         _newChatButton.clicked += () => OnNewChatRequested?.Invoke();
-        
-        SubscribeToDbEvents();
-    }
-
-    private void OnDisable()
-    {
-        UnsubscribeFromDbEvents();
-        ClearAllListItems();
-    }
-    
-    private void SubscribeToDbEvents()
-    {
-        if (_database == null) return;
-        _database.OnConversationAdded += HandleConversationChange;
-        _database.OnConversationUpdated += HandleConversationChange;
-        _database.OnConversationRemoved += HandleConversationRemoved;
-        _database.OnMessageReceived += HandleMessageReceived;
-    }
-
-    public void UnsubscribeFromDbEvents()
-    {
-        if (_database == null) return;
-        _database.OnConversationAdded -= HandleConversationChange;
-        _database.OnConversationUpdated -= HandleConversationChange;
-        _database.OnConversationRemoved -= HandleConversationRemoved;
-        _database.OnMessageReceived -= HandleMessageReceived;
-    }
-
-    private void RefreshConversations()
-    {
-        if (_database == null)
-        {
-            _scrollView.Add(new Label("Database service not available."));
-            return;
-        }
-        
-        var conversations = _database.GetAllConversations().ToList();
-        RefreshConversations(conversations);
     }
 
     public void RefreshConversations(List<ConversationData> conversations)
@@ -82,7 +44,7 @@ public class ConversationsListComponent : VisualElement
         
         ClearAllListItems();
 
-        if (conversations.Count == 0)
+        if (conversations == null || conversations.Count == 0)
         {
             _scrollView.Add(new Label("No conversations yet."));
             return;
@@ -103,23 +65,16 @@ public class ConversationsListComponent : VisualElement
         OnConversationSelected?.Invoke(conversation);
     }
 
-    private void HandleConversationChange(ConversationData conversation)
-    {
-        RefreshConversations();
-    }
-
-    private void HandleConversationRemoved(ulong conversationId)
-    {
-        RefreshConversations();
-    }
-
-    private void HandleMessageReceived(MessageData message)
-    {
-        RefreshConversations();
-    }
-
     private void ClearAllListItems()
     {
-        _scrollView?.Clear();
+        // We must iterate over a copy since we are modifying the collection
+        foreach (var item in _scrollView.Children().ToList())
+        {
+            if (item is ConversationListItem listItem)
+            {
+                listItem.Cleanup();
+            }
+        }
+        _scrollView.Clear();
     }
 } 
