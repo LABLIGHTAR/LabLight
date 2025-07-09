@@ -23,13 +23,16 @@ namespace SpacetimeDB.Types
         public SpacetimeDB.Timestamp CreatedAt;
         [DataMember(Name = "last_online")]
         public SpacetimeDB.Timestamp LastOnline;
+        [DataMember(Name = "bio")]
+        public string Bio;
 
         public UserProfile(
             SpacetimeDB.Identity Identity,
             string Name,
             bool Online,
             SpacetimeDB.Timestamp CreatedAt,
-            SpacetimeDB.Timestamp LastOnline
+            SpacetimeDB.Timestamp LastOnline,
+            string Bio
         )
         {
             this.Identity = Identity;
@@ -37,11 +40,13 @@ namespace SpacetimeDB.Types
             this.Online = Online;
             this.CreatedAt = CreatedAt;
             this.LastOnline = LastOnline;
+            this.Bio = Bio;
         }
 
         public UserProfile()
         {
             this.Name = "";
+            this.Bio = "";
         }
     }
 }

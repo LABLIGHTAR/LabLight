@@ -527,7 +527,10 @@ namespace SpacetimeDB.Types
                 "try_schedule_protocol_task" => BSATNHelpers.Decode<Reducer.TryScheduleProtocolTask>(encodedArgs),
                 "try_start_scheduled_task" => BSATNHelpers.Decode<Reducer.TryStartScheduledTask>(encodedArgs),
                 "try_unsave_protocol" => BSATNHelpers.Decode<Reducer.TryUnsaveProtocol>(encodedArgs),
+                "update_organization_description" => BSATNHelpers.Decode<Reducer.UpdateOrganizationDescription>(encodedArgs),
                 "update_organization_name" => BSATNHelpers.Decode<Reducer.UpdateOrganizationName>(encodedArgs),
+                "update_protocol_description" => BSATNHelpers.Decode<Reducer.UpdateProtocolDescription>(encodedArgs),
+                "update_user_profile_bio" => BSATNHelpers.Decode<Reducer.UpdateUserProfileBio>(encodedArgs),
                 "update_user_profile_name" => BSATNHelpers.Decode<Reducer.UpdateUserProfileName>(encodedArgs),
                 var reducer => throw new ArgumentOutOfRangeException("Reducer", $"Unknown reducer {reducer}")
             };
@@ -590,7 +593,10 @@ namespace SpacetimeDB.Types
                 Reducer.TryScheduleProtocolTask args => Reducers.InvokeTryScheduleProtocolTask(eventContext, args),
                 Reducer.TryStartScheduledTask args => Reducers.InvokeTryStartScheduledTask(eventContext, args),
                 Reducer.TryUnsaveProtocol args => Reducers.InvokeTryUnsaveProtocol(eventContext, args),
+                Reducer.UpdateOrganizationDescription args => Reducers.InvokeUpdateOrganizationDescription(eventContext, args),
                 Reducer.UpdateOrganizationName args => Reducers.InvokeUpdateOrganizationName(eventContext, args),
+                Reducer.UpdateProtocolDescription args => Reducers.InvokeUpdateProtocolDescription(eventContext, args),
+                Reducer.UpdateUserProfileBio args => Reducers.InvokeUpdateUserProfileBio(eventContext, args),
                 Reducer.UpdateUserProfileName args => Reducers.InvokeUpdateUserProfileName(eventContext, args),
                 _ => throw new ArgumentOutOfRangeException("Reducer", $"Unknown reducer {reducer}")
             };

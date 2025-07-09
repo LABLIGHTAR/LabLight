@@ -17,6 +17,8 @@ namespace SpacetimeDB.Types
         public uint Id;
         [DataMember(Name = "name")]
         public string Name;
+        [DataMember(Name = "description")]
+        public string Description;
         [DataMember(Name = "created_at")]
         public SpacetimeDB.Timestamp CreatedAt;
         [DataMember(Name = "owner_identity")]
@@ -27,6 +29,7 @@ namespace SpacetimeDB.Types
         public Organization(
             uint Id,
             string Name,
+            string Description,
             SpacetimeDB.Timestamp CreatedAt,
             SpacetimeDB.Identity OwnerIdentity,
             string OwnerDisplayName
@@ -34,6 +37,7 @@ namespace SpacetimeDB.Types
         {
             this.Id = Id;
             this.Name = Name;
+            this.Description = Description;
             this.CreatedAt = CreatedAt;
             this.OwnerIdentity = OwnerIdentity;
             this.OwnerDisplayName = OwnerDisplayName;
@@ -42,6 +46,7 @@ namespace SpacetimeDB.Types
         public Organization()
         {
             this.Name = "";
+            this.Description = "";
             this.OwnerDisplayName = "";
         }
     }

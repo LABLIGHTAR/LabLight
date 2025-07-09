@@ -17,6 +17,8 @@ namespace SpacetimeDB.Types
         public uint Id;
         [DataMember(Name = "name")]
         public string Name;
+        [DataMember(Name = "description")]
+        public string Description;
         [DataMember(Name = "content")]
         public string Content;
         [DataMember(Name = "created_at")]
@@ -31,6 +33,7 @@ namespace SpacetimeDB.Types
         public Protocol(
             uint Id,
             string Name,
+            string Description,
             string Content,
             SpacetimeDB.Timestamp CreatedAt,
             SpacetimeDB.Timestamp EditedAt,
@@ -40,6 +43,7 @@ namespace SpacetimeDB.Types
         {
             this.Id = Id;
             this.Name = Name;
+            this.Description = Description;
             this.Content = Content;
             this.CreatedAt = CreatedAt;
             this.EditedAt = EditedAt;
@@ -50,6 +54,7 @@ namespace SpacetimeDB.Types
         public Protocol()
         {
             this.Name = "";
+            this.Description = "";
             this.Content = "";
         }
     }
