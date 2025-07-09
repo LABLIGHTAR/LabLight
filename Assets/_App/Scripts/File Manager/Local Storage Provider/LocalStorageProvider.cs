@@ -147,4 +147,9 @@ public class LocalStorageProvider : ILocalStorageProvider
             return Result<System.Collections.Generic.List<string>>.CreateFailure("LOCAL_STORAGE_ERROR", $"Error listing keys: {ex.Message}");
         }
     }
+
+    public string GetFilePath(string key)
+    {
+        return System.IO.Path.Combine(Application.persistentDataPath, key);
+    }
 } 

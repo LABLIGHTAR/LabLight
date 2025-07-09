@@ -48,6 +48,8 @@ public class FileManager : IFileManager
         _largeFileStorageProvider = largeFileStorageProvider ?? throw new System.ArgumentNullException(nameof(largeFileStorageProvider));
     }
 
+    private readonly Dictionary<string, Task<Result<byte[]>>> _ongoingMediaDownloads = new Dictionary<string, Task<Result<byte[]>>>();
+
     // Key generation strategy for local cache.
     // TODO: Consider more robust key sanitization if user-provided parts are used directly.
     private string GetProtocolCacheKey(uint protocolId) => $"protocol_{protocolId}.json";
@@ -334,9 +336,8 @@ public class FileManager : IFileManager
         }
 
         string cacheKey = GetMediaCacheKey(objectKey);
-        Debug.Log($"FileManager.GetMediaFileAsync: Attempting to get media '{objectKey}'. Cache key: {cacheKey}");
 
-        // 1. Check Local Cache
+        // 1. Check Local Cache first.
         Result<byte[]> localResult = await _localStorageProvider.ReadBinaryAsync(cacheKey);
         if (localResult.Success && localResult.Data != null)
         {
@@ -344,14 +345,49 @@ public class FileManager : IFileManager
             return Result<byte[]>.CreateSuccess(localResult.Data);
         }
 
-        // 2. Check Online Status
+        // 2. If not in cache, check for/create an ongoing download task.
+        Task<Result<byte[]>> downloadTask;
+        lock (_ongoingMediaDownloads)
+        {
+            if (!_ongoingMediaDownloads.TryGetValue(objectKey, out downloadTask))
+            {
+                Debug.Log($"FileManager.GetMediaFileAsync: Media '{objectKey}' not in cache, initiating download task.");
+                downloadTask = DownloadAndCacheMediaInternalAsync(objectKey);
+                _ongoingMediaDownloads.Add(objectKey, downloadTask);
+            }
+            else
+            {
+                Debug.Log($"FileManager.GetMediaFileAsync: Download for '{objectKey}' is already in progress. Awaiting existing task.");
+            }
+        }
+
+        try
+        {
+            // 3. Await the task outside of the lock.
+            return await downloadTask;
+        }
+        finally
+        {
+            // 4. Remove the task from the dictionary once it's complete.
+            lock (_ongoingMediaDownloads)
+            {
+                _ongoingMediaDownloads.Remove(objectKey);
+            }
+        }
+    }
+
+    private async Task<Result<byte[]>> DownloadAndCacheMediaInternalAsync(string objectKey)
+    {
+        string cacheKey = GetMediaCacheKey(objectKey);
+        
+        // Check Online Status
         if (!_database.IsConnected)
         {
             Debug.LogWarning($"FileManager.GetMediaFileAsync: Offline and media '{objectKey}' not in cache.");
             return Result<byte[]>.CreateFailure(ErrorOfflineMediaCacheMiss, $"Media file '{objectKey}' not in local cache and client is offline.");
         }
 
-        // 3. Verify Metadata (If Online)
+        // Verify Metadata (If Online)
         Debug.Log($"FileManager.GetMediaFileAsync: Media '{objectKey}' not in cache, checking metadata and fetching from LFS.");
         MediaMetadataData metadata = _database.GetCachedMediaMetadata(objectKey);
         if (metadata == null)
@@ -359,11 +395,8 @@ public class FileManager : IFileManager
             Debug.LogWarning($"FileManager.GetMediaFileAsync: Media metadata not found for '{objectKey}'.");
             return Result<byte[]>.CreateFailure(ErrorMediaNotAvailable, $"Media file metadata not found for '{objectKey}'.");
         }
-        // TODO: Define what "Available" status means. Assuming a property like `metadata.Status == "Available"`.
-        // For now, I'll assume if metadata exists, we can try to download. Add a specific check if `MediaMetadataData` has a status field.
-        // Example: if (metadata.FileStatus != MediaFileStatus.Available) return Result<byte[]>.CreateFailure(ErrorMediaNotAvailable, "Media file is not in an available state.");
 
-        // 4. Download File
+        // Download File
         Debug.Log($"FileManager.GetMediaFileAsync: Metadata found for '{objectKey}'. Calling LFS to download.");
         Result<byte[]> downloadResult = await _largeFileStorageProvider.DownloadFileAsync(objectKey);
         if (!downloadResult.Success || downloadResult.Data == null)
@@ -372,7 +405,7 @@ public class FileManager : IFileManager
             return Result<byte[]>.CreateFailure(downloadResult.Error?.Code ?? ErrorLfsDownloadError, downloadResult.Error?.Message ?? $"Failed to download file '{objectKey}' from large file storage.");
         }
 
-        // 5. Cache Locally
+        // Cache Locally
         Debug.Log($"FileManager.GetMediaFileAsync: Media '{objectKey}' downloaded. Caching locally.");
         ResultVoid cacheWriteResult = await _localStorageProvider.WriteBinaryAsync(cacheKey, downloadResult.Data);
         if (!cacheWriteResult.Success)
@@ -381,6 +414,50 @@ public class FileManager : IFileManager
         }
 
         return Result<byte[]>.CreateSuccess(downloadResult.Data);
+    }
+    
+    public async Task<Result<string>> GetMediaFilePathAsync(string objectKey)
+    {
+        if (string.IsNullOrEmpty(objectKey))
+        {
+            Debug.LogError("FileManager.GetMediaFilePathAsync: objectKey cannot be null or empty.");
+            return Result<string>.CreateFailure("INVALID_ARGUMENT", "Object key must be provided.");
+        }
+
+        string cacheKey = GetMediaCacheKey(objectKey);
+        string filePath = _localStorageProvider.GetFilePath(cacheKey);
+
+        // 1. Check if file exists at the path.
+        if (System.IO.File.Exists(filePath))
+        {
+            Debug.Log($"FileManager.GetMediaFilePathAsync: Media '{objectKey}' found in local cache at {filePath}.");
+            return Result<string>.CreateSuccess(filePath);
+        }
+
+        // 2. If it doesn't exist, trigger the download and caching process.
+        Debug.Log($"FileManager.GetMediaFilePathAsync: Media '{objectKey}' not in cache. Fetching...");
+        var downloadResult = await GetMediaFileAsync(objectKey);
+
+        if (downloadResult.Success)
+        {
+            // GetMediaFileAsync already caches the file, so now the file should exist.
+            if (System.IO.File.Exists(filePath))
+            {
+                Debug.Log($"FileManager.GetMediaFilePathAsync: Media '{objectKey}' successfully downloaded and cached at {filePath}.");
+                return Result<string>.CreateSuccess(filePath);
+            }
+            else
+            {
+                // This case should not happen if GetMediaFileAsync works as expected.
+                Debug.LogError($"FileManager.GetMediaFilePathAsync: Download succeeded but file not found at cache path {filePath}.");
+                return Result<string>.CreateFailure(ErrorLocalCacheWriteFailed, "File not found after successful download and cache attempt.");
+            }
+        }
+        else
+        {
+            Debug.LogError($"FileManager.GetMediaFilePathAsync: Failed to get media file for '{objectKey}'. Error: {downloadResult.Error.Message}");
+            return Result<string>.CreateFailure(downloadResult.Error.Code, downloadResult.Error.Message);
+        }
     }
 
     public async Task<ResultVoid> SaveMediaFileAsync(string objectKey, string originalFilename, string contentType, byte[] data)

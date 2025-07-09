@@ -3,6 +3,9 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using UnityEngine.Video;
 
 public class ProtocolWindowController : BaseWindowController
 {
@@ -54,12 +57,16 @@ public class ProtocolWindowController : BaseWindowController
     private ProtocolDefinition _currentProtocol;
     private StepDefinition _currentStepDefinition;
     private int _currentStepIndex = 0;
+    private int _selectedChecklistItemIndex = -1;
 
     // Services and State
+    private VideoPlayer _videoPlayer;
     private IUIDriver _uiDriver;
     private IAudioService _audioService;
+    private IFileManager _fileManager;
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private bool _isSignedOff = false;
+    private bool _isPopulatingStep = false; // Flag to prevent re-entrant updates
 
     protected override void OnEnable()
     {
@@ -105,6 +112,10 @@ public class ProtocolWindowController : BaseWindowController
         base.OnDisable();
         _disposables.Clear();
         UnregisterEventHandlers();
+        if (_videoPlayer != null && _videoPlayer.targetTexture != null)
+        {
+            _videoPlayer.targetTexture.Release();
+        }
     }
     
     private void InitializeView()
@@ -129,6 +140,12 @@ public class ProtocolWindowController : BaseWindowController
         _arViewButton = rootVisualElement.Q<Button>(ArViewButtonName);
         _protocolTitleLabel = rootVisualElement.Q<Label>(ProtocolTitleLabelName);
         _protocolContentContainer = rootVisualElement.Q<VisualElement>(ProtocolContentContainerName);
+        
+        _fileManager = ServiceRegistry.GetService<IFileManager>();
+        
+        _videoPlayer = gameObject.GetComponent<VideoPlayer>() ?? gameObject.AddComponent<VideoPlayer>();
+        _videoPlayer.playOnAwake = false;
+        _videoPlayer.renderMode = VideoRenderMode.RenderTexture;
 
         RegisterEventHandlers();
 
@@ -188,24 +205,13 @@ public class ProtocolWindowController : BaseWindowController
         }
         Debug.Log($"[ProtocolViewWindowController] Populating checklist with {checklistItemStatesList.Count} items based on StepDefinition: '{_currentStepDefinition.title}'");
 
-        int firstUncheckedIndex = -1;
-        for (int i = 0; i < checklistItemStatesList.Count; i++)
-        {
-            if (!checklistItemStatesList[i].IsChecked.Value)
-            {
-                firstUncheckedIndex = i;
-                break;
-            }
-        }
+        // Determine the first unchecked item to mark it as "active"
+        int firstUncheckedIndex = checklistItemStatesList.FindIndex(item => !item.IsChecked.Value);
         Debug.Log($"[ProtocolViewWindowController] PopulateChecklist: firstUncheckedIndex = {firstUncheckedIndex}");
+
 
         for (int i = 0; i < checklistItemStatesList.Count; i++)
         {
-            if (i >= _currentStepDefinition.checklist.Count)
-            {
-                Debug.LogWarning($"[ProtocolViewWindowController] Checklist state/definition mismatch at index {i}.");
-                continue;
-            }
             var itemState = checklistItemStatesList[i];
             var itemDef = _currentStepDefinition.checklist[i];
 
@@ -259,6 +265,16 @@ public class ProtocolWindowController : BaseWindowController
 
             _checklistContainer.Add(checkItemVisual);
         }
+        
+        // Update content panel based on the first unchecked item
+        if (_selectedChecklistItemIndex != firstUncheckedIndex)
+        {
+            _selectedChecklistItemIndex = firstUncheckedIndex;
+            // The call to UpdateContentPanelForSelection is removed from here.
+            // It is now called once at the end of OnStepChanged and OnChecklistChanged
+            // to prevent multiple UI refreshes during a single state update.
+        }
+
         UpdateSignOffButtonState();
     }
 
@@ -315,6 +331,37 @@ public class ProtocolWindowController : BaseWindowController
         }
     }
 
+    private void UpdateContentPanelForSelection()
+    {
+        if (_isPopulatingStep)
+        {
+            // Defer content update until the end of the step population logic in OnStepChanged.
+            return;
+        }
+
+        if (_currentStepDefinition == null) return;
+
+        List<ContentItem> contentToShow = null;
+
+        // If a specific checklist item is selected and valid, get its content
+        if (_selectedChecklistItemIndex >= 0 && _selectedChecklistItemIndex < _currentStepDefinition.checklist.Count)
+        {
+            var checkItemDef = _currentStepDefinition.checklist[_selectedChecklistItemIndex];
+            if (checkItemDef.contentItems != null && checkItemDef.contentItems.Any())
+            {
+                contentToShow = checkItemDef.contentItems;
+            }
+        }
+        
+        // If no specific content for the checklist item, fall back to the step's content
+        if (contentToShow == null)
+        {
+            contentToShow = _currentStepDefinition.contentItems;
+        }
+
+        PopulateContentPanel(contentToShow);
+    }
+    
     private void PopulateContentPanel(List<ContentItem> contentItems)
     {
         _protocolContentContainer.Clear();
@@ -329,6 +376,8 @@ public class ProtocolWindowController : BaseWindowController
 
         foreach (var contentItem in contentItems)
         {
+            Debug.Log($"[ProtocolViewWindowController] Loading ContentItem. Type: {contentItem.contentType}, Properties: {JsonConvert.SerializeObject(contentItem.properties)}");
+
             VisualElement itemElement = null;
             switch (contentItem.contentType?.ToLower())
             {
@@ -341,24 +390,59 @@ public class ProtocolWindowController : BaseWindowController
                     }
                     break;
                 case "image":
-                    if (contentItem.properties.TryGetValue("ImageURL", out object imageUrlObj))
+                    if (contentItem.properties.TryGetValue("objectKey", out object imageUrlObj))
                     {
                         var imageElement = new Image();
                         string imagePath = imageUrlObj.ToString();
-                        if (_currentProtocol != null && !string.IsNullOrEmpty(_currentProtocol.mediaBasePath) && !System.IO.Path.IsPathRooted(imagePath))
-                        {
-                            imagePath = System.IO.Path.Combine(_currentProtocol.mediaBasePath, imagePath);
-                        }
-                        imageElement.style.backgroundColor = new StyleColor(Color.gray);
-                        imageElement.style.minHeight = 100;
+                        
                         imageElement.AddToClassList("protocol-main-image");
                         itemElement = imageElement;
+                        
+                        // Asynchronously load the image
+                        LoadImageAsync(imageElement, imagePath);
+                    }
+                    break;
+                case "video":
+                    if (contentItem.properties.TryGetValue("objectKey", out object videoObjectKey))
+                    {
+                        var videoContainer = new VisualElement();
+                        videoContainer.AddToClassList("video-container");
+
+                        var videoImage = new Image();
+                        videoImage.AddToClassList("protocol-video-player");
+
+                        var renderTexture = new RenderTexture(1280, 720, 16, RenderTextureFormat.ARGB32);
+                        if (_videoPlayer.targetTexture != null && _videoPlayer.targetTexture.IsCreated())
+                        {
+                            _videoPlayer.targetTexture.Release();
+                        }
+                        _videoPlayer.targetTexture = renderTexture;
+                        videoImage.image = renderTexture;
+
+                        var playButton = new Button(() =>
+                        {
+                            if (_videoPlayer.isPrepared)
+                            {
+                                if (_videoPlayer.isPlaying) _videoPlayer.Pause();
+                                else _videoPlayer.Play();
+                            }
+                            else
+                            {
+                                Debug.LogWarning("Video is not ready to play yet.");
+                            }
+                        }) { text = "Play/Pause" };
+                        playButton.AddToClassList("action-button");
+
+                        videoContainer.Add(videoImage);
+                        videoContainer.Add(playButton);
+                        itemElement = videoContainer;
+
+                        LoadVideoAsync(videoObjectKey.ToString());
                     }
                     break;
                 case "sound":
-                case "video":
                 case "weburl":
-                    if (contentItem.properties.TryGetValue("url", out object urlObj))
+                    if (contentItem.properties.TryGetValue("objectKey", out object urlObj))
                     {
                         var button = new Button();
                         button.RegisterCallback<ClickEvent>(evt =>
@@ -394,6 +478,76 @@ public class ProtocolWindowController : BaseWindowController
         }
     }
 
+    private async void LoadImageAsync(Image imageElement, string imagePath)
+    {
+        if (_fileManager == null)
+        {
+            Debug.LogError("[ProtocolWindowController] FileManager service not available.");
+            imageElement.style.backgroundColor = new StyleColor(Color.red); // Indicate error
+            return;
+        }
+
+        if (string.IsNullOrEmpty(imagePath))
+        {
+            Debug.LogWarning("[ProtocolWindowController] Image path is null or empty.");
+            return;
+        }
+        
+        Debug.Log($"[ProtocolWindowController] Attempting to load image from path: {imagePath}");
+
+        var result = await _fileManager.GetMediaFileAsync(imagePath);
+
+        if (result.Success)
+        {
+            var texture = new Texture2D(2, 2);
+            // This needs to be done on the main thread if the context could be different
+            if (texture.LoadImage(result.Data)) // Check if data is a valid image
+            {
+                imageElement.image = texture;
+                imageElement.style.backgroundColor = new StyleColor(StyleKeyword.None); // Clear placeholder color
+                Debug.Log($"[ProtocolViewWindowController] Successfully loaded and applied image: {imagePath}");
+            }
+            else
+            {
+                Debug.LogError($"[ProtocolViewWindowController] Failed to load image data for {imagePath}. The data may not be a valid PNG or JPG.");
+                imageElement.style.backgroundColor = new StyleColor(Color.yellow); // Indicate data error
+            }
+        }
+        else
+        {
+            Debug.LogError($"[ProtocolWindowController] Failed to load image {imagePath}: {result.Error.Message}");
+            imageElement.style.backgroundColor = new StyleColor(Color.magenta); // Indicate error
+        }
+    }
+
+    private async void LoadVideoAsync(string videoObjectKey)
+    {
+        if (_fileManager == null)
+        {
+            Debug.LogError("[ProtocolWindowController] FileManager service not available.");
+            return;
+        }
+        if (string.IsNullOrEmpty(videoObjectKey))
+        {
+            Debug.LogWarning("[ProtocolWindowController] Video object key is null or empty.");
+            return;
+        }
+
+        Debug.Log($"[ProtocolWindowController] Attempting to get video file path for: {videoObjectKey}");
+        var result = await _fileManager.GetMediaFilePathAsync(videoObjectKey);
+
+        if (result.Success)
+        {
+            Debug.Log($"[ProtocolWindowController] Video path received: {result.Data}. Preparing video player.");
+            _videoPlayer.url = result.Data;
+            _videoPlayer.Prepare();
+        }
+        else
+        {
+            Debug.LogError($"[ProtocolWindowController] Failed to get video path for {videoObjectKey}: {result.Error.Message}");
+        }
+    }
+
     private void OnProtocolChanged(ProtocolDefinition protocol)
     {
         _currentProtocol = protocol;
@@ -413,63 +567,77 @@ public class ProtocolWindowController : BaseWindowController
 
     private void OnStepChanged(int stepIndex)
     {
-        Debug.Log($"[ProtocolViewWindowController] OnStepChanged called. Requested stepIndex: {stepIndex}. Current protocol: '{_currentProtocol?.title ?? "NULL"}'");
-        _currentStepIndex = stepIndex;
+        if (_isPopulatingStep) return; // Prevent re-entrant calls
+        _isPopulatingStep = true;
 
-        if (_currentProtocol == null || _currentProtocol.steps == null || stepIndex < 0 || stepIndex >= _currentProtocol.steps.Count)
+        try
         {
-            Debug.LogWarning($"[ProtocolViewWindowController] Invalid step index: {stepIndex} for protocol '{_currentProtocol?.title}'. Steps available: {_currentProtocol?.steps?.Count ?? 0}. Clearing step view.");
-            ResetStepUIData(stepIndicatorText: (_currentProtocol?.steps != null && _currentProtocol.steps.Any()) ? $"Step ? / {_currentProtocol.steps.Count}" : "Step - / -");
-            _currentStepDefinition = null;
-            _isSignedOff = false;
-            UpdateSignOffButtonState();
-            return;
-        }
-        
-        _currentStepDefinition = _currentProtocol.steps[_currentStepIndex];
-        Debug.Log($"[ProtocolViewWindowController] Current step definition set to: '{_currentStepDefinition?.title}' at index {_currentStepIndex}");
-        
-        if (ProtocolState.Instance != null && ProtocolState.Instance.Steps != null && stepIndex >= 0 && stepIndex < ProtocolState.Instance.Steps.Count)
-        {
-            var newStepState = ProtocolState.Instance.Steps[stepIndex];
-            _isSignedOff = newStepState?.SignedOff?.Value ?? false;
-            Debug.Log($"[ProtocolViewWindowController] OnStepChanged: Fetched StepState for index {stepIndex}. IsSignedOff from newStepState: {_isSignedOff}");
+            Debug.Log($"[ProtocolViewWindowController] OnStepChanged called. Requested stepIndex: {stepIndex}. Current protocol: '{_currentProtocol?.title ?? "NULL"}'");
+            _currentStepIndex = stepIndex;
+            _selectedChecklistItemIndex = -1; // Reset selected item when step changes
 
-            if (_isSignedOff)
+            if (_currentProtocol == null || _currentProtocol.steps == null || stepIndex < 0 || stepIndex >= _currentProtocol.steps.Count)
             {
-                if (_signatureLineLabel != null)
+                Debug.LogWarning($"[ProtocolViewWindowController] Invalid step index: {stepIndex} for protocol '{_currentProtocol?.title}'. Steps available: {_currentProtocol?.steps?.Count ?? 0}. Clearing step view.");
+                ResetStepUIData(stepIndicatorText: (_currentProtocol?.steps != null && _currentProtocol.steps.Any()) ? $"Step ? / {_currentProtocol.steps.Count}" : "Step - / -");
+                _currentStepDefinition = null;
+                _isSignedOff = false;
+                UpdateSignOffButtonState();
+                return;
+            }
+            
+            _currentStepDefinition = _currentProtocol.steps[_currentStepIndex];
+            Debug.Log($"[ProtocolViewWindowController] Current step definition set to: '{_currentStepDefinition?.title}' at index {_currentStepIndex}");
+            
+            if (ProtocolState.Instance != null && ProtocolState.Instance.Steps != null && stepIndex >= 0 && stepIndex < ProtocolState.Instance.Steps.Count)
+            {
+                var newStepState = ProtocolState.Instance.Steps[stepIndex];
+                _isSignedOff = newStepState?.SignedOff?.Value ?? false;
+                Debug.Log($"[ProtocolViewWindowController] OnStepChanged: Fetched StepState for index {stepIndex}. IsSignedOff from newStepState: {_isSignedOff}");
+
+                if (_isSignedOff)
                 {
-                    string userName = SessionState.currentUserProfile?.GetName() ?? "Signed";
-                    _signatureLineLabel.text = userName;
-                    _signatureLineLabel.AddToClassList("signed-text");
-                    Debug.Log($"[ProtocolViewWindowController] OnStepChanged: Step already signed off. Signature line set for: {userName}");
+                    if (_signatureLineLabel != null)
+                    {
+                        string userName = SessionState.currentUserProfile?.GetName() ?? "Signed";
+                        _signatureLineLabel.text = userName;
+                        _signatureLineLabel.AddToClassList("signed-text");
+                        Debug.Log($"[ProtocolViewWindowController] OnStepChanged: Step already signed off. Signature line set for: {userName}");
+                    }
+                }
+                else
+                {
+                    ResetSignatureLine();
                 }
             }
             else
             {
+                _isSignedOff = false;
+                Debug.LogWarning($"[ProtocolViewWindowController] OnStepChanged: Could not get StepState for index {stepIndex} from ProtocolState.Instance.Steps. Defaulting _isSignedOff to false.");
                 ResetSignatureLine();
             }
-        }
-        else
-        {
-            _isSignedOff = false;
-            Debug.LogWarning($"[ProtocolViewWindowController] OnStepChanged: Could not get StepState for index {stepIndex} from ProtocolState.Instance.Steps. Defaulting _isSignedOff to false.");
-            ResetSignatureLine();
-        }
 
-        if (_stepIndicatorLabel != null) _stepIndicatorLabel.text = $"Step {_currentStepIndex + 1} / {_currentProtocol.steps.Count}";
-        else Debug.LogWarning("[ProtocolViewWindowController] _stepIndicatorLabel is null, cannot update step text.");
-        
-        if (_checklistStepTitleLabel != null)
-        {
-            _checklistStepTitleLabel.text = _currentStepDefinition?.title ?? "Unnamed Step";
-        }
+            if (_stepIndicatorLabel != null) _stepIndicatorLabel.text = $"Step {_currentStepIndex + 1} / {_currentProtocol.steps.Count}";
+            else Debug.LogWarning("[ProtocolViewWindowController] _stepIndicatorLabel is null, cannot update step text.");
+            
+            if (_checklistStepTitleLabel != null)
+            {
+                _checklistStepTitleLabel.text = _currentStepDefinition?.title ?? "Unnamed Step";
+            }
 
-        var currentStepState = ProtocolState.Instance.CurrentStepState?.Value;
-        Debug.Log($"[ProtocolViewWindowController] CurrentStepState for step '{_currentStepDefinition?.title}' has checklist count: {currentStepState?.Checklist?.Count ?? -1}");
-        PopulateChecklist(currentStepState?.Checklist?.ToList());
-        PopulateContentPanel(_currentStepDefinition.contentItems);
-        UpdateSignOffButtonState();
+            var currentStepState = ProtocolState.Instance.CurrentStepState?.Value;
+            Debug.Log($"[ProtocolViewWindowController] CurrentStepState for step '{_currentStepDefinition?.title}' has checklist count: {currentStepState?.Checklist?.Count ?? -1}");
+            PopulateChecklist(currentStepState?.Checklist?.ToList());
+            
+            // After the checklist is populated and the active item index is known, update the content panel once.
+            UpdateContentPanelForSelection();
+            
+            UpdateSignOffButtonState();
+        }
+        finally
+        {
+            _isPopulatingStep = false;
+        }
     }
 
     private void OnChecklistChanged(List<ProtocolState.CheckItemState> checklistItemStatesList)
@@ -480,6 +648,7 @@ public class ProtocolWindowController : BaseWindowController
         }
         _currentStepDefinition = _currentProtocol.steps[_currentStepIndex];
         PopulateChecklist(checklistItemStatesList);
+        UpdateContentPanelForSelection(); // Update content when checklist changes (e.g., new item becomes active)
         UpdateSignOffButtonState();
     }
 

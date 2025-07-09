@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine; // For JsonUtility and Debug.Log
+using System; // For Uri.TryCreate
 
 // TODO: Consider a shared HTTP client factory or service if multiple services need HttpClient.
 // TODO: Add appropriate JSON parsing library if JsonUtility is not sufficient or for non-Unity environments (e.g. Newtonsoft.Json).
@@ -51,8 +52,39 @@ public class LargeFileStorageProvider : ILargeFileStorageProvider
     public LargeFileStorageProvider(string lfsServiceBaseUrl, IAuthProvider authProvider)
     {
         _httpClient = new HttpClient();
-        _lfsServiceBaseUrl = lfsServiceBaseUrl.TrimEnd('/');
-        _authProvider = authProvider ?? throw new System.ArgumentNullException(nameof(authProvider));
+        _lfsServiceBaseUrl = lfsServiceBaseUrl;
+        _authProvider = authProvider;
+        CheckHealthAsync();
+    }
+
+    private async void CheckHealthAsync()
+    {
+        if (string.IsNullOrEmpty(_lfsServiceBaseUrl))
+        {
+            Debug.LogWarning("[LargeFileStorageProvider] LFS Base URL is not set, skipping health check.");
+            return;
+        }
+
+        try
+        {
+            string healthUrl = $"{_lfsServiceBaseUrl.TrimEnd('/')}/health";
+            var request = new HttpRequestMessage(HttpMethod.Get, healthUrl);
+            HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Health check successful, no need to log every time on success.
+            }
+            else
+            {
+                string errorContent = await response.Content.ReadAsStringAsync();
+                Debug.LogError($"[LargeFileStorageProvider] MUSS health check failed (Status: {response.StatusCode}): {errorContent}");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[LargeFileStorageProvider] Exception during MUSS health check: {ex.Message}");
+        }
     }
 
     private async Task<string> GetOidcTokenAsync()
@@ -185,8 +217,24 @@ public class LargeFileStorageProvider : ILargeFileStorageProvider
                 return Result<byte[]>.CreateFailure("MUSS_ERROR", "MUSS did not return a valid download URL.");
             }
 
+            string downloadUrlString = urlResponse.url;
+            Uri downloadUri;
+
+            if (!Uri.TryCreate(downloadUrlString, UriKind.Absolute, out downloadUri) ||
+                (downloadUri.Scheme != Uri.UriSchemeHttp && downloadUri.Scheme != Uri.UriSchemeHttps))
+            {
+                Debug.LogWarning($"[LargeFileStorageProvider] Received URL '{downloadUrlString}' is not a valid absolute URL. Attempting to combine with base URL.");
+                downloadUrlString = $"{_lfsServiceBaseUrl.TrimEnd('/')}/{downloadUrlString.TrimStart('/')}";
+                if (!Uri.TryCreate(downloadUrlString, UriKind.Absolute, out downloadUri) ||
+                    (downloadUri.Scheme != Uri.UriSchemeHttp && downloadUri.Scheme != Uri.UriSchemeHttps))
+                {
+                    Debug.LogError($"[LargeFileStorageProvider] Failed to create a valid absolute URL from '{urlResponse.url}' or '{downloadUrlString}'");
+                    return Result<byte[]>.CreateFailure("LFS_DOWNLOAD_ERROR", "Invalid URL format received from service.");
+                }
+            }
+
             // 2. Download file from MinIO using the presigned URL
-            var minioHttpRequest = new HttpRequestMessage(HttpMethod.Get, urlResponse.url);
+            var minioHttpRequest = new HttpRequestMessage(HttpMethod.Get, downloadUri);
             // MinIO presigned URLs usually don't require Authorization headers.
 
             HttpResponseMessage minioResponse = await _httpClient.SendAsync(minioHttpRequest);

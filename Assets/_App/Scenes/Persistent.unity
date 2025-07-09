@@ -3007,7 +3007,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SelectedAuthProvider: 0
-  MussBaseURL: ws://localhost:3000
+  MussBaseURL: http://localhost:8000
   TrackedObjectsDebug: []
 --- !u!4 &973196474
 Transform:

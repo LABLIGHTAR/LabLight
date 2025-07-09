@@ -69,9 +69,7 @@ public partial class SpacetimeDBImpl
     {
         if (!AssertConnected() || _connection?.Db == null || _connection.Identity == null) return Enumerable.Empty<MediaMetadataData>();
 
-        string currentUserIdentityString = _connection.Identity.ToString();
         return _connection.Db.MediaMetadata.Iter()
-            .Where(m => m.OwnerIdentity.ToString() == currentUserIdentityString)
             .Select(MapToMediaMetadataData)
             .ToList();
     }

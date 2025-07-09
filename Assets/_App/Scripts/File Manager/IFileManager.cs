@@ -28,6 +28,7 @@ public interface IFileManager
 
     // Media File Management (using byte[] for FileObject)
     Task<Result<byte[]>> GetMediaFileAsync(string objectKey);
+    Task<Result<string>> GetMediaFilePathAsync(string objectKey);
     Task<ResultVoid> SaveMediaFileAsync(string objectKey, string originalFilename, string contentType, byte[] data);
     Task<ResultVoid> DeleteMediaFileAsync(string objectKey);
 
