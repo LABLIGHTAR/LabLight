@@ -9,15 +9,17 @@ namespace LabLight
     {
         private readonly Image _imageElement;
         private readonly VisualElement _imageContainer;
+        private readonly Label _captionLabel;
 
         public ImageComponent(VisualTreeAsset asset)
         {
             asset.CloneTree(this);
             _imageContainer = this.Q<VisualElement>("image-container");
             _imageElement = this.Q<Image>("image-display");
+            _captionLabel = this.Q<Label>("caption-label");
         }
 
-        public async void SetImage(IFileManager fileManager, string imageObjectKey)
+        public async void SetImage(IFileManager fileManager, string imageObjectKey, string captionText = null)
         {
             if (fileManager == null)
             {
@@ -29,6 +31,12 @@ namespace LabLight
             {
                 Debug.LogError("[ImageComponent] Image element is not found in the UXML.");
                 return;
+            }
+
+            if (!string.IsNullOrEmpty(captionText))
+            {
+                _captionLabel.text = captionText;
+                _captionLabel.RemoveFromClassList("hidden");
             }
 
             try

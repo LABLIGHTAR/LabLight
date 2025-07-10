@@ -242,6 +242,55 @@
     font-size: 16px;
 }
 
+/* === Content Item Styles === */
+.content-media-container,
+.text-content-container {
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    align-self: flex-start; /* Fix for vertical spacing */
+}
+
+/* Specifics for media inside containers */
+.protocol-image-display,
+.protocol-video-player {
+    max-height: 400px;
+    border-radius: 6px;
+}
+
+.protocol-video-player {
+    margin-bottom: 10px; /* Space between video and controls */
+}
+
+.video-controls-container {
+    flex-direction: row;
+    align-items: center;
+}
+
+.video-control-button {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+}
+
+.video-progress-bar {
+    flex-grow: 1;
+}
+
+.caption-label {
+    font-size: 16px;
+    color: rgb(210, 210, 210);
+    white-space: normal;
+    margin-top: 8px;
+    -unity-text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
 /* Action buttons in the right panel footer */
 .icon-button {
     background-color: transparent;
@@ -250,4 +299,27 @@
 
 .protocol-content-item {
     margin-bottom: 15px;
+} 
+
+.content-item-title {
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: rgb(220, 220, 220);
+    margin-bottom: 8px;
+}
+
+.content-item-text {
+    font-size: 16px;
+    color: rgb(200, 200, 200);
+    white-space: normal; 
+    margin-top: 8px;
+}
+
+.text-content-container {
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    align-self: flex-start; /* Fix for vertical spacing */
 } 

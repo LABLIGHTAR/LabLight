@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements">
-    <Style src="ImageComponent.uss" />
-    <ui:VisualElement name="image-container" class="image-container">
+    <ui:VisualElement name="image-container" class="content-media-container">
         <ui:Image name="image-display" class="protocol-image-display" />
+        <ui:Label name="caption-label" class="caption-label hidden" />
     </ui:VisualElement>
 </ui:UXML>

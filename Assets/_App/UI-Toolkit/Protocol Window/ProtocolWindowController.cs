@@ -379,22 +379,32 @@ public class ProtocolWindowController : BaseWindowController
         {
             Debug.Log($"[ProtocolViewWindowController] Loading ContentItem. Type: {contentItem.contentType}, Properties: {JsonConvert.SerializeObject(contentItem.properties)}");
 
+            var contentItemContainer = new VisualElement();
+            contentItemContainer.AddToClassList("protocol-content-item");
+
             VisualElement itemElement = null;
-            switch (contentItem.contentType?.ToLower())
+            string contentTypeLower = contentItem.contentType?.ToLower();
+
+            // Handle Title first, as it should appear at the top.
+            if (contentItem.properties.TryGetValue("Title", out object titleObj) && !string.IsNullOrEmpty(titleObj?.ToString()))
+            {
+                var titleLabel = new Label(titleObj.ToString());
+                titleLabel.AddToClassList("content-item-title");
+                contentItemContainer.Add(titleLabel);
+            }
+
+            switch (contentTypeLower)
             {
                 case "text":
-                    if (contentItem.properties.TryGetValue("Text", out object textObj))
-                    {
-                        var textLabel = new Label(textObj.ToString());
-                        textLabel.AddToClassList("text-block");
-                        itemElement = textLabel;
-                    }
+                    // Text-only items don't have a primary "itemElement".
+                    // The text is added in the generic handler below.
                     break;
                 case "image":
                     if (contentItem.properties.TryGetValue("objectKey", out object imageUrlObj))
                     {
                         var imageComponent = new ImageComponent(imageComponentAsset);
-                        imageComponent.SetImage(_fileManager, imageUrlObj.ToString());
+                        contentItem.properties.TryGetValue("text", out object imgCaption);
+                        imageComponent.SetImage(_fileManager, imageUrlObj.ToString(), imgCaption?.ToString());
                         itemElement = imageComponent;
                     }
                     break;
@@ -402,46 +412,64 @@ public class ProtocolWindowController : BaseWindowController
                     if (contentItem.properties.TryGetValue("objectKey", out object videoObjectKey))
                     {
                         var videoPlayerComponent = new VideoPlayerComponent(videoPlayerComponentAsset);
-                        videoPlayerComponent.SetVideo(_fileManager, videoObjectKey.ToString());
+                        contentItem.properties.TryGetValue("text", out object vidCaption);
+                        videoPlayerComponent.SetVideo(_fileManager, videoObjectKey.ToString(), vidCaption?.ToString());
                         itemElement = videoPlayerComponent;
                     }
                     break;
-                case "sound":
+                case "pdf":
+                case "webpage":
                 case "weburl":
-                    if (contentItem.properties.TryGetValue("objectKey", out object urlObj))
+                    if (contentItem.properties.TryGetValue("objectKey", out object keyObj) || contentItem.properties.TryGetValue("url", out keyObj))
                     {
                         var button = new Button();
                         button.RegisterCallback<ClickEvent>(evt =>
                         {
                             _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
-                            string url = urlObj.ToString();
-                            if (contentItem.contentType.ToLower() == "sound")
-                            {
-                                Debug.Log($"[ProtocolViewWindowController] Sound play request: {url}. (Actual playback via UIDriver not yet implemented in IUIDriver)");
-                            }
-                            else if (contentItem.contentType.ToLower() == "video")
-                            {
-                                _uiDriver?.DisplayVideoPlayer(url);
-                            }
-                            else if (contentItem.contentType.ToLower() == "weburl")
-                            {
-                                _uiDriver?.DisplayWebPage(url);
-                            }
+                            string resourceKey = keyObj.ToString();
+                            if (contentTypeLower == "pdf") _uiDriver?.DisplayPDFReader(resourceKey);
+                            else _uiDriver?.DisplayWebPage(resourceKey);
                         });
-                        button.text = $"Open {contentItem.contentType}: {System.IO.Path.GetFileName(urlObj.ToString())}";
+                        button.text = contentItem.properties.TryGetValue("text", out object btnText) ? btnText.ToString() : $"Open {contentItem.contentType}";
                         button.AddToClassList("action-button");
                         itemElement = button;
                     }
+                    break;
+                case "timer":
+                    var timerButton = new Button();
+                    string duration = contentItem.properties.TryGetValue("estimatedDurationinSeconds", out object durObj) ? $" ({durObj}s)" : "";
+                    timerButton.text = $"Open Timer{duration}";
+                    timerButton.RegisterCallback<ClickEvent>(evt =>
+                    {
+                        _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
+                        _uiDriver?.DisplayTimer();
+                    });
+                    timerButton.AddToClassList("action-button");
+                    itemElement = timerButton;
                     break;
                 default:
                     Debug.LogWarning($"[ProtocolViewWindowController] Unsupported content type: {contentItem.contentType}");
                     break;
             }
+
             if (itemElement != null)
             {
-                itemElement.AddToClassList("protocol-content-item");
-                _protocolContentContainer.Add(itemElement);
+                contentItemContainer.Add(itemElement);
                 _activeMediaComponents.Add(itemElement);
+            }
+            
+            if (contentTypeLower == "text" && contentItem.properties.TryGetValue("text", out object textObj) && !string.IsNullOrEmpty(textObj.ToString()))
+            {
+                var textLabel = new Label(textObj.ToString());
+                textLabel.AddToClassList("content-item-text");
+                contentItemContainer.Add(textLabel);
+                // Add background style for standalone text
+                contentItemContainer.AddToClassList("text-content-container");
+            }
+            
+            if (contentItemContainer.childCount > 0)
+            {
+                _protocolContentContainer.Add(contentItemContainer);
             }
         }
     }

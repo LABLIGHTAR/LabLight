@@ -13,6 +13,7 @@ namespace LabLight
         private readonly VisualElement _playPauseButton;
         private readonly Slider _progressBar;
         private readonly VisualElement _videoContainer;
+        private readonly Label _captionLabel;
         
         private readonly CompositeDisposable _videoDisposables = new CompositeDisposable();
         private bool _isPreparing = false;
@@ -25,6 +26,7 @@ namespace LabLight
             _videoImage = this.Q<Image>("video-image");
             _playPauseButton = this.Q<VisualElement>("play-pause-button");
             _progressBar = this.Q<Slider>("progress-bar");
+            _captionLabel = this.Q<Label>("caption-label");
             
             _playPauseButton.SetEnabled(false);
             _progressBar.SetEnabled(false);
@@ -58,7 +60,7 @@ namespace LabLight
             }
         }
         
-        public async void SetVideo(IFileManager fileManager, string videoObjectKey)
+        public async void SetVideo(IFileManager fileManager, string videoObjectKey, string captionText = null)
         {
             if (fileManager == null)
             {
@@ -69,6 +71,12 @@ namespace LabLight
             {
                 Debug.LogWarning("[VideoPlayerComponent] Video object key is null or empty.");
                 return;
+            }
+
+            if (!string.IsNullOrEmpty(captionText))
+            {
+                _captionLabel.text = captionText;
+                _captionLabel.RemoveFromClassList("hidden");
             }
 
             var result = await fileManager.GetMediaFilePathAsync(videoObjectKey);
