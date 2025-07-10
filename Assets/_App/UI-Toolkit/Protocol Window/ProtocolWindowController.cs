@@ -11,6 +11,7 @@ public class ProtocolWindowController : BaseWindowController
     [Header("Component UXML Assets")]
     public VisualTreeAsset imageComponentAsset;
     public VisualTreeAsset videoPlayerComponentAsset;
+    public VisualTreeAsset checklistItemAsset;
 
     // Constants for element names
     private const string ChecklistPanelName = "checklist-panel";
@@ -197,7 +198,7 @@ public class ProtocolWindowController : BaseWindowController
         {
             Debug.Log("[ProtocolViewWindowController] No checklist items to display or prerequisites missing.");
             var noItemsLabel = new Label("No checklist items for this step.");
-            noItemsLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            noItemsLabel.AddToClassList("text-centered-spacious");
             _checklistContainer.Add(noItemsLabel);
             UpdateSignOffButtonState();
             return;
@@ -213,56 +214,23 @@ public class ProtocolWindowController : BaseWindowController
         {
             var itemState = checklistItemStatesList[i];
             var itemDef = _currentStepDefinition.checklist[i];
-
-            var checkItemVisual = new VisualElement();
-            checkItemVisual.AddToClassList("check-item");
-
-            var statusIndicator = new VisualElement();
-            statusIndicator.AddToClassList("check-item-status-indicator");
-            if (itemState.IsChecked.Value)
-            {
-                statusIndicator.AddToClassList("icon-check-circle");
-            }
-            else
-            {
-                statusIndicator.AddToClassList("icon-radio-unchecked");
-            }
-
-            var checkItemText = new Label(itemDef.Text);
-            checkItemText.AddToClassList("check-item-text");
-
-            checkItemVisual.Add(statusIndicator);
-            checkItemVisual.Add(checkItemText);
-
-            checkItemVisual.RemoveFromClassList("check-item-next");
-            checkItemVisual.RemoveFromClassList("check-item-locked");
-
-            if (_isSignedOff)
-            {
-                checkItemVisual.AddToClassList("check-item-locked");
-            }
-            else
-            {
-                bool isTheNextItemToBeChecked = (i == firstUncheckedIndex && firstUncheckedIndex != -1);
-                bool canThisItemBeUnchecked = itemState.IsChecked.Value &&
+            
+            var checklistItem = checklistItemAsset.Instantiate();
+            var itemController = checklistItem.Q<ChecklistItemController>();
+            
+            bool isTheNextItem = (i == firstUncheckedIndex);
+            bool canThisItemBeUnchecked = itemState.IsChecked.Value &&
                                             ((firstUncheckedIndex == -1 && i == checklistItemStatesList.Count - 1) ||
                                              (firstUncheckedIndex > 0 && i == firstUncheckedIndex - 1));
+            
+            bool isLocked = _isSignedOff || (!isTheNextItem && !canThisItemBeUnchecked);
 
-                if (isTheNextItemToBeChecked)
-                {
-                    checkItemVisual.AddToClassList("check-item-next");
-                }
-                else if (!canThisItemBeUnchecked)
-                {
-                    checkItemVisual.AddToClassList("check-item-locked");
-                }
-            }
+            itemController.SetData(itemDef.Text, itemState.IsChecked.Value, isTheNextItem, isLocked);
 
             int itemIndexForCallback = i;
-            checkItemVisual.UnregisterCallback<ClickEvent, int>(HandleChecklistItemClicked);
-            checkItemVisual.RegisterCallback<ClickEvent, int>(HandleChecklistItemClicked, itemIndexForCallback);
+            checklistItem.RegisterCallback<ClickEvent, int>(HandleChecklistItemClicked, itemIndexForCallback);
 
-            _checklistContainer.Add(checkItemVisual);
+            _checklistContainer.Add(checklistItem);
         }
         
         // Update content panel based on the first unchecked item
@@ -389,7 +357,9 @@ public class ProtocolWindowController : BaseWindowController
             if (contentItem.properties.TryGetValue("Title", out object titleObj) && !string.IsNullOrEmpty(titleObj?.ToString()))
             {
                 var titleLabel = new Label(titleObj.ToString());
-                titleLabel.AddToClassList("content-item-title");
+                titleLabel.AddToClassList("text-lg");
+                titleLabel.AddToClassList("font-bold");
+                titleLabel.style.marginBottom = 8;
                 contentItemContainer.Add(titleLabel);
             }
 
@@ -461,7 +431,9 @@ public class ProtocolWindowController : BaseWindowController
             if (contentTypeLower == "text" && contentItem.properties.TryGetValue("text", out object textObj) && !string.IsNullOrEmpty(textObj.ToString()))
             {
                 var textLabel = new Label(textObj.ToString());
-                textLabel.AddToClassList("content-item-text");
+                textLabel.AddToClassList("text-md");
+                textLabel.AddToClassList("text-color-secondary");
+                textLabel.AddToClassList("text-wrap-normal");
                 contentItemContainer.Add(textLabel);
                 // Add background style for standalone text
                 contentItemContainer.AddToClassList("text-content-container");

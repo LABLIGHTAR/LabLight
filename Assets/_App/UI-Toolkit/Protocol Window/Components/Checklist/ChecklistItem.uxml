@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss?fileID=7433441132597879392&amp;guid=b24467c9ab0b0a34c8e7b3a2a912b59a&amp;type=3#Icons" />
+    <ChecklistItemController name="check-item" class="check-item">
+        <ui:VisualElement name="status-indicator" class="check-item-status-indicator" />
+        <ui:Label name="check-item-text" class="check-item-text" />
+    </ChecklistItemController>
+</ui:UXML> 

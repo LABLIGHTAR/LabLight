@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements" editor-extension-mode="False">
     <Style src="ProtocolWindow.uss" />
-    <Style src="/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss" />
-    <Style src="/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss?fileID=7433441132597879392&amp;guid=b24467c9ab0b0a34c8e7b3a2a912b59a&amp;type=3#Icons" />
     <ui:VisualElement name="protocol-view-root" class="protocol-view-root">
         <ui:VisualElement name="checklist-panel" class="content-panel protocol-view-left-panel">
             <ui:Label name="checklist-step-title-label" text="Step Title Placeholder" class="checklist-step-title" />
@@ -33,12 +33,12 @@
             <ui:VisualElement name="content-footer" class="protocol-view-footer">
                 <ui:VisualElement class="horizontal-separator" />
                 <ui:VisualElement name="action-buttons-container" class="button-group-row-spaced">
-                    <ui:Button name="camera-button" class="icon-button icon-camera" />
-                    <ui:Button name="pdf-button" class="icon-button icon-pdf" />
-                    <ui:Button name="calculator-button" class="icon-button icon-calculator" />
-                    <ui:Button name="timer-button" class="icon-button icon-timer" />
-                    <ui:Button name="comments-button" class="icon-button icon-chat" />
-                    <ui:Button name="ar-view-button" class="icon-button icon-change-circle" />
+                    <ui:Button name="camera-button" class="icon-button clear-button icon-camera" />
+                    <ui:Button name="pdf-button" class="icon-button clear-button icon-pdf" />
+                    <ui:Button name="calculator-button" class="icon-button clear-button icon-calculator" />
+                    <ui:Button name="timer-button" class="icon-button clear-button icon-timer" />
+                    <ui:Button name="comments-button" class="icon-button clear-button icon-chat" />
+                    <ui:Button name="ar-view-button" class="icon-button clear-button icon-change-circle" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
