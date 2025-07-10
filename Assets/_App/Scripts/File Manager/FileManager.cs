@@ -420,8 +420,7 @@ public class FileManager : IFileManager
     {
         if (string.IsNullOrEmpty(objectKey))
         {
-            Debug.LogError("FileManager.GetMediaFilePathAsync: objectKey cannot be null or empty.");
-            return Result<string>.CreateFailure("INVALID_ARGUMENT", "Object key must be provided.");
+            return Result<string>.CreateFailure("INVALID_KEY", "Object key cannot be null or empty.");
         }
 
         string cacheKey = GetMediaCacheKey(objectKey);
@@ -431,20 +430,27 @@ public class FileManager : IFileManager
         if (System.IO.File.Exists(filePath))
         {
             Debug.Log($"FileManager.GetMediaFilePathAsync: Media '{objectKey}' found in local cache at {filePath}.");
-            return Result<string>.CreateSuccess(filePath);
+            return Result<string>.CreateSuccess(filePath.Replace('\\', '/'));
         }
 
-        // 2. If it doesn't exist, trigger the download and caching process.
-        Debug.Log($"FileManager.GetMediaFilePathAsync: Media '{objectKey}' not in cache. Fetching...");
+        // 2. If not cached, check online status before trying to download.
+        if (!_database.IsConnected)
+        {
+            Debug.LogWarning($"FileManager.GetMediaFilePathAsync: Offline and media '{objectKey}' not in cache.");
+            return Result<string>.CreateFailure(ErrorOfflineMediaCacheMiss, $"Media file '{objectKey}' not in local cache and client is offline.");
+        }
+
+        // 3. Download the file. The GetMediaFileAsync method will handle caching.
+        Debug.Log($"FileManager.GetMediaFilePathAsync: Media '{objectKey}' not in cache, attempting to download.");
         var downloadResult = await GetMediaFileAsync(objectKey);
 
         if (downloadResult.Success)
         {
-            // GetMediaFileAsync already caches the file, so now the file should exist.
+            // After a successful download, the file should now exist at the same path.
             if (System.IO.File.Exists(filePath))
             {
                 Debug.Log($"FileManager.GetMediaFilePathAsync: Media '{objectKey}' successfully downloaded and cached at {filePath}.");
-                return Result<string>.CreateSuccess(filePath);
+                return Result<string>.CreateSuccess(filePath.Replace('\\', '/'));
             }
             else
             {
@@ -455,7 +461,8 @@ public class FileManager : IFileManager
         }
         else
         {
-            Debug.LogError($"FileManager.GetMediaFilePathAsync: Failed to get media file for '{objectKey}'. Error: {downloadResult.Error.Message}");
+            // Download failed.
+            Debug.LogError($"FileManager.GetMediaFilePathAsync: Failed to download media '{objectKey}'. Error: {downloadResult.Error?.Code} - {downloadResult.Error?.Message}");
             return Result<string>.CreateFailure(downloadResult.Error.Code, downloadResult.Error.Message);
         }
     }

@@ -1,0 +1,33 @@
+.video-container {
+    width: 100%;
+}
+
+.protocol-video-player {
+    width: 100%;
+    max-height: 400px;
+    margin-bottom: 10px;
+}
+
+.video-controls-container {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+}
+
+.video-control-button {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+}
+
+.icon-play {
+    background-image: resource("Icons/play-button-arrowhead-svgrepo-com");
+}
+
+.icon-pause {
+    background-image: resource("Icons/pause-svgrepo-com");
+}
+
+.video-progress-bar {
+    flex-grow: 1;
+} 

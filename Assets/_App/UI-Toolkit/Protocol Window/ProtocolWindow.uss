@@ -148,6 +148,24 @@
     /* background-color: initial; */ /* Consider specific non-hover state if needed */
 }
 
+.protocol-main-content {
+    background-color: #2c2c2c;
+    border-radius: 10px;
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.text-block {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #f0f0f0;
+}
+
+.action-button {
+    margin-bottom: 10px;
+    width: 100%;
+}
+
 /* Footer styles */
 .protocol-view-footer {
     margin-top: auto; /* Push footer to the bottom of its panel if panel uses flex-direction: column */
@@ -222,21 +240,6 @@
 .signed-text {
     -unity-font-style: italic;
     font-size: 16px;
-}
-
-.protocol-main-image {
-    width: 100%;
-    min-height: 150px; /* Placeholder height */
-    background-color: rgb(60, 60, 60); /* Placeholder color */
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.text-block {
-    white-space: normal;
-    margin-bottom: 10px;
-    font-size: 14px;
-    color: rgb(220,220,220);
 }
 
 /* Action buttons in the right panel footer */
