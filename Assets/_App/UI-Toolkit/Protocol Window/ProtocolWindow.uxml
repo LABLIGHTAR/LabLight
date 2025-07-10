@@ -10,7 +10,7 @@
                 <ui:Label name="step-indicator-label" text="Step 1 / X" class="step-indicator" />
                 <ui:Button name="next-step-button" class="icon-button nav-icon-button icon-arrow-right" />
             </ui:VisualElement>
-            <ui:ScrollView name="checklist-scroll-view" class="protocol-scroll-view">
+            <ui:ScrollView name="checklist-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden">
                 <ui:VisualElement name="checklist-container" />
             </ui:ScrollView>
             <ui:VisualElement name="checklist-footer" class="protocol-view-footer checklist-signoff-footer">
@@ -23,7 +23,7 @@
         </ui:VisualElement>
         <ui:VisualElement name="content-panel" class="content-column-panel protocol-view-right-panel">
             <ui:Label name="protocol-title-label" text="Protocol Title" class="h1 protocol-content-title" />
-            <ui:ScrollView name="protocol-content-scroll-view" class="protocol-scroll-view">
+            <ui:ScrollView name="protocol-content-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden">
                 <ui:VisualElement name="protocol-content-container">
                     <ui:Label name="protocol-description-top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." class="text-block" />
                     <ui:Image name="protocol-image" class="protocol-main-image" />

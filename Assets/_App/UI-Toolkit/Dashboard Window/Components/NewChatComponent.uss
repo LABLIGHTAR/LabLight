@@ -15,31 +15,18 @@
     border-top-width: 1px;
     border-color: rgba(128, 128, 128, 0.5);
     padding: 5px 0;
-    margin-bottom: 10px;
-}
-
-.recipient-label {
-    margin-right: 10px;
-    -unity-font-style: bold;
-}
-
-.selected-recipients-scroll-view {
-    flex-grow: 1;
-    flex-direction: row;
-    min-height: 35px;
-}
-
-.search-results-scroll-view {
-    min-height: 50px;
-    max-height: 150px;
-    border-width: 1px;
-    border-color: rgba(128, 128, 128, 0.2);
-    border-radius: 5px;
     margin-bottom: 15px;
 }
 
+.recipient-label {
+    margin-bottom: 5px;
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
 .message-text-field {
-    flex-grow: 1;
+    min-height: 100px; /* Give more space for typing */
+    flex-grow: 1; /* Allow it to take up available vertical space */
     -unity-text-align: upper-left;
     margin-bottom: 20px;
 }

@@ -90,12 +90,6 @@
     max-width: 95%; /* Ensure it doesn't overflow if title is very long */
 }
 
-/* ScrollView styling - can leverage existing .protocols-scroll-view if suitable or override */
-.protocol-scroll-view {
-    flex-grow: 1;
-    /* Assuming CoreStyles.uss has basic scroll view styling */
-}
-
 /* Checklist Item Styling - Placeholder, will need C# to generate items */
 .check-item {
     flex-direction: row;

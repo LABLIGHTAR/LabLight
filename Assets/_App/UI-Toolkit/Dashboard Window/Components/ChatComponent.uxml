@@ -9,7 +9,7 @@
         </ui:VisualElement>
 
         <!-- Messages -->
-        <ui:ScrollView name="messages-scroll-view" class="messages-scroll-view" />
+        <ui:ScrollView name="messages-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden" />
 
         <!-- Footer -->
         <ui:VisualElement name="chat-footer" class="chat-footer">

@@ -3,17 +3,15 @@
     <ui:VisualElement name="new-chat-container" class="new-chat-container">
         <ui:Label text="New Message" class="h2 title-label" />
 
-        <ui:VisualElement name="recipient-section" class="recipient-section">
-            <ui:Label text="To:" class="recipient-label" />
-            <ui:ScrollView name="selected-recipients-scroll-view" class="selected-recipients-scroll-view" horizontal-scroller-visibility="Auto" mode="Horizontal">
-                <!-- Selected recipient badges will go here -->
+        <ui:VisualElement name="recipients-area">
+            <ui:Label text="To:" class="h3" />
+            <ui:ScrollView name="selected-recipients-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Auto" mode="Horizontal">
+                <ui:VisualElement name="selected-recipients-container" class="flex-row-center-items" />
             </ui:ScrollView>
+            <ui:TextField name="recipient-search-field" class="form-field" label="Search..." />
+            <ui:ScrollView name="search-results-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden" />
         </ui:VisualElement>
-
-        <ui:TextField name="recipient-search-field" class="form-field" placeholder-text="Search for users..." />
-        <ui:ScrollView name="search-results-scroll-view" class="search-results-scroll-view" />
-
-        <ui:TextField name="message-text-field" multiline="true" class="form-field message-text-field" />
+        <ui:TextField name="chat-message-field" class="form-field" label="Message" multiline="true" />
 
         <ui:VisualElement class="button-group-row-spaced">
             <ui:Button name="cancel-button" text="Cancel" class="button button-secondary" />

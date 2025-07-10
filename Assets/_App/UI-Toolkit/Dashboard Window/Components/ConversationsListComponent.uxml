@@ -1,10 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <Style src="ConversationsListComponent.uss" />
-    <ui:VisualElement name="conversations-list-container" class="full-height-flex-column">
-        <ui:VisualElement name="header" class="header-section">
-            <ui:Label text="Messages" class="h1" />
-            <ui:Button name="new-chat-button" text="New Chat" class="button button-primary" />
+    <ui:VisualElement name="conversations-panel">
+        <ui:Label text="Messages" class="title-label" />
+        <ui:ScrollView name="conversations-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden" />
+        <ui:VisualElement name="button-container" class="margin-top-medium button-group-row-spaced">
+            <ui:Button name="new-chat-button" class="icon-button icon-add" />
         </ui:VisualElement>
-        <ui:ScrollView name="conversations-scroll-view" class="list-view" />
     </ui:VisualElement>
 </ui:UXML> 

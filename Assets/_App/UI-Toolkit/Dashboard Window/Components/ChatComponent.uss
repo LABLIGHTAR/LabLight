@@ -6,23 +6,19 @@
 .chat-header {
     flex-direction: row;
     align-items: center;
-    padding: 10px 15px;
+    padding: 0 10px;
+    background-color: rgba(0, 0, 0, 0.2);
     border-bottom-width: 1px;
-    border-color: rgba(128, 128, 128, 0.5);
-    flex-shrink: 0;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
 .conversation-title {
-    margin: 0 15px;
+    flex-grow: 1;
+    -unity-text-align: middle-center;
 }
 
 .header-spacer {
     flex-grow: 1;
-}
-
-.messages-scroll-view {
-    flex-grow: 1;
-    padding: 10px 15px;
 }
 
 .message-row {
@@ -93,6 +89,5 @@
 .message-input {
     flex-grow: 1;
     margin-right: 10px;
-    max-height: 80px;
-    min-width: 0px;
+    min-height: 40px;
 } 

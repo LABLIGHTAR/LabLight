@@ -36,13 +36,15 @@
         </ui:VisualElement>
         
         <!-- Main Content (Component Swapping Area) -->
-        <ui:VisualElement name="main-content-container" class="main-content-column" />
+        <ui:VisualElement name="main-content-area" class="flex-grow-column">
+            <ui:VisualElement name="main-content-container" class="flex-grow-column" />
+        </ui:VisualElement>
 
         <!-- Notices Column -->
         <ui:VisualElement name="notices-panel" class="notices-column content-column-panel">
             <ui:VisualElement name="notices-inner-content" class="flex-grow-column">
                 <ui:Label text="Notices:" class="h2 notice-title" />
-                <ui:ScrollView name="notices-scroll-view">
+                <ui:ScrollView name="notices-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden">
                     <ui:Label name="notices-content-label" text="Running low on Skittles Protocol reagent, order more? (Placeholder)" class="text-wrap-normal" />
                 </ui:ScrollView>
             </ui:VisualElement>

@@ -41,10 +41,6 @@
     -unity-text-align: middle-center;
 }
 
-.notices-scroll-view {
-    flex-grow: 1;
-}
-
 /* Style for the currently selected navigation button */
 .button-primary-selected {
     background-color: rgba(100, 150, 255, 0.4);
