@@ -577,6 +577,8 @@ MonoBehaviour:
   conversationListItemAsset: {fileID: 9197481963319205126, guid: 64dfd1bf219e5d54fba6ca0639ed0976, type: 3}
   newChatComponentAsset: {fileID: 9197481963319205126, guid: b96cf795b237a69429e634d45d75e3a8, type: 3}
   chatComponentAsset: {fileID: 9197481963319205126, guid: 0184790ac04661346aedf85a74cf2cab, type: 3}
+  chatMessageListItemAsset: {fileID: 9197481963319205126, guid: 28c813b8f92ba0b45ba5bb8e79295e5c, type: 3}
+  recipientBadgeAsset: {fileID: 9197481963319205126, guid: 04c2e63ee3a0d8f49acc7684e8726fe3, type: 3}
   protocolListItemAsset: {fileID: 9197481963319205126, guid: 1b590a7cba23eac42b794fba7a4d95ba, type: 3}
 --- !u!1 &203844586
 GameObject:
@@ -1831,6 +1833,7 @@ MonoBehaviour:
   windowSize: {x: 1800, y: 1000}
   imageComponentAsset: {fileID: 9197481963319205126, guid: eb547f9f935c5164c81c6f558dee6b7c, type: 3}
   videoPlayerComponentAsset: {fileID: 9197481963319205126, guid: 37738178b77167b4da0e50cb67de3776, type: 3}
+  checklistItemAsset: {fileID: 9197481963319205126, guid: a22716e63e8b463479046508f2c5a057, type: 3}
 --- !u!850595691 &634348060
 LightingSettings:
   m_ObjectHideFlags: 0
