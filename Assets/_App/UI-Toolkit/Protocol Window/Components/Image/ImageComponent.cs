@@ -8,10 +8,12 @@ namespace LabLight
     public class ImageComponent : VisualElement
     {
         private readonly Image _imageElement;
+        private readonly VisualElement _imageContainer;
 
         public ImageComponent(VisualTreeAsset asset)
         {
             asset.CloneTree(this);
+            _imageContainer = this.Q<VisualElement>("image-container");
             _imageElement = this.Q<Image>("image-display");
         }
 
@@ -37,6 +39,23 @@ namespace LabLight
                     byte[] imageData = await File.ReadAllBytesAsync(result.Data);
                     var texture = new Texture2D(2, 2);
                     texture.LoadImage(imageData);
+
+                    // Calculate the display width based on the max-height and aspect ratio
+                    float imageWidth = texture.width;
+                    float imageHeight = texture.height;
+                    const float maxHeight = 400f; // From the USS file
+                    
+                    if (imageHeight > maxHeight)
+                    {
+                        float aspectRatio = imageWidth / imageHeight;
+                        float displayWidth = maxHeight * aspectRatio;
+                        _imageContainer.style.width = displayWidth;
+                    }
+                    else
+                    {
+                        _imageContainer.style.width = imageWidth;
+                    }
+                    
                     _imageElement.image = texture;
                 }
                 else

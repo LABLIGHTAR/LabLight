@@ -12,6 +12,7 @@ namespace LabLight
         private readonly Image _videoImage;
         private readonly VisualElement _playPauseButton;
         private readonly Slider _progressBar;
+        private readonly VisualElement _videoContainer;
         
         private readonly CompositeDisposable _videoDisposables = new CompositeDisposable();
         private bool _isPreparing = false;
@@ -20,6 +21,7 @@ namespace LabLight
         {
             asset.CloneTree(this);
             
+            _videoContainer = this.Q<VisualElement>("video-container");
             _videoImage = this.Q<Image>("video-image");
             _playPauseButton = this.Q<VisualElement>("play-pause-button");
             _progressBar = this.Q<Slider>("progress-bar");
@@ -122,6 +124,22 @@ namespace LabLight
             {
                 // Check if the component is still attached to a panel before updating UI
                 if (this.panel == null || source == null) return;
+
+                // Calculate the display width based on the max-height and aspect ratio
+                float videoWidth = source.width;
+                float videoHeight = source.height;
+                const float maxHeight = 400f; // From the USS file
+                
+                if (videoHeight > maxHeight)
+                {
+                    float aspectRatio = videoWidth / videoHeight;
+                    float displayWidth = maxHeight * aspectRatio;
+                    _videoContainer.style.width = displayWidth;
+                }
+                else
+                {
+                    _videoContainer.style.width = videoWidth;
+                }
 
                 _progressBar.highValue = (float)source.length;
                 _progressBar.SetEnabled(true);

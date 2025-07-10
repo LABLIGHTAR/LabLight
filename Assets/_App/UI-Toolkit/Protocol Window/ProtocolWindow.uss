@@ -247,3 +247,7 @@
     background-color: transparent;
     border-width: 0;
 } 
+
+.protocol-content-item {
+    margin-bottom: 15px;
+} 

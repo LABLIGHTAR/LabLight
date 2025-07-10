@@ -1829,6 +1829,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   windowSize: {x: 1800, y: 1000}
+  imageComponentAsset: {fileID: 9197481963319205126, guid: eb547f9f935c5164c81c6f558dee6b7c, type: 3}
+  videoPlayerComponentAsset: {fileID: 9197481963319205126, guid: 37738178b77167b4da0e50cb67de3776, type: 3}
 --- !u!850595691 &634348060
 LightingSettings:
   m_ObjectHideFlags: 0

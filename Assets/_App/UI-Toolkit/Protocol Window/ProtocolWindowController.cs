@@ -439,6 +439,7 @@ public class ProtocolWindowController : BaseWindowController
             }
             if (itemElement != null)
             {
+                itemElement.AddToClassList("protocol-content-item");
                 _protocolContentContainer.Add(itemElement);
                 _activeMediaComponents.Add(itemElement);
             }
