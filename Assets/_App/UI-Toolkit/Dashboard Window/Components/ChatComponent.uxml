@@ -5,7 +5,7 @@
     <ui:VisualElement name="chat-container" class="chat-container">
         <ui:VisualElement name="chat-header" class="chat-header">
             <ui:Button name="back-button" class="icon-button icon-back" />
-            <ui:Label name="conversation-title" class="h2 conversation-title" />
+            <ui:Label name="conversation-title" class="text-lg text-color-secondary conversation-title" />
             <ui:VisualElement class="header-spacer" />
         </ui:VisualElement>
         <ui:ScrollView name="messages-scroll-view" horizontal-scroller-visibility="Hidden" class="custom-scroll-view" />

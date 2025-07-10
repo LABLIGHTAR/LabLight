@@ -4,7 +4,7 @@
     <Style src="DashboardWindow.uss" />
     <ui:VisualElement name="dashboard-container" class="glassmorphic-panel">
         <!-- Navigation Column -->
-        <ui:VisualElement name="nav-bar" class="nav-bar-column content-column-panel">
+        <ui:VisualElement name="nav-bar" class="nav-bar-column content-panel">
             <ui:Button name="nav-home" class="button button-primary nav-button">
                 <ui:VisualElement class="nav-button-icon icon-home-filled" />
                 <ui:Label text="Home" class="nav-button-label" />
@@ -37,13 +37,13 @@
         
         <!-- Main Content (Component Swapping Area) -->
         <ui:VisualElement name="main-content-area" class="main-content-column">
-            <ui:VisualElement name="main-content-container" class="flex-grow-column" />
+            <ui:VisualElement name="main-content-container" class="flex-column flex-grow" />
         </ui:VisualElement>
-
+ 
         <!-- Notices Column -->
-        <ui:VisualElement name="notices-panel" class="notices-column content-column-panel">
-            <ui:VisualElement name="notices-inner-content" class="flex-grow-column">
-                <ui:Label text="Notices:" class="h2 notice-title" />
+        <ui:VisualElement name="notices-panel" class="notices-column content-panel">
+            <ui:VisualElement name="notices-inner-content" class="flex-column flex-grow">
+                <ui:Label text="Notices:" class="text-lg text-color-secondary notice-title" />
                 <ui:ScrollView name="notices-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden">
                     <ui:Label name="notices-content-label" text="Running low on Skittles Protocol reagent, order more? (Placeholder)" class="text-wrap-normal" />
                 </ui:ScrollView>

@@ -3,7 +3,7 @@
     <ui:VisualElement name="new-chat-container" class="new-chat-container">
         <ui:VisualElement name="new-chat-header" class="chat-header">
             <ui:Button name="back-button" class="icon-button icon-back" />
-            <ui:Label text="New Message" class="h2 conversation-title" />
+            <ui:Label text="New Message" class="text-lg text-color-secondary conversation-title" />
             <ui:VisualElement class="header-spacer" />
         </ui:VisualElement>
         <ui:ScrollView name="selected-recipients-scroll-view" mode="Horizontal" class="recipients-scroll-view" />

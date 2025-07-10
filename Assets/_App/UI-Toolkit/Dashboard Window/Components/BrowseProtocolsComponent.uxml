@@ -4,7 +4,7 @@
     <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
     <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss?fileID=7433441132597879392&amp;guid=271b405523f72184189a19c5b244d187&amp;type=3#Icons" />
     <ui:VisualElement name="browse-protocols-panel">
-        <ui:Label text="Browse Protocols" class="title-label" />
+        <ui:Label text="Browse Protocols" class="text-xs font-bold title-block" />
         <ui:ScrollView name="protocols-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden" />
         <ui:VisualElement name="button-container" class="margin-top-medium button-group-row-spaced">
             <!-- Back button is removed as navigation is handled by the parent window -->
