@@ -1,20 +1,17 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <Style src="ChatComponent.uss" />
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_App/UI-Toolkit/Dashboard%20Window/Components/ChatComponent.uss?fileID=7433441132597879392&amp;guid=98396264c0bf05741be3926bd79cdead&amp;type=3#ChatComponent" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss?fileID=7433441132597879392&amp;guid=9b0562328a278574a950e9c01fee1791&amp;type=3#Icons" />
     <ui:VisualElement name="chat-container" class="chat-container">
-        <!-- Header -->
         <ui:VisualElement name="chat-header" class="chat-header">
             <ui:Button name="back-button" class="icon-button icon-back" />
             <ui:Label name="conversation-title" class="h2 conversation-title" />
             <ui:VisualElement class="header-spacer" />
         </ui:VisualElement>
-
-        <!-- Messages -->
-        <ui:ScrollView name="messages-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden" />
-
-        <!-- Footer -->
+        <ui:ScrollView name="messages-scroll-view" horizontal-scroller-visibility="Hidden" class="custom-scroll-view" />
         <ui:VisualElement name="chat-footer" class="chat-footer">
-            <ui:TextField name="message-input" class="form-field message-input" placeholder-text="Type a message..." multiline="true" />
+            <ui:TextField name="message-input" class="message-input styled-text-input" placeholder-text="Type a message..." multiline="true" />
             <ui:Button name="send-button" class="icon-button icon-send" />
         </ui:VisualElement>
     </ui:VisualElement>
-</ui:UXML> 
+</ui:UXML>

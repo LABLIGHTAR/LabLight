@@ -1,21 +1,15 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <Style src="NewChatComponent.uss" />
     <ui:VisualElement name="new-chat-container" class="new-chat-container">
-        <ui:Label text="New Message" class="h2 title-label" />
-
-        <ui:VisualElement name="recipients-area">
-            <ui:Label text="To:" class="h3" />
-            <ui:ScrollView name="selected-recipients-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Auto" mode="Horizontal">
-                <ui:VisualElement name="selected-recipients-container" class="flex-row-center-items" />
-            </ui:ScrollView>
-            <ui:TextField name="recipient-search-field" class="form-field" label="Search..." />
-            <ui:ScrollView name="search-results-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden" />
+        <ui:VisualElement name="new-chat-header" class="chat-header">
+            <ui:Button name="back-button" class="icon-button icon-back" />
+            <ui:Label text="New Message" class="h2 conversation-title" />
+            <ui:VisualElement class="header-spacer" />
         </ui:VisualElement>
-        <ui:TextField name="chat-message-field" class="form-field" label="Message" multiline="true" />
-
-        <ui:VisualElement class="button-group-row-spaced">
-            <ui:Button name="cancel-button" text="Cancel" class="button button-secondary" />
-            <ui:Button name="send-button" text="Send" class="button button-primary" />
-        </ui:VisualElement>
+        <ui:ScrollView name="selected-recipients-scroll-view" mode="Horizontal" class="recipients-scroll-view" />
+        <ui:TextField name="recipient-search-field" class="styled-text-input" placeholder-text="Search..." />
+        <ui:ScrollView name="search-results-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden" />
+        <ui:TextField name="chat-message-field" class="styled-text-input" placeholder-text="Message" multiline="true" />
+        <ui:Button name="send-chat-button" text="Send" class="button button-primary" />
     </ui:VisualElement>
 </ui:UXML> 

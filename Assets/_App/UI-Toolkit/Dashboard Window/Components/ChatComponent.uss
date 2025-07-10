@@ -7,7 +7,6 @@
     flex-direction: row;
     align-items: center;
     padding: 0 10px;
-    background-color: rgba(0, 0, 0, 0.2);
     border-bottom-width: 1px;
     border-bottom-color: rgba(255, 255, 255, 0.1);
 }
@@ -18,7 +17,8 @@
 }
 
 .header-spacer {
-    flex-grow: 1;
+    width: 32px;
+    flex-shrink: 0;
 }
 
 .message-row {
@@ -80,14 +80,24 @@
 .chat-footer {
     flex-direction: row;
     align-items: center;
-    padding: 10px 15px;
     border-top-width: 1px;
     border-color: rgba(128, 128, 128, 0.5);
-    flex-shrink: 0;
+    flex-shrink: 0; 
 }
 
 .message-input {
     flex-grow: 1;
     margin-right: 10px;
-    min-height: 40px;
-} 
+}
+
+.message-input.styled-text-input {
+    flex-grow: 1;
+    margin-right: 10px;
+    width: auto;
+    margin-bottom: 0;
+}
+
+.chat-footer > .icon-button {
+    flex-shrink: 0;
+    margin: 0;
+}

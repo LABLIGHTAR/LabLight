@@ -83,6 +83,11 @@
     background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/logout_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
 }
 
+.icon-send {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/send_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+}
+
 /* Status Indicators */
 .icon-check-circle {
     -unity-background-image-tint-color: rgb(227, 227, 227);
@@ -115,6 +120,11 @@
     background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/arrow_split_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
 }
 
+.icon-back {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/keyboard_arrow_left_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
+}
+
 /* Media Controls */
 .icon-play {
     -unity-background-image-tint-color: rgb(227, 227, 227);
@@ -145,4 +155,9 @@
 .icon-chat-unread {
     -unity-background-image-tint-color: rgb(227, 227, 227);
     background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/mark_unread_chat_alt_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg');
+}
+
+.icon-close-small {
+    -unity-background-image-tint-color: rgb(227, 227, 227);
+    background-image: url('/Assets/_App/UI-Toolkit/Common/Icons/close_small_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg');
 } 

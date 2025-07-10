@@ -191,8 +191,6 @@
     /* Stack label on top of input */
     flex-direction: column;
     align-items: stretch;
-    --unity-cursor-color: white;
-    --unity-selection-color: rgba(100, 150, 255, 0.5);
 }
 
 .form-field > .unity-label {
@@ -206,8 +204,15 @@
     -unity-text-align: middle-left;
 }
 
-.form-field > .unity-text-input,
-.form-field > .unity-base-text-field__input {
+.styled-text-input {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.styled-text-input > .unity-text-input,
+.styled-text-input > .unity-base-text-field__input {
     background-color: rgba(0, 0, 0, 0.25);
     border-color: rgba(255, 255, 255, 0.2);
     border-width: 1px;
@@ -218,15 +223,18 @@
     width: 100%;
     min-width: 0;
     transition: scale 0.1s ease-out, background-color 0.1s ease-out, border-color 0.1s ease-out;
+    color: white;
+    --unity-cursor-color: white;
+    --unity-selection-color: rgba(100, 150, 255, 0.5);
 }
 
-.form-field > .unity-text-input:hover,
-.form-field > .unity-base-text-field__input:hover {
+.styled-text-input > .unity-text-input:hover,
+.styled-text-input > .unity-base-text-field__input:hover {
     border-color: rgba(255, 255, 255, 0.4);
 }
 
-.form-field > .unity-text-input:focus,
-.form-field > .unity-base-text-field__input:focus {
+.styled-text-input > .unity-text-input:focus,
+.styled-text-input > .unity-base-text-field__input:focus {
     border-color: rgba(100, 150, 255, 0.8);
     background-color: rgba(0, 0, 0, 0.4);
     scale: 1.01 1.01;

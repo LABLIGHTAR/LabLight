@@ -40,11 +40,11 @@ public class NewChatComponent : VisualElement
         }
 
         _recipientSearchField = this.Q<TextField>("recipient-search-field");
-        _messageTextField = this.Q<TextField>("message-text-field");
+        _messageTextField = this.Q<TextField>("chat-message-field");
         _searchResultsScrollView = this.Q<ScrollView>("search-results-scroll-view");
         _selectedRecipientsScrollView = this.Q<ScrollView>("selected-recipients-scroll-view");
-        _sendButton = this.Q<Button>("send-button");
-        _cancelButton = this.Q<Button>("cancel-button");
+        _sendButton = this.Q<Button>("send-chat-button");
+        _cancelButton = this.Q<Button>("back-button");
 
         _recipientSearchField.RegisterValueChangedCallback(evt => PopulateSearchResults(evt.newValue));
         _sendButton.RegisterCallback<ClickEvent>(OnSendClicked);
@@ -108,7 +108,7 @@ public class NewChatComponent : VisualElement
                 userData = user
             };
             removeButton.AddToClassList("recipient-badge-remove-button");
-            removeButton.AddToClassList("icon-close"); // From Icons.uss
+            removeButton.AddToClassList("icon-close-small");
             removeButton.RegisterCallback<ClickEvent>(OnRemoveRecipientClicked);
 
             badge.Add(nameLabel);

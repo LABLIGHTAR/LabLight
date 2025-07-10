@@ -38,7 +38,6 @@
     border-radius: 12px;
     padding: 4px 8px;
     margin: 2px 5px 2px 0;
-    height: 24px;
 }
 
 .recipient-badge-label {
@@ -62,4 +61,14 @@
 
 .user-search-result-item:hover {
     background-color: rgba(255, 255, 255, 0.05);
+}
+
+.recipients-scroll-view > .unity-scroll-view__content-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.recipients-scroll-view {
+    min-height: 40px;
+    margin-bottom: 15px;
 } 

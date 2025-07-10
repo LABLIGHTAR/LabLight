@@ -6,7 +6,7 @@
                 <ui:VisualElement name="profile-image" class="profile-image" />
             </ui:VisualElement>
             <ui:Label text="Welcome Back, [User]!" name="welcome-label" class="h2 text-block-centered-spacious" />
-            <ui:TextField name="password-field" label="Password" class="form-field" password="true"/>
+            <ui:TextField name="password-field" label="Password" class="styled-text-input" password="true"/>
             <ui:VisualElement name="error-label-container" class="error-message-area">
                 <ui:Label name="error-label" class="error-message-label hidden" />
             </ui:VisualElement>
