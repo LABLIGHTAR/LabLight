@@ -36,7 +36,7 @@
         </ui:VisualElement>
         
         <!-- Main Content (Component Swapping Area) -->
-        <ui:VisualElement name="main-content-area" class="flex-grow-column">
+        <ui:VisualElement name="main-content-area" class="main-content-column">
             <ui:VisualElement name="main-content-container" class="flex-grow-column" />
         </ui:VisualElement>
 

@@ -7,7 +7,6 @@
         <ui:Label text="Saved Protocols" class="title-label" />
         <ui:ScrollView name="protocols-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden" />
         <ui:VisualElement name="button-container" class="margin-top-medium button-group-row-spaced">
-            <ui:Button name="browse-all-button" text="Browse All" class="button button-secondary" />
             <!-- Back button is removed as navigation is handled by the parent window -->
             <ui:Button name="refresh-button" class="icon-button icon-refresh" />
         </ui:VisualElement>

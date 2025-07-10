@@ -57,37 +57,43 @@
     font-size: 16px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
-    background-color: rgba(80, 80, 80, 0.7); /* Darker background for step indicator */
-    padding: 5px 15px; /* More horizontal padding */
-    border-radius: 15px; /* Rounded corners */
-    min-width: 100px; /* Ensure it has some base width */
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 5px 15px;
+    border-radius: 10px;
+    min-width: 100px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .protocol-content-title {
     -unity-text-align: middle-center;
     margin-bottom: 15px;
-    font-size: 20px; /* Ensure it matches h1 if that's what was intended */
+    font-size: 20px;
     -unity-font-style: bold;
-    background-color: rgba(80, 80, 80, 0.7); /* Similar background */
-    padding: 8px 20px; /* Padding */
-    border-radius: 15px; /* Rounded corners */
-    align-self: center; /* Center the title block itself if it doesn't stretch */
-    max-width: 70%; /* Prevent it from taking full width if title is short */
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 8px 20px;
+    border-radius: 10px;
+    align-self: center;
+    max-width: 70%;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* New style for the checklist step title */
 .checklist-step-title {
     font-size: 16px;
     -unity-font-style: bold;
-    -unity-text-align: middle-center; /* Text centered within its own bounds */
-    margin-top: 5px; /* Added top margin */
-    margin-bottom: 10px; /* Space below the title, before the scroll view */
-    padding: 5px 15px; /* Adjusted padding */
-    background-color: rgba(80, 80, 80, 0.7); /* Added background */
-    border-radius: 15px; /* Added border radius */
-    align-self: center; /* Center the block itself */
-    min-width: 150px; /* Ensure a minimum width for the lozenge look */
-    max-width: 95%; /* Ensure it doesn't overflow if title is very long */
+    -unity-text-align: middle-center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding: 5px 15px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    align-self: center;
+    min-width: 150px;
+    max-width: 95%;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Checklist Item Styling - Placeholder, will need C# to generate items */
@@ -98,7 +104,10 @@
     margin-bottom: 5px;
     border-radius: 5px;
     width: 100%; /* Ensure the item itself doesn't overflow its container */
-    box-sizing: border-box; /* Ensure padding/border are included in the 100% width */
+}
+
+.check-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
 }
 
 .check-item-selected {
@@ -132,14 +141,17 @@
     border-bottom-right-radius: 5px;
 }
 
+.check-item.check-item-next:hover {
+    background-color: rgba(80, 120, 200, 0.35);
+}
+
 /* Optional: Style for items that are not currently interactable */
 .check-item.check-item-locked {
     opacity: 0.6; /* Visually indicate it's not the current focus */
 }
 
 .check-item.check-item-locked:hover {
-    /* Optional: override hover effects if .check-item has them */
-    /* background-color: initial; */ /* Consider specific non-hover state if needed */
+    background-color: transparent;
 }
 
 .protocol-main-content {
@@ -158,6 +170,16 @@
 .action-button {
     margin-bottom: 10px;
     width: 100%;
+}
+
+#action-buttons-container {
+    justify-content: center;
+    flex-grow: 1;
+}
+
+#action-buttons-container > .icon-button {
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 /* Footer styles */
@@ -264,8 +286,8 @@
 }
 
 .video-control-button {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     margin-right: 10px;
 }
 
@@ -278,7 +300,7 @@
     color: rgb(210, 210, 210);
     white-space: normal;
     margin-top: 8px;
-    -unity-text-align: center;
+    -unity-text-align: middle-center;
 }
 
 .hidden {
