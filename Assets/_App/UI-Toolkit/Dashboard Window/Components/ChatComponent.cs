@@ -19,15 +19,18 @@ public class ChatComponent : VisualElement
     private readonly ScrollView _messagesScrollView;
     private readonly TextField _messageInput;
     private readonly Button _sendButton;
-    
+    private readonly VisualTreeAsset _chatMessageListItemAsset;
+
     public ChatComponent(
         VisualTreeAsset componentAsset,
+        VisualTreeAsset chatMessageListItemAsset,
         ConversationData conversation,
         IDatabase database,
         IAudioService audioService)
     {
         componentAsset.CloneTree(this);
 
+        _chatMessageListItemAsset = chatMessageListItemAsset;
         _conversation = conversation;
         _database = database;
         _audioService = audioService;
@@ -61,7 +64,8 @@ public class ChatComponent : VisualElement
         if (_missingParticipantIds.Contains(updatedProfile.SpacetimeId))
         {
             SetTitle();
-            PopulateMessages(); 
+            // We could refresh all messages, but for now we'll just update the title
+            // as re-populating could be expensive.
         }
     }
 
@@ -76,8 +80,7 @@ public class ChatComponent : VisualElement
         _missingParticipantIds.Clear();
         foreach (var message in _conversation.Messages)
         {
-            var messageElement = CreateMessageVisualElement(message);
-            _messagesScrollView.Add(messageElement);
+            AddMessage(message);
         }
         ScrollToBottom();
     }
@@ -86,11 +89,28 @@ public class ChatComponent : VisualElement
     {
         if (message.ConversationId == _conversation.ConversationId)
         {
-            var messageElement = CreateMessageVisualElement(message);
-            _messagesScrollView.Add(messageElement);
+            AddMessage(message);
             ScrollToBottom();
             _conversation.Messages.Add(message); // Keep local data in sync
         }
+    }
+    
+    private void AddMessage(MessageData message)
+    {
+        var listItem = _chatMessageListItemAsset.Instantiate();
+        var controller = listItem.Q<ChatMessageListItemController>();
+
+        var isSentByUser = message.SenderIdentity == _database.CurrentIdentity;
+        var senderProfile = isSentByUser ? null : _database.GetCachedUserProfile(message.SenderIdentity);
+        var isGroupChat = _conversation.Participants.Count > 2;
+        
+        if (!isSentByUser && senderProfile == null)
+        {
+            _missingParticipantIds.Add(message.SenderIdentity);
+        }
+
+        controller.SetMessageData(message, senderProfile, isSentByUser, isGroupChat);
+        _messagesScrollView.Add(listItem);
     }
 
     private void HandleMessageUpdated(MessageData updatedMessage)
@@ -100,11 +120,8 @@ public class ChatComponent : VisualElement
         var elementToUpdate = _messagesScrollView.Children()
             .FirstOrDefault(c => c.userData is MessageData md && md.MessageId == updatedMessage.MessageId);
 
-        if (elementToUpdate != null)
-        {
-            var contentLabel = elementToUpdate.Q<Label>("message-content");
-            contentLabel.text = updatedMessage.IsDeleted ? "Message deleted" : updatedMessage.Content;
-        }
+        var controller = elementToUpdate?.Q<ChatMessageListItemController>();
+        controller?.UpdateMessageContent(updatedMessage);
     }
 
     private void OnSendClicked(ClickEvent evt)
@@ -115,46 +132,6 @@ public class ChatComponent : VisualElement
         _audioService?.PlayButtonPress((evt.currentTarget as VisualElement).worldBound.center);
         _database.SendConversationMessage(_conversation.ConversationId, messageText);
         _messageInput.SetValueWithoutNotify("");
-    }
-
-    private VisualElement CreateMessageVisualElement(MessageData message)
-    {
-        var isSentByUser = message.SenderIdentity == _database.CurrentIdentity;
-        
-        var row = new VisualElement();
-        row.AddToClassList("message-row");
-        row.AddToClassList(isSentByUser ? "sent" : "received");
-        row.userData = message;
-
-        var bubble = new VisualElement();
-        bubble.AddToClassList("message-bubble");
-        bubble.AddToClassList(isSentByUser ? "sent" : "received");
-        
-        if (!isSentByUser && _conversation.Participants.Count > 2)
-        {
-            var senderProfile = _database.GetCachedUserProfile(message.SenderIdentity);
-            if (senderProfile == null)
-            {
-                _missingParticipantIds.Add(message.SenderIdentity);
-            }
-            var senderName = senderProfile?.Name ?? "Unknown";
-            var senderLabel = new Label(senderName);
-            senderLabel.AddToClassList("sender-name-label");
-            bubble.Add(senderLabel);
-        }
-
-        var content = new Label(message.IsDeleted ? "Message deleted" : message.Content);
-        content.AddToClassList("message-content");
-        content.name = "message-content"; // For querying in update
-        
-        var timestamp = new Label(message.SentAt.ToLocalTime().ToString("h:mm tt"));
-        timestamp.AddToClassList("message-timestamp");
-
-        bubble.Add(content);
-        bubble.Add(timestamp);
-        row.Add(bubble);
-
-        return row;
     }
 
     private string GetConversationName()
@@ -168,7 +145,10 @@ public class ChatComponent : VisualElement
                 var user = _database.GetCachedUserProfile(p.ParticipantIdentity);
                 if (user == null)
                 {
-                    _missingParticipantIds.Add(p.ParticipantIdentity);
+                    if (!_missingParticipantIds.Contains(p.ParticipantIdentity))
+                    {
+                        _missingParticipantIds.Add(p.ParticipantIdentity);
+                    }
                     return "Unknown";
                 }
                 return user.Name;

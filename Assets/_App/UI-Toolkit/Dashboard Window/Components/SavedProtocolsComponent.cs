@@ -90,8 +90,7 @@ public class SavedProtocolsComponent : VisualElement
         {
             Debug.LogWarning("CurrentUserId is not available from database. Cannot load saved protocols.");
             var noUserLabel = new Label("Please log in to see saved protocols.");
-            noUserLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-            noUserLabel.style.marginTop = 20;
+            noUserLabel.AddToClassList("text-centered-spacious");
             _protocolsScrollView.Add(noUserLabel);
             return;
         }
@@ -103,8 +102,7 @@ public class SavedProtocolsComponent : VisualElement
             if (!result.Data.Any())
             {
                 var noProtocolsLabel = new Label("You have no saved protocols.");
-                noProtocolsLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-                noProtocolsLabel.style.marginTop = 20;
+                noProtocolsLabel.AddToClassList("text-centered-spacious");
                 _protocolsScrollView.Add(noProtocolsLabel);
                 return;
             }
@@ -138,8 +136,8 @@ public class SavedProtocolsComponent : VisualElement
         {
             Debug.LogError($"Failed to load saved protocols: {result.Error?.Message}");
             var errorLabel = new Label("Error loading saved protocols.");
-            errorLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-            errorLabel.style.color = Color.red;
+            errorLabel.AddToClassList("text-centered-spacious");
+            errorLabel.AddToClassList("text-error");
             _protocolsScrollView.Add(errorLabel);
         }
     }
@@ -167,8 +165,7 @@ public class SavedProtocolsComponent : VisualElement
             if (!_protocolIdToListItemMap.Any() && _protocolsScrollView != null)
             {
                 var noProtocolsLabel = new Label("You have no saved protocols.");
-                noProtocolsLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-                noProtocolsLabel.style.marginTop = 20;
+                noProtocolsLabel.AddToClassList("text-centered-spacious");
                 _protocolsScrollView.Add(noProtocolsLabel);
             }
         }

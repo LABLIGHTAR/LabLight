@@ -1,14 +1,15 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <Style src="ConversationListItem.uss"/>
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
     <ui:VisualElement name="list-item-container" class="list-item">
         <ui:VisualElement name="main-content" class="list-item-main-content">
-            <ui:Label name="conversation-name" class="conversation-name-label" />
-            <ui:Label name="last-message" class="last-message-label" />
+            <ui:Label name="conversation-name" class="text-md font-bold" style="margin-bottom: 4px;" />
+            <ui:Label name="last-message" class="text-sm text-color-secondary last-message-label" />
         </ui:VisualElement>
         <ui:VisualElement name="right-content" class="list-item-right-content">
-            <ui:Label name="timestamp" class="timestamp-label" />
+            <ui:Label name="timestamp" class="text-xs" style="color: #aaaaaa; margin-bottom: 5px;" />
             <ui:VisualElement name="unread-badge" class="unread-badge hidden">
-                <ui:Label name="unread-count" class="unread-count-label" />
+                <ui:Label name="unread-count" class="text-xs font-bold text-color-primary" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

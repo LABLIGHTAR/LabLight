@@ -99,8 +99,7 @@ public class BrowseProtocolsComponent : VisualElement
             if (!result.Data.Any())
             {
                 var noProtocolsLabel = new Label("No protocols available to browse.");
-                noProtocolsLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-                noProtocolsLabel.style.marginTop = 20;
+                noProtocolsLabel.AddToClassList("text-centered-spacious");
                 _protocolsScrollView.Add(noProtocolsLabel);
                 return;
             }
@@ -135,8 +134,8 @@ public class BrowseProtocolsComponent : VisualElement
         {
             Debug.LogError($"Failed to load available protocols: {result.Error?.Message}");
             var errorLabel = new Label("Error loading protocols.");
-            errorLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-            errorLabel.style.color = Color.red;
+            errorLabel.AddToClassList("text-centered-spacious");
+            errorLabel.AddToClassList("text-error");
             _protocolsScrollView.Add(errorLabel);
         }
     }

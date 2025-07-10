@@ -2,11 +2,11 @@
     <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
     <Style src="ProtocolListItem.uss" />
     <ProtocolListItemController name="protocol-item-container" class="protocol-list-item">
-        <ui:Button name="select-protocol-area-button" class="protocol-select-area protocol-item-button">
+        <ui:Button name="select-protocol-area-button" class="protocol-select-area clear-button">
             <ui:VisualElement name="info-container" class="protocol-item-info-container">
-                <ui:Label name="protocol-name-label" text="Protocol Title" class="protocol-name" />
-                <ui:Label name="owner-name-label" text="Owner Name" class="owner-name" />
-                <ui:Label name="protocol-description-label" text="Porttitor nulla proin cursus non in. Velit laoreet ornare suspendisse turpis montes ac id consectetur. Amet consectetur donec porttitor feugiat congue eleifend..." class="protocol-description" />
+                <ui:Label name="protocol-name-label" text="Protocol Title" class="text-lg font-bold" style="margin-bottom: 3px;" />
+                <ui:Label name="owner-name-label" text="Owner Name" class="text-sm text-color-secondary" style="margin-bottom: 5px;" />
+                <ui:Label name="protocol-description-label" text="Description..." class="text-sm text-color-tertiary protocol-description" style="margin-top: 5px;" />
             </ui:VisualElement>
         </ui:Button>
         <ui:VisualElement name="protocol-item-actions-group" class="protocol-item-actions-group">

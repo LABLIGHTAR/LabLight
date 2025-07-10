@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <!-- This entire element's classes ('message-row', 'sent'/'received') will be set from the controller -->
+    <ChatMessageListItemController name="message-row" class="message-row">
+        <!-- The classes for this bubble ('message-bubble', 'sent'/'received') will also be set from the controller -->
+        <ui:VisualElement name="message-bubble" class="message-bubble">
+            <!-- This label is only shown for received messages in group chats -->
+            <ui:Label name="sender-name-label" class="sender-name-label" style="display: none;"/>
+            <ui:Label name="message-content" class="message-content" />
+            <ui:Label name="message-timestamp" class="message-timestamp" />
+        </ui:VisualElement>
+    </ChatMessageListItemController>
+</ui:UXML> 

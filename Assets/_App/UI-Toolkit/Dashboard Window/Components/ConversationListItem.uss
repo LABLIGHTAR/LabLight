@@ -5,7 +5,7 @@
     padding: 10px 15px;
     border-bottom-width: 1px;
     border-bottom-color: rgba(128, 128, 128, 0.2);
-    cursor: pointer;
+    cursor: link;
 }
 
 .list-item:hover {
@@ -20,29 +20,15 @@
     margin-right: 10px;
 }
 
-.conversation-name-label {
-    -unity-font-style: bold;
-    font-size: 16px;
-    margin-bottom: 4px;
-}
-
-.last-message-label {
-    font-size: 14px;
-    color: #cccccc;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .list-item-right-content {
     align-items: flex-end;
     flex-shrink: 0;
 }
 
-.timestamp-label {
-    font-size: 12px;
-    color: #aaaaaa;
-    margin-bottom: 5px;
+.last-message-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .unread-badge {
@@ -57,10 +43,4 @@
 
 .unread-badge.hidden {
     display: none;
-}
-
-.unread-count-label {
-    color: white;
-    font-size: 12px;
-    -unity-font-style: bold;
 } 

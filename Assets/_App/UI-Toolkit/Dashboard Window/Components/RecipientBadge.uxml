@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="recipient-badge" class="recipient-badge">
+        <ui:Label name="recipient-name" class="recipient-badge-label" />
+        <ui:Button name="remove-recipient-button" class="recipient-badge-remove-button icon-close-small" />
+    </ui:VisualElement>
+</ui:UXML> 

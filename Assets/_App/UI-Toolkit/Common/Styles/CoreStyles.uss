@@ -141,6 +141,10 @@
 
 .text-centered { -unity-text-align: middle-center; }
 
+.text-error {
+    color: red;
+}
+
 /* --- Text Block & Title (now for composition) --- */
 .title-block {
     margin-bottom: 20px;
@@ -150,6 +154,11 @@
 .text-block {
     white-space: normal;
     margin-bottom: 10px;
+}
+
+.text-centered-spacious {
+    -unity-text-align: middle-center;
+    margin-top: 20px;
 }
 
 .text-block-spacious {
@@ -214,6 +223,24 @@
 
 .button-secondary:active {
     background-color: rgba(255, 255, 255, 0.02);
+}
+
+.clear-button {
+    background-color: transparent;
+    border-width: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.list-item-button {
+    padding: 8px 12px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(128, 128, 128, 0.2);
+    cursor: link;
+}
+
+.list-item-button:hover {
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* --- Icon Buttons --- */

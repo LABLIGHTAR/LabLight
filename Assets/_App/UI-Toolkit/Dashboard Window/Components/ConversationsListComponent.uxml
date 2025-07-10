@@ -1,5 +1,4 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <Style src="ConversationsListComponent.uss" />
     <ui:VisualElement name="conversations-panel">
         <ui:Label text="Messages" class="text-xs font-bold title-block" />
         <ui:ScrollView name="conversations-scroll-view" class="custom-scroll-view" horizontal-scroller-visibility="Hidden" />

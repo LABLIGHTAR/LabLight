@@ -46,7 +46,9 @@ public class ConversationsListComponent : VisualElement
 
         if (conversations == null || conversations.Count == 0)
         {
-            _scrollView.Add(new Label("No conversations yet."));
+            var noConvoLabel = new Label("No conversations yet.");
+            noConvoLabel.AddToClassList("text-centered-spacious");
+            _scrollView.Add(noConvoLabel);
             return;
         }
 

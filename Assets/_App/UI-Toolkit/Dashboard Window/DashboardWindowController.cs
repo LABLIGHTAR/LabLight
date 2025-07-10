@@ -13,6 +13,8 @@ public partial class DashboardWindowController : BaseWindowController
     public VisualTreeAsset conversationListItemAsset;
     public VisualTreeAsset newChatComponentAsset;
     public VisualTreeAsset chatComponentAsset;
+    public VisualTreeAsset chatMessageListItemAsset;
+    public VisualTreeAsset recipientBadgeAsset;
     public VisualTreeAsset protocolListItemAsset; // For list items
 
     private VisualElement _mainContentContainer;
@@ -201,6 +203,7 @@ public partial class DashboardWindowController : BaseWindowController
 
         var newChatComponent = new NewChatComponent(
             newChatComponentAsset,
+            recipientBadgeAsset,
             _database,
             _fileManager,
             _audioService,
@@ -223,6 +226,7 @@ public partial class DashboardWindowController : BaseWindowController
         
         var chatComponent = new ChatComponent(
             chatComponentAsset,
+            chatMessageListItemAsset,
             conversation,
             _database,
             _audioService);

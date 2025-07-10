@@ -19,14 +19,16 @@ public class NewChatComponent : VisualElement
     private readonly ScrollView _selectedRecipientsScrollView;
     private readonly Button _sendButton;
     private readonly Button _cancelButton;
+    private readonly VisualTreeAsset _recipientBadgeAsset;
 
     private List<UserData> _allUsers;
     private readonly List<UserData> _selectedRecipients = new List<UserData>();
 
-    public NewChatComponent(VisualTreeAsset componentAsset, IDatabase database, IFileManager fileManager, IAudioService audioService, List<UserData> potentialRecipients)
+    public NewChatComponent(VisualTreeAsset componentAsset, VisualTreeAsset recipientBadgeAsset, IDatabase database, IFileManager fileManager, IAudioService audioService, List<UserData> potentialRecipients)
     {
         componentAsset.CloneTree(this);
 
+        _recipientBadgeAsset = recipientBadgeAsset;
         _database = database;
         _fileManager = fileManager;
         _audioService = audioService;
@@ -70,7 +72,7 @@ public class NewChatComponent : VisualElement
         foreach (var user in filteredUsers)
         {
             var label = new Label(user.Name);
-            label.AddToClassList("user-search-result-item");
+            label.AddToClassList("list-item-button");
             label.userData = user;
             label.RegisterCallback<ClickEvent>(OnSearchResultClicked);
             _searchResultsScrollView.Add(label);
@@ -97,22 +99,14 @@ public class NewChatComponent : VisualElement
         _selectedRecipientsScrollView.Clear();
         foreach (var user in _selectedRecipients)
         {
-            var badge = new VisualElement();
-            badge.AddToClassList("recipient-badge");
+            var badge = _recipientBadgeAsset.Instantiate();
+            var nameLabel = badge.Q<Label>("recipient-name");
+            var removeButton = badge.Q<Button>("remove-recipient-button");
 
-            var nameLabel = new Label(user.Name);
-            nameLabel.AddToClassList("recipient-badge-label");
-            
-            var removeButton = new Button
-            {
-                userData = user
-            };
-            removeButton.AddToClassList("recipient-badge-remove-button");
-            removeButton.AddToClassList("icon-close-small");
+            nameLabel.text = user.Name;
+            removeButton.userData = user;
             removeButton.RegisterCallback<ClickEvent>(OnRemoveRecipientClicked);
 
-            badge.Add(nameLabel);
-            badge.Add(removeButton);
             _selectedRecipientsScrollView.Add(badge);
         }
     }
