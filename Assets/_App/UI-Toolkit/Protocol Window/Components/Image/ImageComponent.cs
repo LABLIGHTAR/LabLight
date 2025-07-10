@@ -10,6 +10,7 @@ namespace LabLight
         private readonly Image _imageElement;
         private readonly VisualElement _imageContainer;
         private readonly Label _captionLabel;
+        private EventCallback<GeometryChangedEvent> _geometryChangedCallback;
 
         public ImageComponent(VisualTreeAsset asset)
         {
@@ -48,22 +49,9 @@ namespace LabLight
                     var texture = new Texture2D(2, 2);
                     texture.LoadImage(imageData);
 
-                    // Calculate the display width based on the max-height and aspect ratio
-                    float imageWidth = texture.width;
-                    float imageHeight = texture.height;
-                    const float maxHeight = 400f; // From the USS file
-                    
-                    if (imageHeight > maxHeight)
-                    {
-                        float aspectRatio = imageWidth / imageHeight;
-                        float displayWidth = maxHeight * aspectRatio;
-                        _imageContainer.style.width = displayWidth;
-                    }
-                    else
-                    {
-                        _imageContainer.style.width = imageWidth;
-                    }
-                    
+                    // Defer size calculation until the element has a resolved style
+                    _geometryChangedCallback = (evt) => OnImageGeometryChanged(evt, texture);
+                    _imageElement.RegisterCallback<GeometryChangedEvent>(_geometryChangedCallback);
                     _imageElement.image = texture;
                 }
                 else
@@ -74,6 +62,35 @@ namespace LabLight
             catch (Exception ex)
             {
                 Debug.LogError($"[ImageComponent] Error loading image with key {imageObjectKey}: {ex}");
+            }
+        }
+
+        private void OnImageGeometryChanged(GeometryChangedEvent evt, Texture2D texture)
+        {
+            if (texture == null) return;
+            
+            // Get the computed max-height from the stylesheet
+            float maxHeight = _imageElement.resolvedStyle.maxHeight.value;
+            if (maxHeight <= 0) return;
+
+            float imageWidth = texture.width;
+            float imageHeight = texture.height;
+            
+            if (imageHeight > maxHeight)
+            {
+                float aspectRatio = imageWidth / imageHeight;
+                float displayWidth = maxHeight * aspectRatio;
+                _imageContainer.style.width = displayWidth;
+            }
+            else
+            {
+                _imageContainer.style.width = imageWidth;
+            }
+            
+            // Unregister the callback to avoid it running again on layout changes
+            if (_geometryChangedCallback != null)
+            {
+                _imageElement.UnregisterCallback<GeometryChangedEvent>(_geometryChangedCallback);
             }
         }
     }

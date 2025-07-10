@@ -10,7 +10,7 @@ namespace LabLight
     {
         private readonly VideoPlayer _videoPlayer;
         private readonly Image _videoImage;
-        private readonly VisualElement _playPauseButton;
+        private readonly Button _playPauseButton;
         private readonly Slider _progressBar;
         private readonly VisualElement _videoContainer;
         private readonly Label _captionLabel;
@@ -24,7 +24,7 @@ namespace LabLight
             
             _videoContainer = this.Q<VisualElement>("video-container");
             _videoImage = this.Q<Image>("video-image");
-            _playPauseButton = this.Q<VisualElement>("play-pause-button");
+            _playPauseButton = this.Q<Button>("play-pause-button");
             _progressBar = this.Q<Slider>("progress-bar");
             _captionLabel = this.Q<Label>("caption-label");
             
@@ -136,9 +136,9 @@ namespace LabLight
                 // Calculate the display width based on the max-height and aspect ratio
                 float videoWidth = source.width;
                 float videoHeight = source.height;
-                const float maxHeight = 400f; // From the USS file
+                float maxHeight = _videoImage.resolvedStyle.maxHeight.value;
                 
-                if (videoHeight > maxHeight)
+                if (videoHeight > maxHeight && maxHeight > 0)
                 {
                     float aspectRatio = videoWidth / videoHeight;
                     float displayWidth = maxHeight * aspectRatio;

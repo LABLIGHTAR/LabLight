@@ -1,0 +1,11 @@
+.content-media-container {
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.protocol-image-display {
+    max-height: 400px;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+} 

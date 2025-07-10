@@ -1,9 +1,11 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:engine="UnityEngine.UIElements">
-    <Style src="/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss" />
+    <Style src="VideoPlayerComponent.uss" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/CoreStyles.uss?fileID=7433441132597879392&amp;guid=1aafb9b3695647a409c74ee6eeb9f9bb&amp;type=3#CoreStyles" />
+    <Style src="project://database/Assets/_App/UI-Toolkit/Common/Styles/Icons.uss?fileID=7433441132597879392&amp;guid=9b0562328a278574a950e9c01fee1791&amp;type=3#Icons" />
     <ui:VisualElement name="video-container" class="content-media-container">
         <ui:Image name="video-image" class="protocol-video-player" />
         <ui:VisualElement name="controls-container" class="video-controls-container">
-            <ui:VisualElement name="play-pause-button" class="video-control-button icon-play" />
+            <ui:Button name="play-pause-button" class="video-control-button icon-button icon-play" />
             <ui:Slider name="progress-bar" class="video-progress-bar" low-value="0" high-value="1" />
         </ui:VisualElement>
         <ui:Label name="caption-label" class="caption-label hidden" />

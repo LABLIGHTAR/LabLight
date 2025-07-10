@@ -170,6 +170,12 @@
     white-space: normal;
 }
 
+.caption-label {
+    font-size: 14px;
+    color: #bbbbbb;
+    -unity-font-style: italic;
+    margin-top: 8px;
+}
 
 /* ==========================================================================
    4. UI Component Styles

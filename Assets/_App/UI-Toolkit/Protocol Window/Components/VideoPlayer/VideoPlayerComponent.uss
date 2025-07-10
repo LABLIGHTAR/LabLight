@@ -1,0 +1,28 @@
+.content-media-container {
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.protocol-video-player {
+    max-height: 400px;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+.video-controls-container {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.video-control-button {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.video-progress-bar {
+    flex-grow: 1;
+} 
