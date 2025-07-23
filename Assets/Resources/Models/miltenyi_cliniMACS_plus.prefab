@@ -4420,6 +4420,7 @@ MonoBehaviour:
   positionLocked: 0
   hasBeenLocked: 0
   ModelName: {fileID: 0}
+  ModelNameText: {fileID: 0}
   Model: {fileID: 1323446542158613813}
   highlightPoints: {fileID: 1467257686696625226}
   Outline: {fileID: 0}
